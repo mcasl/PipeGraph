@@ -45,6 +45,11 @@ The results provided by Phase III allow to draw some conclusions on the pattern 
 \end{algorithm}
 """
 #%%
+import pandas as pd
+import statsmodels.formula.api as sm
+import numpy as np
+import patsy
+import scipy 
 
 
 class Paella():
@@ -52,6 +57,7 @@ class Paella():
                  formula,
                  data, 
                  classification,
+                 noise_label=None,
                  max_it = 1,
                  beta_rate = 0.3, 
                  betaMin_rate = 0.1, 
@@ -61,6 +67,7 @@ class Paella():
         self.formula = formula
         self.data = data
         self.classification = classification
+        self.noise_label = noise_label
         self.max_it = max_it
         self.beta_rate = beta_rate 
         self.betaMin_rate = betaMin_rate 
@@ -77,9 +84,12 @@ class Paella():
         if self.occurrences is None :
             self.occurrences =  pd.DataFrame(0, index=self.data.index, columns=["Occurrences"])
             
-        rowsDict = classification.groupby("Classification").groups
+        rowsDict = self.classification.groupby("Classification").groups
   
-        invertedSigmas = {clusterLabel: np.linalg.inv(np.cov(data.loc[rows,:], rowvar=False)) for clusterLabel, rows in rowsDict.items() }
+        if self.noise_label is not None :
+            del rowsDict[self.noise_label]
+            
+        invertedSigmas = {clusterLabel: np.linalg.inv(np.cov(self.data.loc[rows,:], rowvar=False)) for clusterLabel, rows in rowsDict.items() }
 
         for dummy in range(self.max_it):
             print(dummy, " ,")
@@ -91,37 +101,37 @@ class Paella():
                 beta = np.floor(self.beta_rate * number_of_observations).astype(int)
                 betaMin   = np.floor(self.betaMin_rate * number_of_observations).astype(int)
                 while number_of_observations > betaMin :
-                    beta_within = beta if number_of_observations > beta else betaMin
+                    beta_within = beta if number_of_observations > beta else betaMin #¿Cambiar betaMin por number_of_observations?
                     # 1.1 One random $x_{k\,i} \in Z_{k\,i}$; $k=1 \ldots g$, $Z_{k\,1}=C_k$ sample is considered as a seed point of the supporting $G_i$ subset.
                     seed_point = np.random.choice(rows, 1, replace=False)
                     # 1.2 The remaining $x_j \in Z_{k\,i}$ points are classified according to their Mahalanobis distance to the seed point $D(x_j,x_{k\,i})$.
-                    D = cdist(XA=data.loc[rows,:],
-                              XB=data.loc[seed_point,:],
-                              metric="mahalanobis",
-                              VI=invertedSigmas[clusterLabel])
+                    D = scipy.spatial.distance.cdist(XA=self.data.loc[rows,:],
+                                                     XB=self.data.loc[seed_point,:],
+                                                     metric="mahalanobis",
+                                                     VI=invertedSigmas[clusterLabel])
                     D = pd.DataFrame(D, index=rows, columns=["Distance"]).sort_values(by="Distance", ascending=True)
                     # 1.3 $\beta$ $x_j$ points, those with the smallest $D(x_j,x_{k\,i})$, are added to the $G_i$ subset. If there are less than $\beta$ points, $\beta_{min}$ is used instead.
                     G_i_rows      = D.head(beta_within).index
                     # 1.4 A $M_i$ model is inferred from $G_i$ (ideally using a robust and affine equivariant fitting ).
-                    M_i_model       = sm.ols(formula=self.formula, data=data.loc[G_i_rows, :]).fit()
+                    M_i_model       = sm.ols(formula=self.formula, data=self.data.loc[G_i_rows, :]).fit()
                     M_i_model_list.append(M_i_model) # We preserve M_i_model for Phase 2
                     # 1.5 For all $x_j \in C_k, x_j \notin G_i$ a residual $r_{x_j}$ is evaluated against the $M_i$ model.
                     # 1.6 The $x_j$ samples whose residual $r_{x_j}$ reports to have a quantile function value lower than $r$ may be considered as compliant with $M_i$, and be added to $G_i$.
                     rows = rows.drop(G_i_rows) # We discard those samples already in G_i
                     if len(rows) > 1 :
-                        ypred, xpred  = patsy.dmatrices(self.formula, data=data.loc[rows,:], return_type="dataframe")
+                        ypred, xpred  = patsy.dmatrices(self.formula, data=self.data.loc[rows,:], return_type="dataframe")
                         r_x_j         = getResiduals(model=M_i_model, X=xpred, Y=ypred) # residuals out of model
                         r_threshold   = scipy.stats.norm.ppf(self.width_r, loc = r_x_j.mean(), scale = r_x_j.std())
                         rows = rows[np.abs(r_x_j) > r_threshold] # We discard those samples out of G_i agreeing with M_i_model (discarding is conceptually equivalent to move those samples to the G_i subset)
                         
                     number_of_observations = len(rows)
                     # 1.7 Steps {\small 1} to {\small 6} are iterated considering $Z_{k\,i+1}=Z_{k\,i}-G_i$, as far as reasonable: the points become exhausted at $Z_{k\,i+1}$ or the density in the subset falls under the r_threshold $q$.
-                               
+            # End of rowsDict.items() loop                 
+            
             ## PHASE 2  
-                
             # 2.1 The vector $r_{x_j}=\min\{r_{x_j,M_i}=y_j-M_i(x_j),\displaystyle {\forall x_j \in \bigcup_{k=0}^g C_k}, \forall M_i \}$ binds the smallest residuals for each sample to their corresponding $M_i$ ``best" fit.
-            dataYpred, dataXpred = patsy.dmatrices(self.formula, data=data, return_type="dataframe")
-            r_x_j  = pd.concat( [getResiduals(model=model, X=dataXpred, Y=dataYpred) for model in  M_i_model_list]  , axis=1).min(axis=1)
+            dataYpred, dataXpred = patsy.dmatrices(self.formula, data=self.data, return_type="dataframe")
+            r_x_j  = pd.concat( [getResiduals(model=model, X=dataXpred, Y=dataYpred) for model in  M_i_model_list]  , axis=1).abs().min(axis=1)
             # 2.2 $r_{x_j}>\alpha$ identifies the samples prone to outlierness, and thus, a list of outliers in the context of a particular trial can be written to reflect the current results.      
             alpha_threshold   = scipy.stats.norm.ppf(self.width_alpha, loc = r_x_j.mean(), scale = r_x_j.std())
             self.occurrences.loc[ np.abs(r_x_j) > alpha_threshold , "Occurrences"] +=  1 
