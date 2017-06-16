@@ -31,7 +31,7 @@ plt.scatter(x=data["A"], y=data["B"] )
 
 
 from sklearn.cluster import KMeans
-myKMeans = KMeans(n_clusters=3)
+myKMeans = KMeans(n_clusters=5)
 myKMeans.fit(data)
 classification1 = pd.DataFrame({"Classification":myKMeans.labels_}, index=data.index)
 
@@ -40,7 +40,7 @@ plt.scatter(x=data["A"], y=data["B"], c=classification1);
 x2 = np.random.uniform(x1.min(), x1.max(), N) 
 y2 = np.random.uniform(y1.min(), y1.max(), N) 
 data2 = pd.DataFrame({"A":x2, "B":y2}, index=pd.RangeIndex(N)+N)
-classification2 = pd.DataFrame({"Classification":4}, index=data2.index)
+classification2 = pd.DataFrame({"Classification":5}, index=data2.index)
 
 data = pd.concat([data1, data2],axis=0)
 classification =  pd.concat([classification1, classification2],axis=0)
@@ -50,12 +50,12 @@ plt.scatter(x=data["A"], y=data["B"], c=classification, cmap="Set1");
 paellaRun = paella.Paella(formula="B ~ A",
                           data=data,
                           classification=classification, 
-                          noise_label=4,
-                          max_it=10000,
+                          noise_label=5,
+                          max_it=1000,
                           beta_rate = 0.1, 
                           betaMin_rate = 0.05, 
-                          width_r = 0.6,
-                          width_alpha = 0.6)
+                          width_r = 0.95,
+                          width_alpha = 0.95)
         
 
 paellaRun.fit()
