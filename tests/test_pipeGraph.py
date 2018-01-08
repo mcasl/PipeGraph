@@ -24,43 +24,41 @@ class TestPipeGraphCase(unittest.TestCase):
         self.graph_description = {
             'First':
                 {'step': FirstStep,
-                 'sklearn_class': None,
-                 'kargs': None,
-                 'input': {'X': x,
-                           'y': y},
+                 'connections': {'X': x,
+                                 'y': y},
                  'use_for': ['fit', 'run'],
                  },
 
+            'Concatenate_Xy':
+                {'step': CustomConcatenationStep,
+                 'connections': {'df1': ('First', 'X'),
+                                 'df2': ('First', 'y')},
+                 'use_for': ['fit'],
+                 },
+
             'Gaussian_Mixture':
-                {'step': ConcatenateInputStep,
-                 'sklearn_class': GaussianMixture,
+                {'step': GaussianMixture,
                  'kargs': {'n_components': 3},
-                 'input': [('First', 'X'),
-                           ('First', 'y')],
+                 'connections': {'X': ('Concatenate_Xy', 'Xy')},
                  'use_for': ['fit'],
                  },
 
             'Dbscan':
-                {'step': CustomDBSCANStep,
-                 'sklearn_class': DBSCAN,
+                {'step': DBSCAN,
                  'kargs': {'eps': 0.05},
-                 'input': [('First', 'X'),
-                           ('First', 'y')],
+                 'connections': {'X': ('Concatenate_Xy', 'Xy')},
                  'use_for': ['fit'],
                  },
 
             'Combine_Clustering':
                 {'step': CustomCombinationStep,
-                 'sklearn_class': None,
-                 'kargs': None,
-                 'input': [('Dbscan', 'output'),
-                           ('Gaussian_Mixture', 'output')],
+                 'connections': {'dominant': ('Dbscan', 'prediction'),
+                                 'other': ('Gaussian_Mixture', 'prediction')},
                  'use_for': ['fit'],
                  },
 
             'Paella':
-                {'step': PaellaStep,
-                 'sklearn_class': Paella,
+                {'step': CustomPaellaStep,
                  'kargs': {'noise_label': -1,
                            'max_it': 20,
                            'regular_size': 400,
@@ -70,30 +68,27 @@ class TestPipeGraphCase(unittest.TestCase):
                            'power': 30,
                            'random_state': None},
 
-                 'input': [('First', 'X'),
-                           ('First', 'y'),
-                           ('Combine_Clustering', 'output')],
+                 'connections': {'X': ('First', 'X'),
+                                 'y': ('First', 'y'),
+                                 'classification': ('Combine_Clustering', 'classification')},
                  'use_for': ['fit'],
                  },
 
             'Regressor':
-                {'step': RegressorStep,
-                 'sklearn_class': LinearRegression,
+                {'step': LinearRegression,
                  'kargs': {},
-                 'input': [('First', 'X'),
-                           ('First', 'y'),
-                           ('Paella', 'sample_weight')],
+                 'connections': {'X': ('First', 'X'),
+                                 'y': ('First', 'y'),
+                                 'sample_weight': ('Paella', 'prediction')},
                  'use_for': ['fit', 'run'],
                  },
 
             'Last':
                 {'step': LastStep,
-                 'sklearn_class': None,
-                 'kargs': {},
-                 'input': [('Regressor', 'prediction')],
+                 'connections': {'prediction': ('Regressor', 'prediction'),
+                                 },
                  'use_for': ['fit', 'run'],
                  },
-
         }
 
         self.graph = PipeGraph(self.graph_description)
@@ -107,6 +102,7 @@ class TestPipeGraphCase(unittest.TestCase):
     def test_nodes(self):
         node_list = list(self.graph.nodes)
         self.assertEqual(node_list, ['First',
+                                     'Concatenate_Xy',
                                      'Gaussian_Mixture',
                                      'Dbscan',
                                      'Combine_Clustering',
@@ -117,6 +113,7 @@ class TestPipeGraphCase(unittest.TestCase):
     def test_iter(self):
         node_list = list(self.graph)
         self.assertEqual(node_list, ['First',
+                                     'Concatenate_Xy',
                                      'Gaussian_Mixture',
                                      'Dbscan',
                                      'Combine_Clustering',
@@ -127,12 +124,14 @@ class TestPipeGraphCase(unittest.TestCase):
     def test_get_fit_nodes(self):
         node_list = [step.node_name for step in self.graph.get_fit_steps()]
         self.assertEqual(node_list, ['First',
+                                     'Concatenate_Xy',
                                      'Dbscan',
                                      'Gaussian_Mixture',
                                      'Combine_Clustering',
                                      'Paella',
                                      'Regressor',
                                      'Last'])
+
     def test_get_run_nodes(self):
         node_list = [step.node_name for step in self.graph.get_run_steps()]
         self.assertEqual(node_list, ['First',
@@ -144,26 +143,25 @@ class TestPipeGraphCase(unittest.TestCase):
         assert_frame_equal(self.graph.data['First', 'X'], self.X)
         assert_frame_equal(self.graph.data['First', 'y'], self.y)
 
-        self.assertEqual(self.graph.data['Dbscan', 'output'].shape[0], self.y.shape[0])
-        self.assertEqual(self.graph.data['Dbscan', 'output'].min(), -1)
+        self.assertEqual(self.graph.data['Dbscan', 'prediction'].shape[0], self.y.shape[0])
+        self.assertEqual(self.graph.data['Dbscan', 'prediction'].min(), -1)
 
-        self.assertEqual(self.graph.data['Gaussian_Mixture', 'output'].shape[0], self.y.shape[0])
-        self.assertEqual(self.graph.data['Gaussian_Mixture', 'output'].min(), 0)
+        self.assertEqual(self.graph.data['Gaussian_Mixture', 'prediction'].shape[0], self.y.shape[0])
+        self.assertEqual(self.graph.data['Gaussian_Mixture', 'prediction'].min(), 0)
 
+        self.assertEqual(self.graph.data['Combine_Clustering', 'classification'].shape[0], self.y.shape[0])
+        self.assertEqual(self.graph.data['Combine_Clustering', 'classification'].min(), -1)
+        self.assertEqual(self.graph.data['Combine_Clustering', 'classification'].max(),
+                         self.graph.data['Gaussian_Mixture', 'prediction'].max())
 
-        self.assertEqual(self.graph.data['Combine_Clustering', 'output'].shape[0], self.y.shape[0])
-        self.assertEqual(self.graph.data['Combine_Clustering', 'output'].min(), -1)
-        self.assertEqual(self.graph.data['Combine_Clustering', 'output'].max(),
-                         self.graph.data['Gaussian_Mixture', 'output'].max())
-
-        self.assertEqual(self.graph.data['Paella', 'sample_weight'].shape[0], self.y.shape[0])
-        self.assertEqual(self.graph.data['Paella', 'sample_weight'].min(), 0)
-        self.assertEqual(self.graph.data['Paella', 'sample_weight'].max(), 1)
+        self.assertEqual(self.graph.data['Paella', 'prediction'].shape[0], self.y.shape[0])
+        self.assertEqual(self.graph.data['Paella', 'prediction'].min(), 0)
+        self.assertEqual(self.graph.data['Paella', 'prediction'].max(), 1)
 
         self.assertEqual(self.graph.data['Regressor', 'prediction'].shape[0], self.y.shape[0])
 
-        assert_array_equal(self.graph.data['Last'     , 'prediction'],
-                         self.graph.data['Regressor', 'prediction'])
+        assert_array_equal(self.graph.data['Last', 'prediction'],
+                           self.graph.data['Regressor', 'prediction'])
 
     def test_graph_run(self):
         self.graph.fit()
@@ -174,8 +172,8 @@ class TestPipeGraphCase(unittest.TestCase):
 
         self.assertEqual(self.graph.data['Regressor', 'prediction'].shape[0], self.y.shape[0])
 
-        assert_array_equal(self.graph.data['Last'     , 'prediction'],
-                         self.graph.data['Regressor', 'prediction'])
+        assert_array_equal(self.graph.data['Last', 'prediction'],
+                           self.graph.data['Regressor', 'prediction'])
 
 
 if __name__ == '__main__':

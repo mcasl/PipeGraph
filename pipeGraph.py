@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 import networkx as nx
-import itertools
+from paella import Paella
 
 from abc import ABC, abstractmethod
 
@@ -15,6 +15,7 @@ class ComputationalGraph(ABC):
     """
     Protocol definition. Use PipeGraph instead.
     """
+
     @abstractmethod
     def __iter__(self):
         """
@@ -61,6 +62,7 @@ class ComputationalGraph(ABC):
 class PipeGraph(ComputationalGraph):
     """
     """
+
     def __init__(self, graph_description):
         """
 
@@ -69,22 +71,7 @@ class PipeGraph(ComputationalGraph):
         """
         self.description = graph_description
         self.data = dict()
-        self.graph = nx.DiGraph()
-        self.graph.add_nodes_from(graph_description)
-        for current_name, info in graph_description.items():
-            current_node = self.graph.node[current_name]
-            if info['kargs'] is None:
-                info['kargs'] = dict()
-            current_node['step'] = info['step'](pipegraph=self,
-                                                node_name=current_name,
-                                                input=info['input'],
-                                                use_for=info['use_for'],
-                                                sklearn_class=info['sklearn_class'],
-                                                **info['kargs'])
-
-            if current_name != 'First':
-                for ascendant in set(name for name, attribute in info['input']):
-                    self.graph.add_edge(ascendant, current_name)
+        self.graph = _create_graph_from_description(pipegraph=self, graph_description=graph_description)
 
     def __iter__(self):
         """
@@ -137,6 +124,7 @@ class StepIterator(ABC):
     """
     Protocol definition. se concrete classes instead, e.g. FitIterator and RunIterator
     """
+
     @abstractmethod
     def __init__(self, pipeGraph):
         """
@@ -164,6 +152,7 @@ class FitIterator(StepIterator):
     """
     An iterator over those steps in PipeGraph object with fit in use_for attribute
     """
+
     def __init__(self, pipe_graph):
         """
         Args:
@@ -186,6 +175,7 @@ class RunIterator(StepIterator):
     """
     An iterator over those steps in PipeGraph object with run in use_for attribute
     """
+
     def __init__(self, pipe_graph):
         """
         Args:
@@ -208,16 +198,78 @@ class RunIterator(StepIterator):
 #  STEPS
 ################################
 class Step(ABC):
+
+    def fit(self):
+        """
+        Template method for fitting
+        """
+        self.input = self._read_connections()
+        self._pre_fit()
+        self._fit()
+        self._post_fit()
+        self._update_graph_data(self.output)
+
+    def run(self):
+        """
+        Template method for running
+        """
+        self.input = self._read_connections()
+        self._pre_run()
+        self._run()
+        self._post_run()
+        self._update_graph_data(self.output)
+
+    @abstractmethod
+    def _pre_fit(self):
+        ''' Preprocessing '''
+        pass
+
+    @abstractmethod
+    def _fit(self):
+        ''' Fit operations '''
+        pass
+
+    @abstractmethod
+    def _post_fit(self):
+        ''' Postprocessing '''
+        pass
+
+    @abstractmethod
+    def _pre_run(self):
+        ''' Preprocessing '''
+        pass
+
+    @abstractmethod
+    def _run(self):
+        ''' Run operations '''
+        pass
+
+    @abstractmethod
+    def _post_run(self):
+        ''' Postprocessing '''
+        pass
+
+    @abstractmethod
+    def _read_connections(self):
+        pass
+
+    def _update_graph_data(self, data_dict):
+        self.pipegraph.data.update(
+            {(self.node_name, variable): value for variable, value in data_dict.items()}
+        )
+
+
+class CustomStep(Step):
     """
-    Protocol definition. Use concrete classes instead.
     """
-    def __init__(self, pipegraph, node_name, input, use_for=['fit', 'run'], sklearn_class=None, **kargs):
+
+    def __init__(self, pipegraph, node_name, connections, use_for=['fit', 'run'], sklearn_class=None, **kargs):
         """
 
         Args:
             pipegraph:
             node_name:
-            input:
+            connections:
             use_for:
             sklearn_class:
             kargs:
@@ -225,171 +277,140 @@ class Step(ABC):
         self.pipegraph = pipegraph
         self.data = self.pipegraph.data
         self.node_name = node_name
-        self.input = input
+        self.connections = connections
         self.use_for = use_for
-        if sklearn_class is not None:
-            self.sklearn_object = sklearn_class(**kargs)
+        self.output = dict()
+        self.kargs = kargs
+        self.sklearn_object = sklearn_class(**kargs) if sklearn_class is not None else None
+        # If sklearn_class is None and the user tries to use it a tremendous error is expected to be raised,
+        # which is a nice free error signal for the user
 
-    # TODO: Add None assignment case with a pass similar
+    def _read_connections(self):
+        if isinstance(self, FirstStep):
+            input_data = self.connections
+        else:
+            input_data = {inner_variable: self.data[node_and_outer_variable_tuple]
+                          for inner_variable, node_and_outer_variable_tuple in self.connections.items()}
+        return input_data
 
-    # @abstractmethod
-    def fit(self):
-        """
-
-        """
+    def _pre(self):
         pass
 
-    # @abstractmethod
-    def run(self):
-        """
-
-        """
+    def _post(self):
         pass
 
-    def update_graph_data(self, data_dict):
-        """
+    def _pre_fit(self):
+        self._pre()
 
-        Args:
-            data_dict:
-        """
-        self.pipegraph.data.update(
-            {(self.node_name, variable): value for variable, value in data_dict.items()}
-        )
+    def _fit(self):
+        pass
 
-class FirstStep(Step):
+    def _post_fit(self):
+        self._post()
+
+    def _pre_run(self):
+        self._pre()
+
+    def _run(self):
+        pass
+
+    def _post_run(self):
+        self._post()
+
+
+class FirstStep(CustomStep):
     """
-    Graphs will have a First and a Last step.
-    This class implements the former doing nothing but publishing its input data in the graph data attribute
+    This class implements the First step doing nothing but publishing its input data in the graph data attribute
     """
-    def fit(self):
-        """
-        Fit as in scikit-learn fit
-        """
-        self.run()
 
-    def run(self):
-        """
-        Run as in scikit-learn predict, transform; essentially doing any other thing different from fit.
-        """
-        self.update_graph_data(self.input)
+    def _post(self):
+        self.output = self.input
 
 
-class ConcatenateInputStep(Step):
+class LastStep(CustomStep):
     """
+    This class implements the Last step doing nothing but publishing its input data in the graph data attribute
     """
-    def fit(self):
-        """
 
-        """
-        input_values = [self.data[node_variable] for node_variable in self.input]
-        input_data = pd.concat(input_values, axis=1)
-        self.sklearn_object.fit(input_data)
-        self.update_graph_data({'output': self.sklearn_object.predict(input_data)})
-
-    def run(self):
-        """
-
-        """
-        input_values = [self.data[node_variable] for node_variable in self.input]
-        input_data = pd.concat(input_values, axis=1)
-        self.update_graph_data({'output': self.sklearn_object.predict(input_data)})
+    def _post(self):
+        self.output = self.input
 
 
-class CustomDBSCANStep(Step):
-    """
-    """
-    def fit(self):
-        """
+class SkLearnFitPredictRegularStep(CustomStep):
+    def _fit(self):
+        self.sklearn_object.fit(**self.input)
 
-        """
-        self.run()
+    def _post(self):
+        predict_dict = dict(self.input)
 
-    def run(self):
-        """
+        if 'y' in predict_dict:
+            del predict_dict['y']
 
-        """
-        input_values = [self.data[node_variable] for node_variable in self.input]
-        input_data = pd.concat(input_values, axis=1)
-        self.update_graph_data({'output': self.sklearn_object.fit_predict(input_data)})
+        if 'sample_weight' in predict_dict:
+            del predict_dict['sample_weight']
+
+        self.output['prediction'] = self.sklearn_object.predict(**predict_dict)
 
 
-class CustomCombinationStep(Step):
-    """
-    """
-    def fit(self):
-        """
-
-        """
-        self.run()
-
-    def run(self):
-        """
-
-        """
-        v0 = self.data['Dbscan', 'output']
-        v1 = self.data['Gaussian_Mixture', 'output']
-        classification = np.where(v0 < 0, v0, v1)
-        self.update_graph_data({'output': classification})
+class SkLearnFitPredictAlternativeStep(CustomStep):
+    def _post(self):
+        self.output['prediction'] = self.sklearn_object.fit_predict(**self.input)
 
 
-class PaellaStep(Step):
-    """
-    """
-    def fit(self):
-        """
-
-        """
-        X = self.data['First', 'X']
-        y = self.data['First', 'y']
-        classification = self.data['Combine_Clustering', 'output']
-
-        self.sklearn_object.fit(X=X, y=y, classification=classification)
-        sample_weight = self.sklearn_object.transform(X, y)
-        self.update_graph_data({'sample_weight': sample_weight})
-
-    def run(self):
-        """
-
-        """
-        data = self.input['Concatenate_Xy__data']
-        sample_weight = self.sklearn_object.transform(data)
-        self.update_graph_data({'sample_weight': sample_weight})
+class CustomConcatenationStep(CustomStep):
+    def _post_fit(self):
+        self.output['Xy'] = pd.concat(self.input, axis=1)
 
 
-class RegressorStep(Step):
-    """
-    """
-    def fit(self):
-        """
-
-        """
-        X = self.data['First', 'X']
-        y = self.data['First', 'y']
-        sample_weight = self.data['Paella', 'sample_weight']
-        self.sklearn_object.fit(X=X, y=y, sample_weight=sample_weight)
-        y_pred = self.sklearn_object.predict(X)
-        self.update_graph_data({'prediction': y_pred})
-
-    def run(self):
-        """
-
-        """
-        X = self.data['First', 'X']
-        y_pred = self.sklearn_object.predict(X)
-        self.update_graph_data({'prediction': y_pred})
+class CustomCombinationStep(CustomStep):
+    def _post_fit(self):
+        self.output['classification'] = np.where(self.input['dominant'] < 0, self.input['dominant'],
+                                                 self.input['other'])
 
 
-class LastStep(Step):
-    """
-    """
-    def fit(self):
-        """
+class CustomPaellaStep(CustomStep):
 
-        """
-        self.run()
+    def _pre_fit(self):
+        self.sklearn_object = Paella(**self.kargs)
 
-    def run(self):
-        """
+    def _fit(self):
+        self.sklearn_object.fit(**self.input)
 
-        """
-        self.update_graph_data({node_variable[1]: self.data[node_variable] for node_variable in self.input})
+    def _post_fit(self):
+        self.output['prediction'] = self.sklearn_object.transform(self.input['X'], self.input['y'])
+
+
+########################################
+
+sklearn_models_dict = {
+    'GaussianMixture': SkLearnFitPredictRegularStep,
+    'DBSCAN': SkLearnFitPredictAlternativeStep,
+    'LinearRegression': SkLearnFitPredictRegularStep,
+}
+
+
+def _create_graph_from_description(pipegraph, graph_description):
+    graph = nx.DiGraph()
+    graph.add_nodes_from(graph_description)
+    for step_name, step_description in graph_description.items():
+        current_node = graph.node[step_name]
+
+        is_step_a_sklearn_class = step_description['step'].__name__ in sklearn_models_dict
+        sklearn_class = step_description['step'] if is_step_a_sklearn_class else None
+        step_class = sklearn_models_dict[sklearn_class.__name__] if is_step_a_sklearn_class else step_description[
+            'step']
+        kargs = step_description.get('kargs', {})
+        current_node['step'] = step_class(pipegraph=pipegraph,
+                                          node_name=step_name,
+                                          connections=step_description['connections'],
+                                          use_for=step_description['use_for'],
+                                          sklearn_class=sklearn_class,
+                                          **kargs)
+
+        if step_name != 'First':
+            for ascendant in set(node_and_outer_variable_tuple[0]
+                                 for inner_variable, node_and_outer_variable_tuple in
+                                 step_description['connections'].items()):
+                graph.add_edge(ascendant, step_name)
+
+    return graph
