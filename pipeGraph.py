@@ -11,9 +11,9 @@ from abc import ABC, abstractmethod
 ##############################
 # GRAPH
 ##############################
-class ComputationalGraph(ABC):
+class AbstractPipeGraph(ABC):
     """
-    Protocol definition. Use PipeGraph instead.
+    Protocol definition. Use PipeGraph instead for instantiation.
     """
 
     @abstractmethod
@@ -31,9 +31,9 @@ class ComputationalGraph(ABC):
         pass
 
     @abstractmethod
-    def run(self):
+    def predict(self):
         """
-        Iterates over the graph steps in topological order and executes their run method
+        Iterates over the graph steps in topological order and executes their predict method
         """
         pass
 
@@ -45,27 +45,26 @@ class ComputationalGraph(ABC):
         pass
 
     @abstractmethod
-    def get_fit_steps(self):
+    def fit_steps(self):
         """
         Returns an iterator over those steps with active fit status
         """
         pass
 
     @abstractmethod
-    def get_run_steps(self):
+    def predict_steps(self):
         """
-        Returns an iterator over those steps with active run status
+        Returns an iterator over those steps with active predict status
         """
         pass
 
 
-class PipeGraph(ComputationalGraph):
+class PipeGraph(AbstractPipeGraph):
     """
     """
 
     def __init__(self, graph_description):
         """
-
         Args:
             graph_description: A dictionary expressing the contents of the graph. See tests examples.
         """
@@ -85,17 +84,17 @@ class PipeGraph(ComputationalGraph):
         """
         Iterates over the graph steps in topological order and executes their fit method
         """
-        for step in self.get_fit_steps():
+        for step in self.fit_steps():
             print("Fitting: ", step.node_name)
             step.fit()
 
-    def run(self):
+    def predict(self):
         """
-        Iterates over the graph steps in topological order and executes their run method
+        Iterates over the graph steps in topological order and executes their predict method
         """
-        for step in self.get_run_steps():
-            print("Running: ", step.node_name)
-            step.run()
+        for step in self.predict_steps():
+            print("Predicting: ", step.node_name)
+            step.predict()
 
     @property
     def nodes(self):
@@ -104,25 +103,25 @@ class PipeGraph(ComputationalGraph):
         """
         return self.graph.nodes
 
-    def get_fit_steps(self):
+    def fit_steps(self):
         """
         Returns: An iterator over those steps with active fit status
         """
-        return FitIterator(self)
+        return FitPipeGraphIterator(self)
 
-    def get_run_steps(self):
+    def predict_steps(self):
         """
-        Returns: An iterator over those steps with active run status
+        Returns: An iterator over those steps with active predict status
         """
-        return RunIterator(self)
+        return PredictPipeGraphIterator(self)
 
 
 #####################################
 #   Iterators
 #####################################
-class StepIterator(ABC):
+class AbstractGraphIterator(ABC):
     """
-    Protocol definition. se concrete classes instead, e.g. FitIterator and RunIterator
+    Protocol definition. se concrete classes instead, e.g. FitPipeGraphIterator and PredictPipeGraphIterator
     """
 
     @abstractmethod
@@ -148,7 +147,7 @@ class StepIterator(ABC):
         return self
 
 
-class FitIterator(StepIterator):
+class FitPipeGraphIterator(AbstractGraphIterator):
     """
     An iterator over those steps in PipeGraph object with fit in use_for attribute
     """
@@ -171,9 +170,9 @@ class FitIterator(StepIterator):
         return self.pipeGraph.graph.node[next_node]['step']
 
 
-class RunIterator(StepIterator):
+class PredictPipeGraphIterator(AbstractGraphIterator):
     """
-    An iterator over those steps in PipeGraph object with run in use_for attribute
+    An iterator over those steps in PipeGraph object with predict in use_for attribute
     """
 
     def __init__(self, pipe_graph):
@@ -183,12 +182,12 @@ class RunIterator(StepIterator):
         """
         self.pipeGraph = pipe_graph
         self.ordered_nodes_generator = (name for name in nx.topological_sort(self.pipeGraph.graph)
-                                        if 'run' in self.pipeGraph.graph.node[name]['step'].use_for)
+                                        if 'predict' in self.pipeGraph.graph.node[name]['step'].use_for)
 
     def __next__(self):
         """
         Part of the Iterator protocol
-        Returns: An iterator over the nodes with run in use_for attribute
+        Returns: An iterator over the nodes with predict in use_for attribute
         """
         next_node = next(self.ordered_nodes_generator)
         return self.pipeGraph.graph.node[next_node]['step']
@@ -197,31 +196,27 @@ class RunIterator(StepIterator):
 ################################
 #  STEPS
 ################################
-class Step(ABC):
+class AbstractStep(ABC):
 
     def fit(self):
         """
         Template method for fitting
         """
-        self.input = self._read_connections()
-        self._pre_fit()
+        self._prepare_fit()
         self._fit()
         self._post_fit()
-        self._update_graph_data(self.output)
 
-    def run(self):
+    def predict(self):
         """
-        Template method for running
+        Template method for predicting
         """
-        self.input = self._read_connections()
-        self._pre_run()
-        self._run()
-        self._post_run()
-        self._update_graph_data(self.output)
+        self._prepare_predict()
+        self._predict()
+        self._post_predict()
 
     @abstractmethod
-    def _pre_fit(self):
-        ''' Preprocessing '''
+    def _prepare_fit(self):
+        ''' Fit operations '''
         pass
 
     @abstractmethod
@@ -231,39 +226,30 @@ class Step(ABC):
 
     @abstractmethod
     def _post_fit(self):
-        ''' Postprocessing '''
+        ''' Fit operations '''
         pass
 
     @abstractmethod
-    def _pre_run(self):
-        ''' Preprocessing '''
+    def _prepare_predict(self):
+        ''' predict operations '''
         pass
 
     @abstractmethod
-    def _run(self):
-        ''' Run operations '''
+    def _predict(self):
+        ''' predict operations '''
         pass
 
     @abstractmethod
-    def _post_run(self):
-        ''' Postprocessing '''
+    def _post_predict(self):
+        ''' predict operations '''
         pass
 
-    @abstractmethod
-    def _read_connections(self):
-        pass
 
-    def _update_graph_data(self, data_dict):
-        self.pipegraph.data.update(
-            {(self.node_name, variable): value for variable, value in data_dict.items()}
-        )
-
-
-class CustomStep(Step):
+class Step(AbstractStep):
     """
     """
 
-    def __init__(self, pipegraph, node_name, connections, use_for=['fit', 'run'], sklearn_class=None, **kargs):
+    def __init__(self, pipegraph, node_name, connections, use_for=['fit', 'predict'], sklearn_class=None, **kargs):
         """
 
         Args:
@@ -293,54 +279,61 @@ class CustomStep(Step):
                           for inner_variable, node_and_outer_variable_tuple in self.connections.items()}
         return input_data
 
-    def _pre(self):
-        pass
-
-    def _post(self):
-        pass
-
-    def _pre_fit(self):
-        self._pre()
+    def _prepare_fit(self):
+        self.input = self._read_connections()
 
     def _fit(self):
-        pass
+        self.predict()
 
     def _post_fit(self):
-        self._post()
+        self._update_graph_data(self.output)
 
-    def _pre_run(self):
-        self._pre()
+    def _prepare_predict(self):
+        self.input = self._read_connections()
 
-    def _run(self):
+    def _predict(self):
         pass
 
-    def _post_run(self):
-        self._post()
+    def _post_predict(self):
+        self._update_graph_data(self.output)
 
+    def _update_graph_data(self, data_dict):
+        self.pipegraph.data.update(
+            {(self.node_name, variable): value for variable, value in data_dict.items()}
+        )
 
-class FirstStep(CustomStep):
+class StepFromFunction(Step):
+    def __init__(self, custom_function, pipegraph, node_name, connections, use_for=['fit', 'predict'], sklearn_class=None, **kargs):
+        super().__init__(pipegraph, node_name, connections, use_for, sklearn_class, **kargs)
+        self.custom_function = custom_function
+
+    def predict(self):
+        self.output['output'] = self.custom_function(self.input)
+
+class FirstStep(Step):
     """
     This class implements the First step doing nothing but publishing its input data in the graph data attribute
     """
 
-    def _post(self):
+    def _predict(self):
         self.output = self.input
 
 
-class LastStep(CustomStep):
+class LastStep(Step):
     """
     This class implements the Last step doing nothing but publishing its input data in the graph data attribute
     """
 
-    def _post(self):
+    def _predict(self):
         self.output = self.input
 
 
-class SkLearnFitPredictRegularStep(CustomStep):
+class SkLearnFitPredictRegularStep(Step):
     def _fit(self):
         self.sklearn_object.fit(**self.input)
+        self.predict()
 
-    def _post(self):
+    def _predict(self):
         predict_dict = dict(self.input)
 
         if 'y' in predict_dict:
@@ -352,31 +345,29 @@ class SkLearnFitPredictRegularStep(CustomStep):
         self.output['prediction'] = self.sklearn_object.predict(**predict_dict)
 
 
-class SkLearnFitPredictAlternativeStep(CustomStep):
-    def _post(self):
+class SkLearnFitPredictAlternativeStep(Step):
+    def _predict(self):
         self.output['prediction'] = self.sklearn_object.fit_predict(**self.input)
 
 
-class CustomConcatenationStep(CustomStep):
-    def _post_fit(self):
+class CustomConcatenationStep(Step):
+    def _predict(self):
         self.output['Xy'] = pd.concat(self.input, axis=1)
 
 
-class CustomCombinationStep(CustomStep):
-    def _post_fit(self):
+class CustomCombinationStep(Step):
+    def _predict(self):
         self.output['classification'] = np.where(self.input['dominant'] < 0, self.input['dominant'],
                                                  self.input['other'])
 
 
-class CustomPaellaStep(CustomStep):
-
-    def _pre_fit(self):
-        self.sklearn_object = Paella(**self.kargs)
-
+class CustomPaellaStep(Step):
     def _fit(self):
+        self.sklearn_object = Paella(**self.kargs)
         self.sklearn_object.fit(**self.input)
+        self.predict()
 
-    def _post_fit(self):
+    def _predict(self):
         self.output['prediction'] = self.sklearn_object.transform(self.input['X'], self.input['y'])
 
 

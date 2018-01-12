@@ -26,7 +26,7 @@ class TestPipeGraphCase(unittest.TestCase):
                 {'step': FirstStep,
                  'connections': {'X': x,
                                  'y': y},
-                 'use_for': ['fit', 'run'],
+                 'use_for': ['fit', 'predict'],
                  },
 
             'Concatenate_Xy':
@@ -80,14 +80,14 @@ class TestPipeGraphCase(unittest.TestCase):
                  'connections': {'X': ('First', 'X'),
                                  'y': ('First', 'y'),
                                  'sample_weight': ('Paella', 'prediction')},
-                 'use_for': ['fit', 'run'],
+                 'use_for': ['fit', 'predict'],
                  },
 
             'Last':
                 {'step': LastStep,
                  'connections': {'prediction': ('Regressor', 'prediction'),
                                  },
-                 'use_for': ['fit', 'run'],
+                 'use_for': ['fit', 'predict'],
                  },
         }
 
@@ -121,8 +121,8 @@ class TestPipeGraphCase(unittest.TestCase):
                                      'Regressor',
                                      'Last'])
 
-    def test_get_fit_nodes(self):
-        node_list = [step.node_name for step in self.graph.get_fit_steps()]
+    def test_fit_steps(self):
+        node_list = [step.node_name for step in self.graph.fit_steps()]
         self.assertEqual(node_list, ['First',
                                      'Concatenate_Xy',
                                      'Dbscan',
@@ -132,8 +132,8 @@ class TestPipeGraphCase(unittest.TestCase):
                                      'Regressor',
                                      'Last'])
 
-    def test_get_run_nodes(self):
-        node_list = [step.node_name for step in self.graph.get_run_steps()]
+    def test_predict_steps(self):
+        node_list = [step.node_name for step in self.graph.predict_steps()]
         self.assertEqual(node_list, ['First',
                                      'Regressor',
                                      'Last'])
@@ -163,9 +163,9 @@ class TestPipeGraphCase(unittest.TestCase):
         assert_array_equal(self.graph.data['Last', 'prediction'],
                            self.graph.data['Regressor', 'prediction'])
 
-    def test_graph_run(self):
+    def test_graph_predict(self):
         self.graph.fit()
-        self.graph.run()
+        self.graph.predict()
 
         assert_frame_equal(self.graph.data['First', 'X'], self.X)
         assert_frame_equal(self.graph.data['First', 'y'], self.y)
