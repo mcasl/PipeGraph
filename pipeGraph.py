@@ -9,7 +9,10 @@ from sklearn.utils.metaestimators import _BaseComposition
 from sklearn.base import BaseEstimator
 
 from paella import Paella
+import logging
 
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # TO-DO: remove Paella's study case related classes
 
@@ -17,128 +20,43 @@ class PipeGraph(_BaseComposition):
     """
     """
 
-    def __init__(self, graph_description):
+    def __init__(self, description):
         """
         Args:
-            graph_description: A dictionary expressing the contents of the graph. See tests examples.
+            description: A dictionary expressing the contents of the graph. See tests examples.
         """
-        self.description = graph_description
+        self.description = description
         self.data = dict()
-        self.graph = _create_graph_from_description(pipegraph=self, graph_description=graph_description)
-
-    def __iter__(self):
-        """
-        Part of the iterator protocol
-
-        Returns: An iterator over the graph nodes. Topological order is not ensured.
-        """
-        return self.graph.__iter__()
+        self.graph = _create_graph_from_description(pipegraph=self, graph_description=description)
 
     def fit(self):
         """
         Iterates over the graph steps in topological order and executes their fit method
         """
-        for step in self.fit_steps():
-            print("Fitting: ", step.node_name)
+        fit_steps = (self.graph.node[name]['step'] for name in nx.topological_sort(self.graph)
+                     if 'fit' in self.graph.node[name]['step'].use_for)
+        for step in fit_steps:
+            logger.debug("Fitting: %s", step.node_name)
             step.fit()
 
     def predict(self):
         """
         Iterates over the graph steps in topological order and executes their predict method
         """
-        for step in self.predict_steps():
-            print("Predicting: ", step.node_name)
+        predict_steps = (self.graph.node[name]['step'] for name in nx.topological_sort(self.graph)
+                         if 'predict' in self.graph.node[name]['step'].use_for)
+        for step in predict_steps:
+            logger.debug("Predicting: %s", step.node_name)
             step.predict()
-
-    @property
-    def nodes(self):
-        """
-        Returns the graph nodes
-        """
-        return self.graph.nodes
 
     @property
     def steps(self):
         return [(name, self.graph.node[name]['step'])
-                for name in nx.topological_sort(self.pipeGraph.graph)]
-
-    def fit_steps(self):
-        """
-        Returns: An iterator over those steps with active fit status
-        """
-        return FitIterator(self)
-
-    def predict_steps(self):
-        """
-        Returns: An iterator over those steps with active predict status
-        """
-        return PredictIterator(self)
-
-
-#####################################
-#   Iterators
-#####################################
-class StepIterator(Iterator):
-    """
-    An iterator over those steps in PipeGraph object with fit in use_for attribute
-    """
-
-    def __init__(self, pipegraph):
-        """
-        Args:
-            pipeGraph: Reference to the PipeGraph object over witch iteration is performed
-        """
-        self.pipeGraph = pipegraph
-
-
-class FitIterator(StepIterator):
-    """
-    An iterator over those steps in PipeGraph object with fit in use_for attribute
-    """
-    def __init__(self, pipegraph):
-        """
-        Args:
-            pipeGraph: Reference to the PipeGraph object over witch iteration is performed
-        """
-        super().__init__(pipegraph)
-        self.ordered_nodes_generator = (name for name in nx.topological_sort(self.pipeGraph.graph)
-                                        if 'fit' in self.pipeGraph.graph.node[name]['step'].use_for)
-
-    def __next__(self):
-        """
-        Part of the Iterator protocol
-        Returns: An iterator over the nodes with fit in use_for attribute
-        """
-        next_node = next(self.ordered_nodes_generator)
-        return self.pipeGraph.graph.node[next_node]['step']
-
-
-class PredictIterator(StepIterator):
-    """
-    An iterator over those steps in PipeGraph object with predict in use_for attribute
-    """
-    def __init__(self, pipegraph):
-        """
-        Args:
-            pipeGraph: Reference to the PipeGraph object over witch iteration is performed
-        """
-        super().__init__(pipegraph)
-        self.ordered_nodes_generator = (name for name in nx.topological_sort(self.pipeGraph.graph)
-                                        if 'predict' in self.pipeGraph.graph.node[name]['step'].use_for)
-
-    def __next__(self):
-        """
-        Part of the Iterator protocol
-        Returns: An iterator over the nodes with predict in use_for attribute
-        """
-        next_node = next(self.ordered_nodes_generator)
-        return self.pipeGraph.graph.node[next_node]['step']
-
+                for name in nx.topological_sort(self.graph)]
 
 ################################
 #  STEPS
 ################################
-
 class Step(BaseEstimator):
     """
     """
@@ -171,7 +89,7 @@ class Step(BaseEstimator):
         """
         self._prepare_fit()
         self._fit()
-        self._post_fit()
+        self._conclude_fit()
 
     def predict(self):
         """
@@ -179,7 +97,7 @@ class Step(BaseEstimator):
         """
         self._prepare_predict()
         self._predict()
-        self._post_predict()
+        self._conclude_predict()
 
     def get_params(self, deep=True):
         if self.sklearn_object is not None:
@@ -202,7 +120,7 @@ class Step(BaseEstimator):
 
 
     def _read_connections(self):
-        if isinstance(self, FirstStep):
+        if isinstance(self, InputStep):
             input_data = self.connections
         else:
             input_data = {inner_variable: self.data[node_and_outer_variable_tuple]
@@ -215,7 +133,7 @@ class Step(BaseEstimator):
     def _fit(self):
         self.predict()
 
-    def _post_fit(self):
+    def _conclude_fit(self):
         self._update_graph_data(self.output)
 
     def _prepare_predict(self):
@@ -224,7 +142,7 @@ class Step(BaseEstimator):
     def _predict(self):
         pass
 
-    def _post_predict(self):
+    def _conclude_predict(self):
         self._update_graph_data(self.output)
 
     def _update_graph_data(self, data_dict):
@@ -243,22 +161,21 @@ class StepFromFunction(Step):
         self.output['output'] = self.custom_function(self.input)
 
 
-class FirstStep(Step):
+class PassStep(Step):
     """
-    This class implements the First step doing nothing but publishing its input data in the graph data attribute
-    """
-
-    def _predict(self):
-        self.output = self.input
-
-
-class LastStep(Step):
-    """
-    This class implements the Last step doing nothing but publishing its input data in the graph data attribute
+    This class implements a step that just let's the information flow unaltered
     """
 
     def _predict(self):
         self.output = self.input
+
+
+class InputStep(PassStep):
+    pass
+
+
+class OutputStep(PassStep):
+    pass
 
 
 class SkLearnFitPredictRegularStep(Step):
@@ -295,8 +212,11 @@ class CustomCombinationStep(Step):
 
 
 class CustomPaellaStep(Step):
+    def __init__(self, pipegraph, node_name, connections, use_for=['fit', 'predict'], sklearn_class=None, **kargs):
+        super().__init__(pipegraph, node_name, connections, use_for=['fit', 'predict'], sklearn_class=None, **kargs)
+        self.sklearn_object = Paella(**kargs)
+
     def _fit(self):
-        self.sklearn_object = Paella(**self.kargs)
         self.sklearn_object.fit(**self.input)
         self.predict()
 

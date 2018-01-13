@@ -23,7 +23,7 @@ class TestPipeGraphCase(unittest.TestCase):
 
         self.graph_description = {
             'First':
-                {'step': FirstStep,
+                {'step': InputStep,
                  'connections': {'X': x,
                                  'y': y},
                  'use_for': ['fit', 'predict'],
@@ -84,7 +84,7 @@ class TestPipeGraphCase(unittest.TestCase):
                  },
 
             'Last':
-                {'step': LastStep,
+                {'step': OutputStep,
                  'connections': {'prediction': ('Regressor', 'prediction'),
                                  },
                  'use_for': ['fit', 'predict'],
@@ -99,42 +99,14 @@ class TestPipeGraphCase(unittest.TestCase):
     def test_data_attribute(self):
         self.assertEqual(dict(), self.graph.data)
 
-    def test_nodes(self):
-        node_list = list(self.graph.nodes)
+    def test_node_names(self):
+        node_list = list(self.graph.graph.nodes)
         self.assertEqual(node_list, ['First',
                                      'Concatenate_Xy',
                                      'Gaussian_Mixture',
                                      'Dbscan',
                                      'Combine_Clustering',
                                      'Paella',
-                                     'Regressor',
-                                     'Last'])
-
-    def test_iter(self):
-        node_list = list(self.graph)
-        self.assertEqual(node_list, ['First',
-                                     'Concatenate_Xy',
-                                     'Gaussian_Mixture',
-                                     'Dbscan',
-                                     'Combine_Clustering',
-                                     'Paella',
-                                     'Regressor',
-                                     'Last'])
-
-    def test_fit_steps(self):
-        node_list = [step.node_name for step in self.graph.fit_steps()]
-        self.assertEqual(node_list, ['First',
-                                     'Concatenate_Xy',
-                                     'Dbscan',
-                                     'Gaussian_Mixture',
-                                     'Combine_Clustering',
-                                     'Paella',
-                                     'Regressor',
-                                     'Last'])
-
-    def test_predict_steps(self):
-        node_list = [step.node_name for step in self.graph.predict_steps()]
-        self.assertEqual(node_list, ['First',
                                      'Regressor',
                                      'Last'])
 
@@ -189,7 +161,6 @@ class TestPipeGraphCase(unittest.TestCase):
         self.assertEqual(graph.node['Paella']['step'].get_params()['width_r'], 0.99)
         self.assertEqual(graph.node['Paella']['step'].get_params()['n_neighbors'], 5)
         self.assertEqual(graph.node['Paella']['step'].get_params()['power'], 30)
-        self.assertEqual(graph.node['Paella']['step'].get_params()['random_state'], None)
         self.assertEqual(graph.node['Regressor']['step'].get_params(), {'copy_X': True, 'fit_intercept': True, 'n_jobs': 1, 'normalize': False})
         self.assertEqual(graph.node['Last']['step'].get_params(), {})
 

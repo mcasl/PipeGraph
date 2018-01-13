@@ -30,7 +30,8 @@ from sklearn.linear_model     import LinearRegression
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils            import check_random_state, check_X_y
 
-class Paella(TransformerMixin):
+
+class Paella(BaseEstimator, TransformerMixin):
     def __init__(self,
                  regressor    = LinearRegression,
                  noise_label  = None,
@@ -162,7 +163,8 @@ class Paella(TransformerMixin):
 
 
 
-
+    def get_params(self, deep=True):
+        return super().get_params(deep=False)
 """
 
                     self.appointment_.loc[G_i_indexes, iteration_number] = model_number
