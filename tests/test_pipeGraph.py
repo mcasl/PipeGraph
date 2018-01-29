@@ -26,7 +26,7 @@ class TestPipeGraphCase(unittest.TestCase):
                 {'step': InputStep,
                  'connections': {'X': x,
                                  'y': y},
-                 'use_for': ['fit', 'predict'],
+                 'use_for': ['fit', 'run'],
                  },
 
             'Concatenate_Xy':
@@ -80,14 +80,14 @@ class TestPipeGraphCase(unittest.TestCase):
                  'connections': {'X': ('First', 'X'),
                                  'y': ('First', 'y'),
                                  'sample_weight': ('Paella', 'prediction')},
-                 'use_for': ['fit', 'predict'],
+                 'use_for': ['fit', 'run'],
                  },
 
             'Last':
                 {'step': OutputStep,
                  'connections': {'prediction': ('Regressor', 'prediction'),
                                  },
-                 'use_for': ['fit', 'predict'],
+                 'use_for': ['fit', 'run'],
                  },
         }
 

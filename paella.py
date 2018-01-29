@@ -122,7 +122,7 @@ class Paella(BaseEstimator, TransformerMixin):
         self.knn.fit(data, self.appointment_)
         return self
 
-# TODO: predict as an ensemble
+# TODO: run as an ensemble
     def predict(self, X, y):
         check_is_fitted(self, 'appointment_')
 
@@ -136,7 +136,7 @@ class Paella(BaseEstimator, TransformerMixin):
 
     def _getResiduals(self, model, X, y, indexes):
         if len(indexes) > 0:
-            result = (model.predict(X.loc[indexes,:]) - y.loc[indexes,:]).stack()
+            result = (model.run(X.loc[indexes, :]) - y.loc[indexes, :]).stack()
         else:
             result = np.array([])
         return result

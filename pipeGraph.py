@@ -14,6 +14,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
 # TO-DO: remove Paella's study case related classes
 
 class PipeGraph(_BaseComposition):
@@ -37,31 +38,120 @@ class PipeGraph(_BaseComposition):
                      if 'fit' in self.graph.node[name]['step'].use_for)
         for step in fit_steps:
             logger.debug("Fitting: %s", step.node_name)
-            step.fit()
+            input_data = read_connection()
+            step.fit(**input_data)
 
     def predict(self):
         """
-        Iterates over the graph steps in topological order and executes their predict method
+        Iterates over the graph steps in topological order and executes their run method
         """
         predict_steps = (self.graph.node[name]['step'] for name in nx.topological_sort(self.graph)
-                         if 'predict' in self.graph.node[name]['step'].use_for)
+                         if 'run' in self.graph.node[name]['step'].use_for)
         for step in predict_steps:
             logger.debug("Predicting: %s", step.node_name)
-            step.predict()
+            step.run()
 
     @property
     def steps(self):
         return [(name, self.graph.node[name]['step'])
                 for name in nx.topological_sort(self.graph)]
 
+
+class Runner(BaseEstimator):
+    """
+    Adapter to provide a common interface to fit(X,y), fit(X), etc.
+    """
+
+    def __init__(self, adaptee):
+        self.adaptee = adaptee
+
+    def get_params(self, deep=True):
+        self.adaptee.get_params(deep=deep)
+
+    def set_params(self, **params):
+        self.adaptee.set_params(**params)
+
+    @abstractmethod
+    def fit(self, data_dictionary, **fit_params):
+        """ Adapt fit methods"""
+
+    @abstractmethod
+    def run(self, data_dictionary, **run_params):
+        """ Adapt run, transform, fit_predict"""
+
+
+class TransformerArity1Runner(Runner):
+    def fit(self, data_dictionary, **fit_params):
+        X=data_dictionary['X']
+        self.adaptee.fit(X, **fit_params)
+        return self
+
+    def run(self, data_dictionary, **run_params):
+        X = data_dictionary['X']
+        return self.adaptee.transform(X)
+
+    def fit_run(self, data_dictionary, **fit_params):
+        X = data_dictionary['X']
+        return self.adaptee.fit(X, **fit_params).transform(X)
+
+
+
+class TransformerArity2Runner(Runner):
+    def fit(self, data_dictionary, **fit_params):
+        X=data_dictionary['X']
+        y = data_dictionary['y']
+        self.adaptee.fit(X, y, **fit_params)
+        return self
+
+    def run(self, data_dictionary, **run_params):
+        X = data_dictionary['X']
+        return self.adaptee.transform(X)
+
+
+    def fit_run(self, data_dictionary, **fit_params):
+        X = data_dictionary['X']
+        y = data_dictionary['y']
+        return self.adaptee.fit(X, y, **fit_params).transform(X)
+
+
+class FitXPredictXRunner(Runner):
+    def fit(self, data_dictionary, **fit_params):
+        X=data_dictionary['X']
+        self.adaptee.fit(X, **fit_params)
+        return self
+
+    def run(self, data_dictionary, **run_params):
+        X = data_dictionary['X']
+        return self.adaptee.fit_predict(X, **fit_params)
+
+
+class FitXyPredictX(Runner):
+    def fit(self, data_dictionary, **fit_params):
+        X=data_dictionary['X']
+        y = data_dictionary['y']
+        self.adaptee.fit(X, y, **fit_params)
+        return self
+
+    def run(self, data_dictionary, **run_params):
+        X = data_dictionary['X']
+        return self.adaptee.transform(X)
+
+    def fit_run(self, data_dictionary, **fit_params):
+        X = data_dictionary['X']
+        y = data_dictionary['y']
+        return self.adaptee.fit(X, y, **fit_params).transform(X)
+
+
+
 ################################
 #  STEPS
 ################################
 class Step(BaseEstimator):
     """
+    Decorator providing extra functionality like pre fit/run and post fit/run processing information
     """
 
-    def __init__(self, pipegraph, node_name, connections, use_for=['fit', 'predict'], sklearn_class=None, **kargs):
+    def __init__(self, pipegraph, node_name, connections, use_for=['fit', 'run'], runner, **kargs):
         """
 
         Args:
@@ -79,9 +169,13 @@ class Step(BaseEstimator):
         self.use_for = use_for
         self.output = dict()
         self.kargs = kargs
-        self.sklearn_object = sklearn_class(**kargs) if sklearn_class is not None else None
-        # If sklearn_class is None and the user tries to use it a tremendous error is expected to be raised,
-        # which is a nice free error signal for the user
+        self.runner = runner
+
+    def get_params(self, deep=True):
+        return self.runner.get_params(deep=deep)
+
+    def set_params(self, **params):
+        self.runner.set_params(**params)
 
     def fit(self):
         """
@@ -91,33 +185,13 @@ class Step(BaseEstimator):
         self._fit()
         self._conclude_fit()
 
-    def predict(self):
+    def run(self):
         """
         Template method for predicting
         """
-        self._prepare_predict()
-        self._predict()
-        self._conclude_predict()
-
-    def get_params(self, deep=True):
-        if self.sklearn_object is not None:
-            return self.sklearn_object.get_params(deep=deep)
-        else:
-            return self.kargs
-
-    def set_params(self, **params):
-        #TO-DO: nested params in case step is a pipegraph itself
-        if not params:
-            # Simple optimization to gain speed (inspect is slow)
-            return self
-        if self.sklearn_object is not None:
-            self.sklearn_object.set_params(**params)
-        elif all(item in self.kargs for item in params):
-            self.kargs.update(params)
-        else:
-            raise NameError('Step.set_params Error: key not in self.kargs')
-        return self
-
+        self._prepare_run()
+        self._run()
+        self._conclude_run()
 
     def _read_connections(self):
         if isinstance(self, InputStep):
@@ -131,18 +205,18 @@ class Step(BaseEstimator):
         self.input = self._read_connections()
 
     def _fit(self):
-        self.predict()
+        self.runner.fit(self.input, self.kargs)
 
     def _conclude_fit(self):
         self._update_graph_data(self.output)
 
-    def _prepare_predict(self):
+    def _prepare_run(self):
         self.input = self._read_connections()
 
-    def _predict(self):
-        pass
+    def _run(self):
+        self.runner.run(self.input, self.kargs)
 
-    def _conclude_predict(self):
+    def _conclude_run(self):
         self._update_graph_data(self.output)
 
     def _update_graph_data(self, data_dict):
@@ -150,23 +224,25 @@ class Step(BaseEstimator):
             {(self.node_name, variable): value for variable, value in data_dict.items()}
         )
 
+""""
+TODO: nice decorator for keystrikes saving
 
 class StepFromFunction(Step):
-    def __init__(self, custom_function, pipegraph, node_name, connections, use_for=['fit', 'predict'],
+    def __init__(self, custom_function, pipegraph, node_name, connections, use_for=['fit', 'run'],
                  sklearn_class=None, **kargs):
         super().__init__(pipegraph, node_name, connections, use_for, sklearn_class, **kargs)
         self.custom_function = custom_function
 
-    def predict(self):
+    def run(self):
         self.output['output'] = self.custom_function(self.input)
-
+"""
 
 class PassStep(Step):
     """
     This class implements a step that just let's the information flow unaltered
     """
 
-    def _predict(self):
+    def _run(self):
         self.output = self.input
 
 
@@ -178,12 +254,12 @@ class OutputStep(PassStep):
     pass
 
 
-class SkLearnFitPredictRegularStep(Step):
+class StrategyArity1(Step):
     def _fit(self):
         self.sklearn_object.fit(**self.input)
-        self.predict()
+        self.run()
 
-    def _predict(self):
+    def _run(self):
         predict_dict = dict(self.input)
 
         if 'y' in predict_dict:
@@ -192,35 +268,35 @@ class SkLearnFitPredictRegularStep(Step):
         if 'sample_weight' in predict_dict:
             del predict_dict['sample_weight']
 
-        self.output['prediction'] = self.sklearn_object.predict(**predict_dict)
+        self.output['prediction'] = self.sklearn_object.run(**predict_dict)
 
 
 class SkLearnFitPredictAlternativeStep(Step):
-    def _predict(self):
+    def _run(self):
         self.output['prediction'] = self.sklearn_object.fit_predict(**self.input)
 
 
 class CustomConcatenationStep(Step):
-    def _predict(self):
+    def _run(self):
         self.output['Xy'] = pd.concat(self.input, axis=1)
 
 
 class CustomCombinationStep(Step):
-    def _predict(self):
+    def _run(self):
         self.output['classification'] = np.where(self.input['dominant'] < 0, self.input['dominant'],
                                                  self.input['other'])
 
 
 class CustomPaellaStep(Step):
-    def __init__(self, pipegraph, node_name, connections, use_for=['fit', 'predict'], sklearn_class=None, **kargs):
-        super().__init__(pipegraph, node_name, connections, use_for=['fit', 'predict'], sklearn_class=None, **kargs)
+    def __init__(self, pipegraph, node_name, connections, use_for=['fit', 'run'], sklearn_class=None, **kargs):
+        super().__init__(pipegraph, node_name, connections, use_for=['fit', 'run'], sklearn_class=None, **kargs)
         self.sklearn_object = Paella(**kargs)
 
     def _fit(self):
         self.sklearn_object.fit(**self.input)
-        self.predict()
+        self.run()
 
-    def _predict(self):
+    def _run(self):
         self.output['prediction'] = self.sklearn_object.transform(self.input['X'], self.input['y'])
 
 
