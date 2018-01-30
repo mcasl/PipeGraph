@@ -79,7 +79,7 @@ class Paella():
         
     def fit(self):
         def getResiduals(model, X, Y):
-            return pd.Series(model.run(X) - np.asarray(Y).T[0])
+            return pd.Series(model.predict() - np.asarray(Y).T[0])
         
         if self.occurrences is None :
             self.occurrences =  pd.DataFrame(0, index=self.data.index, columns=["Occurrences"])

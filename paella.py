@@ -136,7 +136,7 @@ class Paella(BaseEstimator, TransformerMixin):
 
     def _getResiduals(self, model, X, y, indexes):
         if len(indexes) > 0:
-            result = (model.run(X.loc[indexes, :]) - y.loc[indexes, :]).stack()
+            result = (model.predict() - y.loc[indexes, :]).stack()
         else:
             result = np.array([])
         return result
