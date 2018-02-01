@@ -77,17 +77,16 @@ class PipeGraph(_BaseComposition):
 ################################
 
 class StepStrategy(BaseEstimator):
-    """
-    Adapter to provide a common interface to fit(X,y), fit(X), etc.
-    """
+    def __init__(self, adaptee):
+        self.adaptee = adaptee
 
     @abstractmethod
     def fit(self, **kwargs):
-        """ Adapt fit methods"""
+        """ document """
 
     @abstractmethod
     def predict(self, **kwargs):
-        """ Adapt predict, transform, fit_predict"""
+        """ document """
 
     @abstractmethod
     def get_fit_parameters_from_signature(self):
@@ -97,8 +96,7 @@ class StepStrategy(BaseEstimator):
     def get_predict_parameters_from_signature(self):
         """ For easier predict params passing"""
 
-    def __init__(self, adaptee):
-        self.adaptee = adaptee
+
 
     def get_params(self, deep=True):
         return self.adaptee.get_params(deep=deep)
@@ -111,13 +109,14 @@ class StepStrategy(BaseEstimator):
         return self.adaptee.__repr__()
 
 
+
 class FitTransformStrategy(StepStrategy):
     def fit(self, **kwargs):
         self.adaptee.fit(**kwargs)
         return self
 
     def predict(self, **kwargs):
-        return self.adaptee.transform(**kwargs)
+        return {'predict': self.adaptee.transform(**kwargs)}
 
     def get_fit_parameters_from_signature(self):
         return inspect.signature(self.fit).parameters
@@ -132,7 +131,7 @@ class FitPredictStrategy(StepStrategy):
         return self
 
     def predict(self, **kwargs):
-        return self.adaptee.predict(**kwargs)
+        return {'predict': self.adaptee.predict(**kwargs)}
 
     def get_fit_parameters_from_signature(self):
         return inspect.signature(self.fit).parameters
@@ -147,7 +146,7 @@ class AtomicFitPredictStrategy(StepStrategy):
         return self
 
     def predict(self, **kwargs):
-        return self.adaptee.fit_predict(**kwargs)
+        return {'predict': self.adaptee.fit_predict(**kwargs)}
 
     def get_fit_parameters_from_signature(self):
         return inspect.signature(self.fit_predict).parameters
@@ -164,15 +163,23 @@ class Step(BaseEstimator):
     def __init__(self, strategy):
         self.strategy = strategy
 
-    def get_params(self, deep=True): return self.strategy.get_params(deep=deep)
+    def __getattr__(self, name):
+        return getattr(self.__dict__['strategy'], name)
+
+    def get_params(self):
+        return self.strategy.get_params()
+
 
     def set_params(self, **params):
         self.strategy.set_params(**params)
         return self
 
-    def fit(self, **kwargs): self.strategy.fit(**kwargs)
+    def fit(self, **kwargs):
+        self.strategy.fit(**kwargs)
+        return self
 
-    def predict(self, **kwargs): self.strategy.predict(**kwargs)
+    def predict(self, **kwargs):
+        return self.strategy.predict(**kwargs)
 
     def get_fit_parameters_from_signature(self): return self.strategy.get_fit_parameters_from_signature()
 
@@ -189,7 +196,7 @@ class FirstNodeModel(BaseEstimator):
         return self
 
     def predict(self, **kwargs):
-        return self
+        return None
 
 
 class CustomConcatenation(BaseEstimator):
@@ -198,8 +205,10 @@ class CustomConcatenation(BaseEstimator):
 
 
 class CustomCombination(BaseEstimator):
-    def fit(self, dominant, other): return self
-    def predict(self, dominant, other): return np.where(dominant < 0, dominant, other)
+    def fit(self, dominant, other):
+        return self
+    def predict(self, dominant, other):
+        return np.where(dominant < 0, dominant, other)
 
 
 class CustomPaella(BaseEstimator):
