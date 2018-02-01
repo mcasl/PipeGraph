@@ -22,10 +22,10 @@ class PipeGraph(_BaseComposition):
     def __init__(self, steps, connections, use_for_fit='all', use_for_predict='all'):
         self.connections = connections
         self.data = dict()
-        self.graph = build_graph(steps,
-                                 connections,
-                                 use_for_fit=use_for_fit,
-                                 use_for_predict=use_for_predict)
+        self._graph = build_graph(steps,
+                                  connections,
+                                  use_for_fit=use_for_fit,
+                                  use_for_predict=use_for_predict)
 
     def fit(self):
         fit_nodes = self._filter_nodes(filter='fit')
@@ -51,12 +51,12 @@ class PipeGraph(_BaseComposition):
 
     @property
     def steps(self):
-        return [(name, self.graph.node[name]['step'])
-                for name in nx.topological_sort(self.graph)]
+        return [(name, self._graph.node[name]['step'])
+                for name in nx.topological_sort(self._graph)]
 
     def _filter_nodes(self, filter):
-        return (self.graph.node[name] for name in nx.topological_sort(self.graph)
-                if filter in self.graph.node[name]['use_for'])
+        return (self._graph.node[name] for name in nx.topological_sort(self._graph)
+                if filter in self._graph.node[name]['use_for'])
 
     def _read_connections(self, step_name):
         if step_name == 'First':
@@ -71,6 +71,48 @@ class PipeGraph(_BaseComposition):
             {(node_name, variable): value for variable, value in data_dict.items()}
         )
 
+################################
+#  STEP
+################################
+
+class Step(BaseEstimator):
+
+    def __init__(self, strategy):
+        self._strategy = strategy
+
+    def get_params(self):
+        return self._strategy.get_params()
+
+    def set_params(self, **params):
+        self._strategy.set_params(**params)
+        return self
+
+    # def fit(self, **kwargs):
+    #     self._strategy.fit(**kwargs)
+    #     return self
+    #
+    # def predict(self, **kwargs):
+    #     return self._strategy.predict(**kwargs)
+    #
+    # def get_fit_parameters_from_signature(self):
+    #     return self._strategy.get_fit_parameters_from_signature()
+    #
+    # def get_predict_parameters_from_signature(self):
+    #     return self._strategy.get_predict_parameters_from_signature()
+    #
+    def __getattr__(self, name):
+        return getattr(self.__dict__['_strategy'], name)
+
+    def __setattr__(self, name, value):
+        if name in ('_strategy',):
+            self.__dict__[name] = value
+        else:
+            setattr(self.__dict__['_strategy'], name, value)
+
+    def __delattr__(self, name):
+        delattr(self.__dict__['_strategy'], name)
+
+
 
 ################################
 #  Strategies
@@ -78,63 +120,59 @@ class PipeGraph(_BaseComposition):
 
 class StepStrategy(BaseEstimator):
     def __init__(self, adaptee):
-        self.adaptee = adaptee
+        self._adaptee = adaptee
 
-    @abstractmethod
     def fit(self, **kwargs):
-        """ document """
+        self._adaptee.fit(**kwargs)
+        return self
 
     @abstractmethod
     def predict(self, **kwargs):
         """ document """
 
-    @abstractmethod
     def get_fit_parameters_from_signature(self):
-        """ For easier fit params passing"""
+        return inspect.signature(self._adaptee.fit).parameters
 
     @abstractmethod
     def get_predict_parameters_from_signature(self):
         """ For easier predict params passing"""
 
-
-
+# These two methods work by introspection, do not remove because the __getattr__ trick does not work with them
     def get_params(self, deep=True):
-        return self.adaptee.get_params(deep=deep)
+        return self._adaptee.get_params(deep=deep)
 
     def set_params(self, **params):
-        self.adaptee.set_params(**params)
+        self._adaptee.set_params(**params)
         return self
 
-    def __repr__(self):
-        return self.adaptee.__repr__()
+    def __getattr__(self, name):
+        return getattr(self.__dict__['_adaptee'], name)
 
+    def __setattr__(self, name, value):
+        if name in ('_adaptee',):
+            self.__dict__[name] = value
+        else:
+            setattr(self.__dict__['_adaptee'], name, value)
+
+    def __delattr__(self, name):
+        delattr(self.__dict__['_adaptee'], name)
 
 
 class FitTransformStrategy(StepStrategy):
-    def fit(self, **kwargs):
-        self.adaptee.fit(**kwargs)
-        return self
-
     def predict(self, **kwargs):
-        return {'predict': self.adaptee.transform(**kwargs)}
-
-    def get_fit_parameters_from_signature(self):
-        return inspect.signature(self.fit).parameters
+        result = {'predict': self._adaptee.transform(**kwargs)}
+        return result
 
     def get_predict_parameters_from_signature(self):
         return inspect.signature(self.transform).parameters
 
 
 class FitPredictStrategy(StepStrategy):
-    def fit(self, **kwargs):
-        self.adaptee.fit(**kwargs)
-        return self
-
     def predict(self, **kwargs):
-        return {'predict': self.adaptee.predict(**kwargs)}
-
-    def get_fit_parameters_from_signature(self):
-        return inspect.signature(self.fit).parameters
+        result = {'predict': self._adaptee.predict(**kwargs)}
+        if hasattr(self._adaptee, 'predict_proba'):
+            result['predict_proba']= self._adaptee.predict_proba(**kwargs)
+        return result
 
     def get_predict_parameters_from_signature(self):
         return inspect.signature(self.predict).parameters
@@ -142,49 +180,14 @@ class FitPredictStrategy(StepStrategy):
 
 class AtomicFitPredictStrategy(StepStrategy):
     def fit(self, **kwargs):
-        self.adaptee.fit_predict(**kwargs)
+        self._adaptee.fit_predict(**kwargs)
         return self
 
     def predict(self, **kwargs):
-        return {'predict': self.adaptee.fit_predict(**kwargs)}
-
-    def get_fit_parameters_from_signature(self):
-        return inspect.signature(self.fit_predict).parameters
+        return {'predict': self._adaptee.fit_predict(**kwargs)}
 
     def get_predict_parameters_from_signature(self):
         return self.get_fit_parameters_from_signature()
-
-
-################################
-#  STEP
-################################
-class Step(BaseEstimator):
-
-    def __init__(self, strategy):
-        self.strategy = strategy
-
-    def __getattr__(self, name):
-        return getattr(self.__dict__['strategy'], name)
-
-    def get_params(self):
-        return self.strategy.get_params()
-
-
-    def set_params(self, **params):
-        self.strategy.set_params(**params)
-        return self
-
-    def fit(self, **kwargs):
-        self.strategy.fit(**kwargs)
-        return self
-
-    def predict(self, **kwargs):
-        return self.strategy.predict(**kwargs)
-
-    def get_fit_parameters_from_signature(self): return self.strategy.get_fit_parameters_from_signature()
-
-    def get_predict_parameters_from_signature(self): return self.strategy.get_predict_parameters_from_signature()
-
 
 
 ################################
@@ -197,7 +200,6 @@ class FirstNodeModel(BaseEstimator):
 
     def predict(self, **kwargs):
         return None
-
 
 class CustomConcatenation(BaseEstimator):
     def fit(self, df1, df2): return self
@@ -213,13 +215,13 @@ class CustomCombination(BaseEstimator):
 
 class CustomPaella(BaseEstimator):
     def __init__(self, **kwargs):
-        self.adaptee = Paella(**kwargs)
+        self._adaptee = Paella(**kwargs)
 
     def fit(self, X, y):
-        self.adaptee.fit(X, y)
+        self._adaptee.fit(X, y)
 
     def predict(self, X, y):
-        return self.adaptee.transform(X, y)
+        return self._adaptee.transform(X, y)
 
 
 ########################################
@@ -268,6 +270,8 @@ def make_step(adaptee):
         strategy=FitPredictStrategy(adaptee)
     elif hasattr(adaptee, 'fit_predict'):
         strategy = AtomicFitPredictStrategy(adaptee)
+    else:
+        raise ValueError('Error: adaptee of unknown behaviour')
 
     step=Step(strategy)
     return step
