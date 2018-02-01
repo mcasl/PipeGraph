@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
+import inspect
+
 from abc import abstractmethod
 
 import networkx as nx
@@ -20,24 +22,23 @@ class PipeGraph(_BaseComposition):
     def __init__(self, steps, connections, use_for_fit='all', use_for_predict='all'):
         self.connections = connections
         self.data = dict()
-        self.graph = _create_graph_from_description(steps,
-                                                    connections,
-                                                    use_for_fit=use_for_fit,
-                                                    use_for_predict=use_for_predict)
+        self.graph = build_graph(steps,
+                                 connections,
+                                 use_for_fit=use_for_fit,
+                                 use_for_predict=use_for_predict)
 
     def fit(self):
-        """
-        Iterates over the graph steps in topological order and executes their fit method
-        """
         fit_nodes = self._filter_nodes(filter='fit')
         for node in fit_nodes:
-            logger.debug("Fitting: %s", node.name)
-            input = self._read_connections(node.name)
-            fit_dict = dict.fromkeys(node['step'].get_fit_parameters_from_signature())
-            predict_dict = dict.fromkeys(node['step'].get_predict_parameters_from_signature())
-            node['step'].fit(**fit_dict)
-            results = node['step'].predict(**predict_dict)
-            self._update_graph_data(self, data_dict)
+            current_step = node['step']
+            current_name = node['name']
+            logger.debug("Fitting: %s", current_name)
+            input = self._read_connections(current_name)
+#           fit_dict = dict.fromkeys(current_step.get_fit_parameters_from_signature())
+#           predict_dict = dict.fromkeys(current_step.get_predict_parameters_from_signature())
+#           current_step.fit(**fit_dict)
+            results = current_step.predict(**predict_dict)
+            self._update_graph_data(current_name, {'output': results})
 
     def predict(self):
         """
@@ -55,7 +56,7 @@ class PipeGraph(_BaseComposition):
 
     def _filter_nodes(self, filter):
         return (self.graph.node[name] for name in nx.topological_sort(self.graph)
-                if filter in self.graph.node[name]['step'].use_for)
+                if filter in self.graph.node[name]['use_for'])
 
     def _read_connections(self, step_name):
         if step_name == 'First':
@@ -65,9 +66,9 @@ class PipeGraph(_BaseComposition):
                           for inner_variable, node_and_outer_variable_tuple in self.connections[step_name].items()}
             return input_data
 
-    def _update_graph_data(self, data_dict):
+    def _update_graph_data(self, node_name, data_dict):
         self.pipegraph.data.update(
-            {(self.node_name, variable): value for variable, value in data_dict.items()}
+            {(node_name, variable): value for variable, value in data_dict.items()}
         )
 
 
@@ -202,23 +203,31 @@ class CustomCombination(BaseEstimator):
 
 
 class CustomPaella(BaseEstimator):
-    def __init__(self, **kwargs):  super().__init__(adaptee=Paella(**kwargs))
+    def __init__(self, **kwargs):
+        self.adaptee = Paella(**kwargs)
 
-    def fit(self, X, y): self.adaptee.fit(X, y)
-    def predict(self, X, y): return self.adaptee.transform(X, y)
+    def fit(self, X, y):
+        self.adaptee.fit(X, y)
+
+    def predict(self, X, y):
+        return self.adaptee.transform(X, y)
 
 
 ########################################
 
-def _create_graph_from_description(steps, connections, use_for_fit='all', use_for_predict='all'):
-    steps = [('First', FirstNodeModel())] + steps
+def build_graph(steps, connections, use_for_fit='all', use_for_predict='all'):
+    steps.insert(0, ('First', FirstNodeModel()) )
     node_names = [name for name, model in steps]
 
     if use_for_fit == 'all':
         use_for_fit=node_names
+    else:
+        use_for_fit.insert(0, 'First')
 
     if use_for_predict == 'all':
         use_for_predict=node_names
+    else:
+        use_for_predict.insert(0, 'First')
 
     use_for = {name:[] for name in node_names}
     for name in node_names:
@@ -232,6 +241,7 @@ def _create_graph_from_description(steps, connections, use_for_fit='all', use_fo
     graph.add_nodes_from(node_names)
     for name, step_model in steps:
         current_node = graph.node[name]
+        current_node['name'] = name
         current_node['step'] = make_step(adaptee=step_model)
         current_node['use_for'] = use_for[name]
         if name != 'First':

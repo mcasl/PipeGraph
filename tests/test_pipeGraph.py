@@ -22,25 +22,30 @@ class TestPipeGraphCase(unittest.TestCase):
         self.y = y
 
         concatenator = CustomConcatenation()
-#         gaussian_clustering = GaussianMixture(n_components=3)
-#         dbscan = DBSCAN(eps=0.05)
-#         mixer = CustomCombinationStep
-#         paellaModel = CustomPaellaStep(noise_label=-1,
-#                                        max_it=20,
-#                                        regular_size=400,
-#                                        minimum_size=100,
-#                                        width_r=0.99,
-#                                        n_neighbors=5,
-#                                        power=30)
+        gaussian_clustering = GaussianMixture(n_components=3)
+        dbscan = DBSCAN(eps=0.05)
+        mixer = CustomCombination()
+        paellaModel = CustomPaella(regressor = LinearRegression,
+                                   noise_label = None,
+                                   max_it = 1,
+                                   regular_size = 100,
+                                   minimum_size = 30,
+                                   width_r = 0.95,
+                                   n_neighbors = 1,
+                                   power = 10,
+                                   random_state = 42)
+
+
+
         linearModel = LinearRegression()
 
         self.steps = [('Concatenate_Xy', concatenator),
-#                       ('Gaussian_Mixture', gaussian_clustering),
-#                       ('Dbscan', dbscan),
-#                       ('Combine_Clustering', mixer),
-#                       ('Paella', paellaModel),
-                       ('Regressor', linearModel),
-                       ]
+                      ('Gaussian_Mixture', gaussian_clustering),
+                      ('Dbscan', dbscan),
+                      ('Combine_Clustering', mixer),
+                      ('Paella', paellaModel),
+                      ('Regressor', linearModel),
+                     ]
 
         self.connections = {
              'First': {'X': x,
@@ -50,32 +55,32 @@ class TestPipeGraphCase(unittest.TestCase):
                  df1=('First', 'X'),
                  df2=('First', 'y')),
 
-#             'Gaussian_Mixture': dict(
-#                 X=('Concatenate_Xy', 'Xy')),
-#
-#             'Dbscan': dict(
-#                 X=('Concatenate_Xy', 'Xy')),
-#
-#             'Combine_Clustering': dict(
-#                 dominant=('Dbscan', 'prediction'),
-#                 other=('Gaussian_Mixture', 'prediction')),
-#
-#             'Paella': dict(
-#                 X=('First', 'X'),
-#                 y=('First', 'y'),
-#                 classification=('Combine_Clustering', 'classification')),
-#
-             'Regressor': dict(
-                 X=('First', 'X'),
-                 y=('First', 'y'),
-#                 sample_weight=('Paella', 'prediction')
-                )
+            'Gaussian_Mixture': dict(
+                X=('Concatenate_Xy', 'Xy')),
+
+            'Dbscan': dict(
+                X=('Concatenate_Xy', 'Xy')),
+
+            'Combine_Clustering': dict(
+                dominant=('Dbscan', 'prediction'),
+                other=('Gaussian_Mixture', 'prediction')),
+
+            'Paella': dict(
+                X=('First', 'X'),
+                y=('First', 'y'),
+                classification=('Combine_Clustering', 'classification')),
+
+            'Regressor': dict(
+                X=('First', 'X'),
+                y=('First', 'y'),
+                sample_weight=('Paella', 'prediction')
+               )
          }
 
         self.graph = PipeGraph(steps=self.steps,
                                     connections=self.connections,
                                     use_for_fit='all',
-                                    use_for_run=['Regressor'])
+                                    use_for_predict=['Regressor'])
 
     def test_make_step(self):
         tests_table = [
@@ -103,15 +108,32 @@ class TestPipeGraphCase(unittest.TestCase):
         node_list = list(self.graph.graph.nodes)
         self.assertEqual(node_list, ['First',
                                       'Concatenate_Xy',
-    #                                  'Gaussian_Mixture',
-    #                                  'Dbscan',
-    #                                  'Combine_Clustering',
-    #                                  'Paella',
+                                      'Gaussian_Mixture',
+                                      'Dbscan',
+                                      'Combine_Clustering',
+                                      'Paella',
                                       'Regressor',
                                       ])
 
-    # def test_graph_fit(self):
-    #     self.graph.fit()
+    def test_filter_nodes_fit(self):
+        fit_nodes = [item['name'] for item in self.graph._filter_nodes(filter='fit')]
+        self.assertEqual(fit_nodes, ['First',
+                                      'Concatenate_Xy',
+                                      'Dbscan',
+                                      'Gaussian_Mixture',
+                                      'Combine_Clustering',
+                                      'Paella',
+                                      'Regressor',
+                                      ])
+
+    def test_filter_nodes_predict(self):
+        predict_nodes = [item['name'] for item in self.graph._filter_nodes(filter='predict')]
+        self.assertEqual(predict_nodes, ['First',
+                                         'Regressor',
+                                         ])
+
+    def test_graph_fit(self):
+        self.graph.fit()
     #     assert_frame_equal(self.graph.data['First', 'X'], self.X)
     #     assert_frame_equal(self.graph.data['First', 'y'], self.y)
     #
