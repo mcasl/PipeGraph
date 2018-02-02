@@ -34,9 +34,9 @@ class PipeGraph(_BaseComposition):
             current_name = node['name']
             logger.debug("Fitting: %s", current_name)
             input = self._read_connections(current_name)
-#           fit_dict = dict.fromkeys(current_step.get_fit_parameters_from_signature())
-#           predict_dict = dict.fromkeys(current_step.get_predict_parameters_from_signature())
-#           current_step.fit(**fit_dict)
+            #           fit_dict = dict.fromkeys(current_step.get_fit_parameters_from_signature())
+            #           predict_dict = dict.fromkeys(current_step.get_predict_parameters_from_signature())
+            #           current_step.fit(**fit_dict)
             results = current_step.predict(**predict_dict)
             self._update_graph_data(current_name, {'output': results})
 
@@ -71,6 +71,7 @@ class PipeGraph(_BaseComposition):
             {(node_name, variable): value for variable, value in data_dict.items()}
         )
 
+
 ################################
 #  STEP
 ################################
@@ -87,10 +88,10 @@ class Step(BaseEstimator):
         self._strategy.set_params(**params)
         return self
 
-    # def fit(self, **kwargs):
-    #     self._strategy.fit(**kwargs)
-    #     return self
-    #
+    def fit(self, **kwargs):
+        self._strategy.fit(**kwargs)
+        return self
+
     # def predict(self, **kwargs):
     #     return self._strategy.predict(**kwargs)
     #
@@ -113,7 +114,6 @@ class Step(BaseEstimator):
         delattr(self.__dict__['_strategy'], name)
 
 
-
 ################################
 #  Strategies
 ################################
@@ -131,13 +131,13 @@ class StepStrategy(BaseEstimator):
         """ document """
 
     def get_fit_parameters_from_signature(self):
-        return inspect.signature(self._adaptee.fit).parameters
+        return list(inspect.signature(self._adaptee.fit).parameters)
 
     @abstractmethod
     def get_predict_parameters_from_signature(self):
         """ For easier predict params passing"""
 
-# These two methods work by introspection, do not remove because the __getattr__ trick does not work with them
+    # These two methods work by introspection, do not remove because the __getattr__ trick does not work with them
     def get_params(self, deep=True):
         return self._adaptee.get_params(deep=deep)
 
@@ -164,24 +164,25 @@ class FitTransformStrategy(StepStrategy):
         return result
 
     def get_predict_parameters_from_signature(self):
-        return inspect.signature(self.transform).parameters
+        return list(inspect.signature(self._adaptee.transform).parameters)
 
 
 class FitPredictStrategy(StepStrategy):
     def predict(self, **kwargs):
         result = {'predict': self._adaptee.predict(**kwargs)}
         if hasattr(self._adaptee, 'predict_proba'):
-            result['predict_proba']= self._adaptee.predict_proba(**kwargs)
+            result['predict_proba'] = self._adaptee.predict_proba(**kwargs)
         return result
 
     def get_predict_parameters_from_signature(self):
-        return inspect.signature(self.predict).parameters
+        return list(inspect.signature(self._adaptee.predict).parameters)
 
 
 class AtomicFitPredictStrategy(StepStrategy):
     def fit(self, **kwargs):
-        self._adaptee.fit_predict(**kwargs)
         return self
+
+    # Relies on the pipegraph iteration loop to run predict after fit in order to propagate the signals
 
     def predict(self, **kwargs):
         return {'predict': self._adaptee.fit_predict(**kwargs)}
@@ -201,14 +202,17 @@ class FirstNodeModel(BaseEstimator):
     def predict(self, **kwargs):
         return None
 
+
 class CustomConcatenation(BaseEstimator):
     def fit(self, df1, df2): return self
+
     def predict(self, df1, df2): return pd.concat([df1, df2], axis=1)
 
 
 class CustomCombination(BaseEstimator):
     def fit(self, dominant, other):
         return self
+
     def predict(self, dominant, other):
         return np.where(dominant < 0, dominant, other)
 
@@ -227,26 +231,25 @@ class CustomPaella(BaseEstimator):
 ########################################
 
 def build_graph(steps, connections, use_for_fit='all', use_for_predict='all'):
-    steps.insert(0, ('First', FirstNodeModel()) )
+    steps.insert(0, ('First', FirstNodeModel()))
     node_names = [name for name, model in steps]
 
     if use_for_fit == 'all':
-        use_for_fit=node_names
+        use_for_fit = node_names
     else:
         use_for_fit.insert(0, 'First')
 
     if use_for_predict == 'all':
-        use_for_predict=node_names
+        use_for_predict = node_names
     else:
         use_for_predict.insert(0, 'First')
 
-    use_for = {name:[] for name in node_names}
+    use_for = {name: [] for name in node_names}
     for name in node_names:
         if name in use_for_fit:
             use_for[name].append('fit')
         if name in use_for_predict:
             use_for[name].append('predict')
-
 
     graph = nx.DiGraph()
     graph.add_nodes_from(node_names)
@@ -265,13 +268,13 @@ def build_graph(steps, connections, use_for_fit='all', use_for_predict='all'):
 
 def make_step(adaptee):
     if hasattr(adaptee, 'transform'):
-        strategy=FitTransformStrategy(adaptee)
+        strategy = FitTransformStrategy(adaptee)
     elif hasattr(adaptee, 'predict'):
-        strategy=FitPredictStrategy(adaptee)
+        strategy = FitPredictStrategy(adaptee)
     elif hasattr(adaptee, 'fit_predict'):
         strategy = AtomicFitPredictStrategy(adaptee)
     else:
         raise ValueError('Error: adaptee of unknown behaviour')
 
-    step=Step(strategy)
+    step = Step(strategy)
     return step

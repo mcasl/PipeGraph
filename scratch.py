@@ -15,7 +15,7 @@ from sklearn.linear_model import LinearRegression
 
 URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
 data = pd.read_csv(URL, usecols=['V1', 'V2'])
-x, y = data[['V1']], data[['V2']]
+X, y = data[['V1']], data[['V2']]
 concatenator = CustomConcatenation()
 gaussian_clustering = GaussianMixture(n_components=3)
 dbscan = DBSCAN(eps=0.05)
