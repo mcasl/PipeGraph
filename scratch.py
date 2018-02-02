@@ -41,7 +41,7 @@ steps = [('Concatenate_Xy', concatenator),
               ]
 
 connections = {
-    'First': {'X': x,
+    'First': {'X': X,
               'y': y},
 
     'Concatenate_Xy': dict(

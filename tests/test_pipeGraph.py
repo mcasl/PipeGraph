@@ -1,99 +1,30 @@
 import unittest
 
-import numpy as np
-import pandas as pd
-from argparse import Namespace
-
 from numpy.testing import assert_array_equal
 from pandas.util.testing import assert_frame_equal
 from sklearn.cluster import DBSCAN
-# from sklearn.model_selection import train_test_split
 from sklearn.mixture import GaussianMixture
-
 from sklearn.preprocessing import MinMaxScaler
 
 from paella import *
 from pipeGraph import *
 
 
-class TestPipeGraphCase(unittest.TestCase):
+class TestStepStrategy(unittest.TestCase):
     def setUp(self):
         URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
-        # URL = 'https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sinusoidal_data.csv'
-
         data = pd.read_csv(URL, usecols=['V1', 'V2'])
-        X = data[['V1']]
-        y = data[['V2']]
-        concatenator = CustomConcatenation()
-        gaussian_clustering = GaussianMixture(n_components=3)
-        dbscan = DBSCAN(eps=0.5)
-        mixer = CustomCombination()
-        paellaModel = CustomPaella(regressor=LinearRegression,
-                                   noise_label=None,
-                                   max_it=1,
-                                   regular_size=100,
-                                   minimum_size=30,
-                                   width_r=0.95,
-                                   power=10,
-                                   random_state=42)
-        linear_model = LinearRegression()
-        steps = [('Concatenate_Xy', concatenator),
-                 ('Gaussian_Mixture', gaussian_clustering),
-                 ('Dbscan', dbscan),
-                 ('Combine_Clustering', mixer),
-                 ('Paella', paellaModel),
-                 ('Regressor', linear_model),
-                 ]
-
-        connections = {
-            'First': {'X': X,
-                      'y': y},
-
-            'Concatenate_Xy': dict(
-                df1=('First', 'X'),
-                df2=('First', 'y')),
-
-            'Gaussian_Mixture': dict(
-                X=('Concatenate_Xy', 'Xy')),
-
-            'Dbscan': dict(
-                X=('Concatenate_Xy', 'Xy')),
-
-            'Combine_Clustering': dict(
-                dominant=('Dbscan', 'prediction'),
-                other=('Gaussian_Mixture', 'prediction')),
-
-            'Paella': dict(
-                X=('First', 'X'),
-                y=('First', 'y'),
-                classification=('Combine_Clustering', 'classification')),
-
-            'Regressor': dict(
-                X=('First', 'X'),
-                y=('First', 'y'),
-                sample_weight=('Paella', 'prediction')
-            )
-        }
-        graph = PipeGraph(steps=steps,
-                          connections=connections,
-                          use_for_fit='all',
-                          use_for_predict=['Regressor'])
-
-        self.paella_1 = Namespace(X=X, y=y, graph=graph)
-
-    # ############ PAELLA 1 #######################
-
-    # STRATEGY TESTS
-
+        self.X = data[['V1']]
+        self.y = data[['V2']]
 
     def test_stepstrategy__init(self):
         lm = LinearRegression()
         stepstrategy = FitPredictStrategy(lm)
         self.assertEqual(stepstrategy._adaptee, lm)
 
-    def test_stepstrategy__fit_lm(self):
-        X = self.paella_1.X
-        y = self.paella_1.y
+    def test_stepstrategy__fit_FitPredict(self):
+        X = self.X
+        y = self.y
         lm = LinearRegression()
         stepstrategy = FitPredictStrategy(lm)
         self.assertEqual(hasattr(stepstrategy._adaptee, 'coef_'), False)
@@ -101,9 +32,17 @@ class TestPipeGraphCase(unittest.TestCase):
         self.assertEqual(hasattr(stepstrategy._adaptee, 'coef_'), True)
         self.assertEqual(stepstrategy, result)
 
-    def test_stepstrategy__fit_dbscan(self):
-        X = self.paella_1.X
-        y = self.paella_1.y
+    def test_stepstrategy__fit_FitTransform(self):
+        X = self.X
+        sc = MinMaxScaler()
+        stepstrategy = FitTransformStrategy(sc)
+        self.assertEqual(hasattr(stepstrategy._adaptee, 'n_samples_seen_'), False)
+        result = stepstrategy.fit(X=X)
+        self.assertEqual(hasattr(stepstrategy._adaptee, 'n_samples_seen_'), True)
+        self.assertEqual(stepstrategy, result)
+
+    def test_stepstrategy__fit_AtomicFitPredict(self):
+        X = self.X
         db = DBSCAN()
         stepstrategy = AtomicFitPredictStrategy(db)
         self.assertEqual(hasattr(stepstrategy._adaptee, 'core_sample_indices_'), False)
@@ -114,22 +53,41 @@ class TestPipeGraphCase(unittest.TestCase):
         self.assertEqual(hasattr(stepstrategy._adaptee, 'core_sample_indices_'), True)
         self.assertEqual(result_predict.shape, (10000,))
 
-    def test_stepstrategy__predict(self):
-        X = self.paella_1.X
-        y = self.paella_1.y
+    def test_stepstrategy__predict_FitPredict(self):
+        X = self.X
+        y = self.y
         lm = LinearRegression()
-        gm = GaussianMixture()
         lm_strategy = FitPredictStrategy(lm)
-        gm_strategy = FitPredictStrategy(gm)
-
         lm_strategy.fit(X=X, y=y)
-        gm_strategy.fit(X=X)
-
         result_lm = lm_strategy.predict(X=X)
-        result_gm = gm_strategy.predict(X=X)
-
         self.assertEqual(list(result_lm.keys()), ['predict'])
+        self.assertEqual(result_lm['predict'].shape, (10000, 1))
+
+        gm = GaussianMixture()
+        gm_strategy = FitPredictStrategy(gm)
+        gm_strategy.fit(X=X)
+        result_gm = gm_strategy.predict(X=X)
         self.assertEqual(list(result_gm.keys()).sort(), ['predict', 'predict_proba'].sort())
+        self.assertEqual(result_gm['predict'].shape, (10000,))
+
+    def test_stepstrategy__predict_FitTransform(self):
+        X = self.X
+        sc = MinMaxScaler()
+        sc_strategy = FitTransformStrategy(sc)
+        sc_strategy.fit(X=X)
+        result_sc = sc_strategy.predict(X=X)
+        self.assertEqual(list(result_sc.keys()), ['predict'])
+        self.assertEqual(result_sc['predict'].shape, (10000, 1))
+
+    def test_stepstrategy__predict_AtomicFitPredict(self):
+        X = self.X
+        y = self.y
+        db = DBSCAN()
+        db_strategy = AtomicFitPredictStrategy(db)
+        db_strategy.fit(X=X, y=y)
+        result_db = db_strategy.predict(X=X)
+        self.assertEqual(list(result_db.keys()), ['predict'])
+        self.assertEqual(result_db['predict'].shape, (10000,))
 
     def test_stepstrategy__get_fit_parameters_from_signature(self):
         lm = LinearRegression()
@@ -143,19 +101,19 @@ class TestPipeGraphCase(unittest.TestCase):
         self.assertEqual(result_lm, ['X', 'y', 'sample_weight'])
         self.assertEqual(result_gm, ['X', 'y'])
 
-    def test_stepstrategy__get_predict_parameters_from_signature_lm(self):
+    def test_stepstrategy__get_predict_parameters_from_signature_FitPredict(self):
         lm = LinearRegression()
         lm_strategy = FitPredictStrategy(lm)
         result_lm = lm_strategy.get_predict_parameters_from_signature()
         self.assertEqual(result_lm, ['X'])
 
-    def test_stepstrategy__get_predict_parameters_from_signature_sc(self):
+    def test_stepstrategy__get_predict_parameters_from_signature_FitTransform(self):
         sc = MinMaxScaler()
         sc_strategy = FitTransformStrategy(sc)
         result_sc = sc_strategy.get_predict_parameters_from_signature()
         self.assertEqual(result_sc, ['X'])
 
-    def test_stepstrategy__get_predict_parameters_from_signature_db(self):
+    def test_stepstrategy__get_predict_parameters_from_signature_AtomicFitPredict(self):
         db = DBSCAN()
         db_strategy = AtomicFitPredictStrategy(db)
         result_db = db_strategy.get_predict_parameters_from_signature()
@@ -207,9 +165,19 @@ class TestPipeGraphCase(unittest.TestCase):
         del lm_strategy.copy_X
         self.assertEqual('copy_X' in dir(lm), False)
 
+    def test_stepstrategy__repr__(self):
+        lm = LinearRegression()
+        lm_strategy = FitPredictStrategy(lm)
+        result = lm_strategy.__repr__()
+        self.assertEqual(result, lm.__repr__() )
 
-# ###########################
-# STEP TESTS
+class TestStep(unittest.TestCase):
+    def setUp(self):
+        URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
+        data = pd.read_csv(URL, usecols=['V1', 'V2'])
+        self.X = data[['V1']]
+        self.y = data[['V2']]
+
     def test_step__init(self):
         lm = LinearRegression()
         stepstrategy = FitPredictStrategy(lm)
@@ -217,8 +185,8 @@ class TestPipeGraphCase(unittest.TestCase):
         self.assertEqual(step._strategy, stepstrategy)
 
     def test_step__fit_lm(self):
-        X = self.paella_1.X
-        y = self.paella_1.y
+        X = self.X
+        y = self.y
         lm = LinearRegression()
         stepstrategy = FitPredictStrategy(lm)
         step = Step(stepstrategy)
@@ -228,8 +196,8 @@ class TestPipeGraphCase(unittest.TestCase):
         self.assertEqual(step, result)
 
     def test_step__fit_dbscan(self):
-        X = self.paella_1.X
-        y = self.paella_1.y
+        X = self.X
+        y = self.y
         db = DBSCAN()
         stepstrategy = AtomicFitPredictStrategy(db)
         step = Step(stepstrategy)
@@ -240,6 +208,25 @@ class TestPipeGraphCase(unittest.TestCase):
         result_predict = step.predict(X=X)['predict']
         self.assertEqual(hasattr(step, 'core_sample_indices_'), True)
         self.assertEqual(result_predict.shape, (10000,))
+
+    def test_step__predict(self):
+        X = self.X
+        y = self.y
+        lm = LinearRegression()
+        gm = GaussianMixture()
+        lm_strategy = FitPredictStrategy(lm)
+        gm_strategy = FitPredictStrategy(gm)
+        step_lm = Step(lm_strategy)
+        step_gm = Step(gm_strategy)
+
+        step_lm.fit(X=X, y=y)
+        step_gm.fit(X=X)
+
+        result_lm = step_lm.predict(X=X)
+        result_gm = step_gm.predict(X=X)
+
+        self.assertEqual(list(result_lm.keys()), ['predict'])
+        self.assertEqual(list(result_gm.keys()).sort(), ['predict', 'predict_proba'].sort())
 
     def test_step__get_params(self):
         lm = LinearRegression()
@@ -260,27 +247,32 @@ class TestPipeGraphCase(unittest.TestCase):
                                          'fit_intercept': True,
                                          'n_jobs': 1,
                                          'normalize': False})
-        lm_strategy.set_params(fit_intercept=False)
+        step.set_params(fit_intercept=False)
         result_lm_post = step.get_params()
         self.assertEqual(result_lm_post, {'copy_X': True,
                                           'fit_intercept': False,
                                           'n_jobs': 1,
                                           'normalize': False})
 
+    def test_step__get_fit_parameters_from_signature(self):
+        lm = LinearRegression()
+        gm = GaussianMixture()
+        lm_strategy = FitPredictStrategy(lm)
+        gm_strategy = FitPredictStrategy(gm)
+        step_lm = Step(lm_strategy)
+        step_gm = Step(gm_strategy)
+        result_lm = step_lm.get_fit_parameters_from_signature()
+        result_gm = step_gm.get_fit_parameters_from_signature()
 
-    # # def fit(self, **kwargs):
-    # #     self._strategy.fit(**kwargs)
-    # #     return self
-    # #
-    # # def predict(self, **kwargs):
-    # #     return self._strategy.predict(**kwargs)
-    # #
-    # # def get_fit_parameters_from_signature(self):
-    # #     return self._strategy.get_fit_parameters_from_signature()
-    # #
-    # # def get_predict_parameters_from_signature(self):
-    # #     return self._strategy.get_predict_parameters_from_signature()
-    # #
+        self.assertEqual(result_lm, ['X', 'y', 'sample_weight'])
+        self.assertEqual(result_gm, ['X', 'y'])
+
+    def test_step__get_predict_parameters_from_signature_lm(self):
+        lm = LinearRegression()
+        lm_strategy = FitPredictStrategy(lm)
+        step_lm = Step(lm_strategy)
+        result_lm = step_lm.get_predict_parameters_from_signature()
+        self.assertEqual(result_lm, ['X'])
 
     def test_step__getattr__(self):
         lm = LinearRegression()
@@ -307,17 +299,70 @@ class TestPipeGraphCase(unittest.TestCase):
         del step.copy_X
         self.assertEqual('copy_X' in dir(lm), False)
 
+    def test_step__repr__(self):
+        lm = LinearRegression()
+        lm_strategy = FitPredictStrategy(lm)
+        step = Step(lm_strategy)
+        result = step.__repr__()
+        self.assertEqual(result, lm.__repr__() )
 
 
+class TestRootFunctions(unittest.TestCase):
+    def setUp(self):
+        URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
+        data = pd.read_csv(URL, usecols=['V1', 'V2'])
+        self.X = X = data[['V1']]
+        self.y = y = data[['V2']]
+        concatenator = CustomConcatenation()
+        gaussian_clustering = GaussianMixture(n_components=3)
+        dbscan = DBSCAN(eps=0.5)
+        mixer = CustomCombination()
+        paellaModel = CustomPaella(regressor=LinearRegression,
+                                   noise_label=None,
+                                   max_it=1,
+                                   regular_size=100,
+                                   minimum_size=30,
+                                   width_r=0.95,
+                                   power=10,
+                                   random_state=42)
+        linear_model = LinearRegression()
+        self.steps = steps = [('Concatenate_Xy', concatenator),
+                              ('Gaussian_Mixture', gaussian_clustering),
+                              ('Dbscan', dbscan),
+                              ('Combine_Clustering', mixer),
+                              ('Paella', paellaModel),
+                              ('Regressor', linear_model),
+                              ]
 
+        self.connections = connections = {
+            'First': {'X': X,
+                      'y': y},
 
+            'Concatenate_Xy': dict(
+                df1=('First', 'X'),
+                df2=('First', 'y')),
 
+            'Gaussian_Mixture': dict(
+                X=('Concatenate_Xy', 'Xy')),
 
-# #########################
+            'Dbscan': dict(
+                X=('Concatenate_Xy', 'Xy')),
 
+            'Combine_Clustering': dict(
+                dominant=('Dbscan', 'prediction'),
+                other=('Gaussian_Mixture', 'prediction')),
 
+            'Paella': dict(
+                X=('First', 'X'),
+                y=('First', 'y'),
+                classification=('Combine_Clustering', 'classification')),
 
-
+            'Regressor': dict(
+                X=('First', 'X'),
+                y=('First', 'y'),
+                sample_weight=('Paella', 'prediction')
+            )
+        }
 
     def test_make_step(self):
         tests_table = [
@@ -336,36 +381,308 @@ class TestPipeGraphCase(unittest.TestCase):
             step = make_step(model)
             self.assertEqual(isinstance(step._strategy, test_dict['expected_class']), True)
 
-    def test_step_predict_lm(self):
-        X = self.paella_1.X
-        y = self.paella_1.y
+    def test_make_step_raise_exception(self):
+        model = object()
+        self.assertRaises(ValueError, make_step, model)
+
+    def test_build_graph_use_for_fit_all(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_fit='all',
+                            use_for_predict='all')
+
+        fit_nodes_list = [name for name in graph.nodes
+                          if 'fit' in graph.node[name]['use_for']]
+        self.assertEqual(fit_nodes_list.sort(), ['First',
+                                                 'Concatenate_Xy',
+                                                 'Gaussian_Mixture',
+                                                 'Dbscan',
+                                                 'Combine_Clustering',
+                                                 'Paella',
+                                                 'Regressor',
+                                                 ].sort())
+
+    def test_build_graph_use_for_fit_some(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_fit=['Concatenate_Xy',
+                                         'Gaussian_Mixture',
+                                         'Dbscan',
+                                         ],
+                            use_for_predict='all')
+
+        fit_nodes_list = [name for name in graph.nodes
+                          if 'fit' in graph.node[name]['use_for']]
+        self.assertEqual(fit_nodes_list.sort(), ['Concatenate_Xy',
+                                                 'Gaussian_Mixture',
+                                                 'Dbscan',
+                                                 ].sort())
+
+    def test_build_graph_use_for_fit_one(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_fit=['Concatenate_Xy'],
+                            use_for_predict='all')
+
+        fit_nodes_list = [name for name in graph.nodes
+                          if 'fit' in graph.node[name]['use_for']]
+        self.assertEqual(fit_nodes_list.sort(), ['Concatenate_Xy'].sort())
+
+    def test_build_graph_use_for_fit_Empty(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_fit=[],
+                            use_for_predict='all')
+
+        fit_nodes_list = [name for name in graph.nodes
+                          if 'fit' in graph.node[name]['use_for']]
+        self.assertEqual(fit_nodes_list, ['First'])
+
+    def test_build_graph_use_for_fit_None(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_fit=None,
+                            use_for_predict='all')
+
+        fit_nodes_list = [name for name in graph.nodes
+                          if 'fit' in graph.node[name]['use_for']]
+        self.assertEqual(fit_nodes_list, ['First'])
+
+    def test_build_graph_use_for_fit_First(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_fit=['First'],
+                            use_for_predict='all')
+
+        fit_nodes_list = [name for name in graph.nodes
+                          if 'fit' in graph.node[name]['use_for']]
+        self.assertEqual(fit_nodes_list, ['First'])
+
+    def test_build_graph_use_for_predict_all(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_fit='all',
+                            use_for_predict='all')
+
+        predict_nodes_list = [name for name in graph.nodes
+                              if 'predict' in graph.node[name]['use_for']]
+        self.assertEqual(predict_nodes_list.sort(), ['First',
+                                                     'Concatenate_Xy',
+                                                     'Gaussian_Mixture',
+                                                     'Dbscan',
+                                                     'Combine_Clustering',
+                                                     'Paella',
+                                                     'Regressor',
+                                                     ].sort())
+
+    def test_build_graph_use_for_predict_some(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_fit='all',
+                            use_for_predict=['Concatenate_Xy',
+                                             'Gaussian_Mixture',
+                                             'Dbscan',
+                                             ])
+
+        predict_nodes_list = [name for name in graph.nodes
+                              if 'predict' in graph.node[name]['use_for']]
+        self.assertEqual(predict_nodes_list.sort(), ['Concatenate_Xy',
+                                                 'Gaussian_Mixture',
+                                                 'Dbscan',
+                                                 ].sort())
+
+    def test_build_graph_use_for_predict_one(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_predict=['Concatenate_Xy'],
+                            use_for_fit='all')
+
+        predict_nodes_list = [name for name in graph.nodes
+                          if 'predict' in graph.node[name]['use_for']]
+        self.assertEqual(predict_nodes_list.sort(), ['Concatenate_Xy'].sort())
+
+    def test_build_graph_use_for_predict_Empty(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_predict=[],
+                            use_for_fit='all')
+
+        predict_nodes_list = [name for name in graph.nodes
+                          if 'predict' in graph.node[name]['use_for']]
+        self.assertEqual(predict_nodes_list, ['First'])
+
+    def test_build_graph_use_for_predict_None(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_predict=None,
+                            use_for_fit='all')
+
+        predict_nodes_list = [name for name in graph.nodes
+                          if 'predict' in graph.node[name]['use_for']]
+        self.assertEqual(predict_nodes_list, ['First'])
+
+    def test_build_graph_use_for_predict_First(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_predict=['First'],
+                            use_for_fit='all')
+
+        predict_nodes_list = [name for name in graph.nodes
+                          if 'predict' in graph.node[name]['use_for']]
+        self.assertEqual(predict_nodes_list, ['First'])
+
+    def test_build_graph_node_names(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_fit='all',
+                            use_for_predict='all')
+
+        node_list = list(graph.nodes)
+        self.assertEqual(node_list, ['First',
+                                     'Concatenate_Xy',
+                                     'Gaussian_Mixture',
+                                     'Dbscan',
+                                     'Combine_Clustering',
+                                     'Paella',
+                                     'Regressor',
+                                     ])
+
+    def test_build_graph_node_steps(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_fit='all',
+                            use_for_predict='all')
+
+        for name in graph.nodes:
+            self.assertTrue(isinstance(graph.nodes[name]['step'], Step))
+
+        self.assertTrue(isinstance(graph.node['First']['step']._strategy, FitPredictStrategy))
+        self.assertTrue(isinstance(graph.node['Concatenate_Xy']['step']._strategy, FitPredictStrategy))
+        self.assertTrue(isinstance(graph.node['Gaussian_Mixture']['step']._strategy, FitPredictStrategy ))
+        self.assertTrue(isinstance(graph.node['Dbscan']['step']._strategy, AtomicFitPredictStrategy ))
+        self.assertTrue(isinstance(graph.node['Combine_Clustering']['step']._strategy, FitPredictStrategy))
+        self.assertTrue(isinstance(graph.node['Paella']['step']._strategy, FitPredictStrategy))
+        self.assertTrue(isinstance(graph.node['Regressor']['step']._strategy, FitPredictStrategy ))
+
+        self.assertTrue(isinstance(graph.node['First']['step']._strategy._adaptee, FirstNodeModel))
+        self.assertTrue(isinstance(graph.node['Concatenate_Xy']['step']._strategy._adaptee, CustomConcatenation))
+        self.assertTrue(isinstance(graph.node['Gaussian_Mixture']['step']._strategy._adaptee, GaussianMixture ))
+        self.assertTrue(isinstance(graph.node['Dbscan']['step']._strategy._adaptee, DBSCAN ))
+        self.assertTrue(isinstance(graph.node['Combine_Clustering']['step']._strategy._adaptee, CustomCombination))
+        self.assertTrue(isinstance(graph.node['Paella']['step']._strategy._adaptee, CustomPaella))
+        self.assertTrue(isinstance(graph.node['Regressor']['step']._strategy._adaptee, LinearRegression ))
+
+    def test_build_graph_node_edges(self):
+        graph = build_graph(self.steps,
+                            self.connections,
+                            use_for_fit='all',
+                            use_for_predict='all')
+
+        in_edges = {name: [ origin for origin, destination in list( graph.in_edges(name) ) ]
+                    for name in graph }
+
+        self.assertEqual(in_edges['First'], [])
+        self.assertEqual(in_edges['Concatenate_Xy'], ['First'] )
+        self.assertEqual(in_edges['Gaussian_Mixture'], ['Concatenate_Xy'] )
+        self.assertEqual(in_edges['Dbscan'], ['Concatenate_Xy'] )
+        self.assertEqual(in_edges['Combine_Clustering'].sort(), ['Gaussian_Mixture', 'Dbscan'].sort())
+        self.assertEqual(in_edges['Paella'].sort(), ['First', 'Combine_Clustering'].sort() )
+        self.assertEqual(in_edges['Regressor'].sort(), ['First', 'Paella'].sort())
+
+
+class TestPipegraph(unittest.TestCase):
+    def setUp(self):
+        URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
+        data = pd.read_csv(URL, usecols=['V1', 'V2'])
+        self.X = X = data[['V1']]
+        self.y = y = data[['V2']]
+        concatenator = CustomConcatenation()
+        gaussian_clustering = GaussianMixture(n_components=3)
+        dbscan = DBSCAN(eps=0.5)
+        mixer = CustomCombination()
+        paellaModel = CustomPaella(regressor=LinearRegression,
+                                   noise_label=None,
+                                   max_it=1,
+                                   regular_size=100,
+                                   minimum_size=30,
+                                   width_r=0.95,
+                                   power=10,
+                                   random_state=42)
+        linear_model = LinearRegression()
+        steps = [('Concatenate_Xy', concatenator),
+                 ('Gaussian_Mixture', gaussian_clustering),
+                 ('Dbscan', dbscan),
+                 ('Combine_Clustering', mixer),
+                 ('Paella', paellaModel),
+                 ('Regressor', linear_model),
+                 ]
+
+        connections = {
+            'First': {'X': X,
+                      'y': y},
+
+            'Concatenate_Xy': dict(
+                df1=('First', 'X'),
+                df2=('First', 'y')),
+
+            'Gaussian_Mixture': dict(
+                X=('Concatenate_Xy', 'Xy')),
+
+            'Dbscan': dict(
+                X=('Concatenate_Xy', 'Xy')),
+
+            'Combine_Clustering': dict(
+                dominant=('Dbscan', 'prediction'),
+                other=('Gaussian_Mixture', 'prediction')),
+
+            'Paella': dict(
+                X=('First', 'X'),
+                y=('First', 'y'),
+                classification=('Combine_Clustering', 'classification')),
+
+            'Regressor': dict(
+                X=('First', 'X'),
+                y=('First', 'y'),
+                sample_weight=('Paella', 'prediction')
+            )
+        }
+        self.pgraph = PipeGraph(steps=steps,
+                                connections=connections,
+                                use_for_fit='all',
+                                use_for_predict=['Regressor'])
+
+    def test_step__predict_lm(self):
+        X = self.X
+        y = self.y
         lm = LinearRegression()
         lm_step = make_step(lm)
         lm_step.fit(X=X, y=y)
         assert_array_equal(lm.predict(X), lm_step.predict(X=X)['predict'])
 
-    def test_concatenate_Xy_predict(self):
-        X = self.paella_1.X
-        y = self.paella_1.y
-        pgraph = self.paella_1.graph
+    def test_concatenate_Xy__predict(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
         expected = pd.concat([X, y], axis=1)
         current_step = pgraph._graph.node['Concatenate_Xy']['step']
         current_step.fit(df1=X, df2=y)
         result = current_step.predict(df1=X, df2=y)['predict']
         assert_frame_equal(expected, result)
 
-    def test_gaussian_mixture_predict(self):
-        X = self.paella_1.X
-        pgraph = self.paella_1.graph
+    def test_gaussian_mixture__predict(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
         current_step = pgraph._graph.node['Gaussian_Mixture']['step']
         current_step.fit(X=X)
         expected = current_step._strategy._adaptee.predict(X=X)
         result = current_step.predict(X=X)['predict']
         assert_array_equal(expected, result)
 
-    def test_dbscan_predict(self):
-        X = self.paella_1.X
-        pgraph = self.paella_1.graph
+    def test_dbscan__predict(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
         current_step = pgraph._graph.node['Dbscan']['step']
         current_step.fit(X=X)
         expected = current_step._strategy._adaptee.fit_predict(X=X)
@@ -390,66 +707,65 @@ class TestPipeGraphCase(unittest.TestCase):
     #     assert_array_equal(expected, result)
     #     self.assertEqual(result.min(), -1)
 
-    def test_strategy_dict_key(self):
-        X = self.paella_1.X
-        y = self.paella_1.y
-        pgraph = self.paella_1.graph
+    def test_strategy__dict_key(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
         current_step = pgraph._graph.node['Concatenate_Xy']['step']
         current_step.fit(df1=X, df2=y)
         result = current_step.predict(df1=X, df2=y)
         self.assertEqual(list(result.keys()), ['predict'])
 
-    def test_dbscan_dict_key(self):
-        X = self.paella_1.X
-        y = self.paella_1.y
-        pgraph = self.paella_1.graph
+    def test_dbscan__dict_key(self):
+        X = self.X
+        pgraph = self.pgraph
         current_step = pgraph._graph.node['Dbscan']['step']
         current_step.fit(X=X)
         result = current_step.predict(X=X)
         self.assertEqual(list(result.keys()), ['predict'])
 
-    def test_combine_clustering_dict_key(self):
-        X = self.paella_1.X
-        y = self.paella_1.y
-        pgraph = self.paella_1.graph
+    def test_combine_clustering__dict_key(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
         current_step = pgraph._graph.node['Combine_Clustering']['step']
         current_step.fit(dominant=X, other=y)
         result = current_step.predict(dominant=X, other=y)
         self.assertEqual(list(result.keys()), ['predict'])
 
-    def test_gaussian_mixture_dict_key(self):
-        X = self.paella_1.X
-        y = self.paella_1.y
-        pgraph = self.paella_1.graph
+    def test_gaussian_mixture__dict_key(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
         current_step = pgraph._graph.node['Gaussian_Mixture']['step']
         current_step.fit(X=X)
         result = current_step.predict(X=X)
         self.assertEqual(list(result.keys()), ['predict', 'predict_proba'])
 
-    def test_regressor_dict_key(self):
-        X = self.paella_1.X
-        y = self.paella_1.y
-        pgraph = self.paella_1.graph
+    def test_regressor__dict_key(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
         current_step = pgraph._graph.node['Regressor']['step']
         current_step.fit(X=X, y=y)
         result = current_step.predict(X=X)
         self.assertEqual(list(result.keys()), ['predict'])
 
-    def test_FirstNode_dict_key(self):
-        X = self.paella_1.X
-        y = self.paella_1.y
-        pgraph = self.paella_1.graph
+    def test_FirstNode__dict_key(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
         current_step = pgraph._graph.node['First']['step']
         current_step.fit(X=X, y=y)
         result = current_step.predict(X=X)
         self.assertEqual(list(result.keys()), ['predict'])
 
     def test_data_attribute(self):
-        pgraph = self.paella_1.graph
+        pgraph = self.pgraph
         self.assertEqual(dict(), pgraph.data)
 
     def test_node_names(self):
-        pgraph = self.paella_1.graph
+        pgraph = self.pgraph
         node_list = list(pgraph._graph.nodes)
         self.assertEqual(node_list, ['First',
                                      'Concatenate_Xy',
@@ -461,7 +777,7 @@ class TestPipeGraphCase(unittest.TestCase):
                                      ])
 
     def test_filter_nodes_fit(self):
-        pgraph = self.paella_1.graph
+        pgraph = self.pgraph
         fit_nodes = [item['name'] for item in pgraph._filter_nodes(filter='fit')]
         self.assertEqual(fit_nodes, ['First',
                                      'Concatenate_Xy',
@@ -473,7 +789,7 @@ class TestPipeGraphCase(unittest.TestCase):
                                      ])
 
     def test_filter_nodes_predict(self):
-        pgraph = self.paella_1.graph
+        pgraph = self.pgraph
         predict_nodes = [item['name'] for item in pgraph._filter_nodes(filter='predict')]
         self.assertEqual(predict_nodes, ['First',
                                          'Regressor',
@@ -518,7 +834,7 @@ class TestPipeGraphCase(unittest.TestCase):
     #
 
     def test_step_get_params_multiple(self):
-        pgraph = self.paella_1.graph
+        pgraph = self.pgraph
         graph = pgraph._graph
         self.assertEqual(graph.node['First']['step'].get_params(), {})
         self.assertEqual(graph.node['Concatenate_Xy']['step'].get_params(), {})
@@ -536,7 +852,7 @@ class TestPipeGraphCase(unittest.TestCase):
                          {'copy_X': True, 'fit_intercept': True, 'n_jobs': 1, 'normalize': False})
 
     def test_step_set_params_multiple(self):
-        pgraph = self.paella_1.graph
+        pgraph = self.pgraph
         graph = pgraph._graph
         self.assertRaises(ValueError, graph.node['First']['step'].set_params, ham=902)
         self.assertRaises(ValueError, graph.node['Concatenate_Xy']['step'].set_params, ham=2, spam=9)
@@ -550,6 +866,56 @@ class TestPipeGraphCase(unittest.TestCase):
                          {'copy_X': False, 'fit_intercept': True, 'n_jobs': 1, 'normalize': False})
         self.assertEqual(graph.node['Regressor']['step'].set_params(n_jobs=13).get_params(),
                          {'copy_X': False, 'fit_intercept': True, 'n_jobs': 13, 'normalize': False})
+
+
+
+class TestCustomPaella(unittest.TestCase):
+    def setUp(self):
+        URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
+        data = pd.read_csv(URL, usecols=['V1', 'V2'])
+        self.X = data[['V1']]
+        self.y = data[['V2']]
+        self.paellador = CustomPaella(regressor=LinearRegression,
+                                      noise_label=None,
+                                      max_it=1,
+                                      regular_size=100,
+                                      minimum_size=30,
+                                      width_r=0.95,
+                                      power=10,
+                                      random_state=42)
+
+    def test_Paella__init(self):
+        self.assertTrue( isinstance(self.paellador._adaptee, Paella))
+
+    def test_Paella__fit(self):
+        X = self.X
+        y = self.y
+        concatenated = pd.concat([X,y], axis=1)
+        gm =GaussianMixture(n_components=3)
+        gm.fit(concatenated)
+        classification_gm = gm.predict(concatenated)
+        paellador = self.paellador
+        self.assertFalse(hasattr(paellador._adaptee, 'appointment_'))
+        paellador.fit(X=X, y=y, classification=classification_gm )
+        self.assertTrue(hasattr(paellador._adaptee, 'appointment_'))
+
+    def test_Paella__predict(self):
+        X = self.X
+        y = self.y
+        paellador = self.paellador
+        paellador.fit(X=X, y=y)
+        result = paellador.predict(X=X, y=y)['predict']
+        self.assertEqual(result.shape, (10000, 1) )
+
+    def test_Paella__get_params(self):
+        paellador = self.paellador
+        result = paellador.get_params()
+        self.assertEqual(result, 12 )
+
+    def test_Paella__set_params(self):
+        paellador = self.paellador
+        result = paellador.get_params()
+        self.assertEqual(result, 12 )
 
 
 if __name__ == '__main__':

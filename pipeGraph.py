@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-# TO-DO: remove Paella's study case related classes
+#TODO: remove Paella's study case related classes
 
 class PipeGraph(_BaseComposition):
     def __init__(self, steps, connections, use_for_fit='all', use_for_predict='all'):
@@ -113,6 +113,8 @@ class Step(BaseEstimator):
     def __delattr__(self, name):
         delattr(self.__dict__['_strategy'], name)
 
+    def __repr__(self):
+        return self._strategy.__repr__()
 
 ################################
 #  Strategies
@@ -157,6 +159,8 @@ class StepStrategy(BaseEstimator):
     def __delattr__(self, name):
         delattr(self.__dict__['_adaptee'], name)
 
+    def __repr__(self):
+        return self._adaptee.__repr__()
 
 class FitTransformStrategy(StepStrategy):
     def predict(self, **kwargs):
@@ -221,11 +225,18 @@ class CustomPaella(BaseEstimator):
     def __init__(self, **kwargs):
         self._adaptee = Paella(**kwargs)
 
-    def fit(self, X, y):
-        self._adaptee.fit(X, y)
+    def fit(self, X, y, classification):
+        self._adaptee.fit(X, y, classification)
 
     def predict(self, X, y):
         return self._adaptee.transform(X, y)
+
+    def get_params(self, deep=True):
+        return self._adaptee.get_params(deep)
+
+    def set_params(self, **params):
+        self._adaptee.set_params(**params)
+        return self
 
 
 ########################################
@@ -236,13 +247,20 @@ def build_graph(steps, connections, use_for_fit='all', use_for_predict='all'):
 
     if use_for_fit == 'all':
         use_for_fit = node_names
+    elif use_for_fit is None:
+        use_for_fit = ['First']
     else:
         use_for_fit.insert(0, 'First')
 
     if use_for_predict == 'all':
         use_for_predict = node_names
+    elif use_for_predict is None:
+        use_for_predict = ['First']
     else:
         use_for_predict.insert(0, 'First')
+
+    use_for_fit = set(use_for_fit)
+    use_for_predict = set(use_for_predict)
 
     use_for = {name: [] for name in node_names}
     for name in node_names:
