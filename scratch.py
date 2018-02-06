@@ -41,36 +41,25 @@ steps = [('Concatenate_Xy', concatenator),
               ]
 
 connections = {
-    'First': {'X': X,
-              'y': y},
+    'Concatenate_Xy': dict(df1='X',
+                           df2='y'),
 
-    'Concatenate_Xy': dict(
-        df1=('First', 'X'),
-        df2=('First', 'y')),
+    'Gaussian_Mixture': dict(X=('Concatenate_Xy', 'Xy')),
 
-    'Gaussian_Mixture': dict(
-        X=('Concatenate_Xy', 'Xy')),
-
-    'Dbscan': dict(
-        X=('Concatenate_Xy', 'Xy')),
+    'Dbscan': dict(X=('Concatenate_Xy', 'Xy')),
 
     'Combine_Clustering': dict(
-        dominant=('Dbscan', 'prediction'),
-        other=('Gaussian_Mixture', 'prediction')),
+        dominant=('Dbscan', 'predict'),
+        other=('Gaussian_Mixture', 'predict')),
 
-    'Paella': dict(
-        X=('First', 'X'),
-        y=('First', 'y'),
-        classification=('Combine_Clustering', 'classification')),
+    'Paella': dict(X='X', y='y', classification=('Combine_Clustering', 'classification')),
 
-    'Regressor': dict(
-        X=('First', 'X'),
-        y=('First', 'y'),
-        sample_weight=('Paella', 'prediction')
-    )
+    'Regressor': dict(X='X', y='y', sample_weight=('Paella', 'predict'))
 }
 
-graph = PipeGraph(steps=steps,
+pgraph = PipeGraph(steps=steps,
                        connections=connections,
                        use_for_fit='all',
                        use_for_predict=['Regressor'])
+
+pgraph._graph.nodes
