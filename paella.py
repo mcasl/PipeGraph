@@ -55,16 +55,20 @@ class Paella(BaseEstimator, TransformerMixin):
         self._location_estimator = np.median
         self._scale_estimator    = np.std
 
-
     def fit(self, X, y, classification):
       #  X, y  = check_X_y(X, y) Me da problemas con el nombre de la columna Classification que se pierde
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
+
         data = pd.concat([X, y], axis=1)
         classification = pd.DataFrame({'Classification': classification},  index=X.index, dtype=np.int16)
         self.appointment_    = pd.DataFrame(0, columns=range(self.max_it), index=X.index, dtype=np.int16) # 0 label appointed to outliers
         self.models_         = { iteration_number: dict() for iteration_number in range(self.max_it) }
         self.sample_weight_  = pd.Series(1, index=X.index)
         if self.noise_label is None:
-            self.noise_label = classification.min()-1
+            self.noise_label = classification['Classification'].min()-1
 
         for iteration_number in range(self.max_it):
             print(iteration_number, " ,")
@@ -136,7 +140,7 @@ class Paella(BaseEstimator, TransformerMixin):
 
     def _getResiduals(self, model, X, y, indexes):
         if len(indexes) > 0:
-            result = (model.predict() - y.loc[indexes, :]).stack()
+            result = (model.predict(X.loc[indexes, :]) - y.loc[indexes, :]).stack()
         else:
             result = np.array([])
         return result

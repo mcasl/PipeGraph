@@ -8,6 +8,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
+from sklearn.utils import Bunch
 from sklearn.utils.metaestimators import _BaseComposition
 
 from paella import Paella
@@ -20,59 +21,80 @@ logger = logging.getLogger(__name__)
 
 class PipeGraph(_BaseComposition):
     def __init__(self, steps, connections, use_for_fit='all', use_for_predict='all'):
+        self.steps = steps
         self.connections = connections
         self.data = dict()
-        self._graph = build_graph(steps,
-                                  connections,
-                                  use_for_fit=use_for_fit,
-                                  use_for_predict=use_for_predict)
 
+        node_names = [name for name, model in steps]
+        if '_External' in node_names:
+            raise ValueError("Please use another name for the _External node. _External name is used internally.")
 
+        if use_for_fit == 'all':
+            use_for_fit = node_names
+        elif use_for_fit is None:
+            use_for_fit = []
 
+        if use_for_predict == 'all':
+            use_for_predict = node_names
+        elif use_for_predict is None:
+            use_for_predict = []
+
+        self._use_for = {name: [] for name in node_names}
+        for name in node_names:
+            if name in use_for_fit:
+                self._use_for[name].append('fit')
+            if name in use_for_predict:
+                self._use_for[name].append('predict')
+
+        self._graph = build_graph(steps, connections)
+
+        self._step = {name: make_step(adaptee=step_model) for name, step_model in steps}
 
     def fit(self, **kwargs):
-        first_node_data = {('_First', key): item for key, item in kwargs.items()}
-        self._graph.update(first_node_data)
+        external_data = {('_External', key): item for key, item in kwargs.items()}
+        self.data.update(external_data)
         fit_nodes = self._filter_nodes(filter='fit')
+        for name in fit_nodes:
+            logger.debug('Fitting: %s', name)
+            self._fit(name)
 
-        for node in fit_nodes:
-            self._fit(node)
-
-    def _fit(self, node):
-        current_step = self._graph.node[node]['step']
-        current_name = current_step.name
-        logger.debug("Fitting: %s", current_name)
-        input_data = self._read_from_connections(current_name)
-        fit_dict = self._filter_data(input_data, input.get_fit_parameters_from_signature())
-        predict_dict = self._filter_data(input_data, current_step.get_predict_parameters_from_signature())
+    def _fit(self, step_name):
+        current_step = self._step[step_name]
+        logger.debug("under_Fitting: %s", step_name)
+        input_data = self._read_from_connections(step_name)
+        fit_dict = self._filter_data(input_data, current_step._get_fit_parameters_from_signature())
+        predict_dict = self._filter_data(input_data, current_step._get_predict_parameters_from_signature())
 
         current_step.fit(**fit_dict)
         results = current_step.predict(**predict_dict)
-        self._update_graph_data(current_name,  results)
-
-
-
-
+        self._update_graph_data(step_name,  results)
 
     def predict(self, **kwargs):
-        first_node_data = {('_First', item): key for key, item in kwargs.items()}
-        self._graph.update(first_node_data)
+        external_data = {('_External', key): item for key, item in kwargs.items()}
+        self.data.update(external_data)
         predict_nodes = self._filter_nodes(filter='predict')
-        for node in predict_nodes:
-            logger.debug("Predicting: %s", node.name)
-            node['step'].predict(**input_data)
+        for name in predict_nodes:
+            logger.debug("Predicting: %s", name)
+            self._predict(name)
+
+    def _predict(self, step_name):
+        current_step = self._step[step_name]
+        logger.debug("under_Predicting: %s", step_name)
+        input_data = self._read_from_connections(step_name)
+        predict_dict = self._filter_data(input_data, current_step._get_predict_parameters_from_signature())
+        results = current_step.predict(**predict_dict)
+        self._update_graph_data(step_name,  results)
 
     @property
-    def steps(self):
-        return [(name, self._graph.node[name]['step'])
-                for name in nx.topological_sort(self._graph)]
+    def named_steps(self):
+        return Bunch(**dict(self.steps))
 
     def _filter_nodes(self, filter):
-        return (self._graph.node[name] for name in nx.topological_sort(self._graph)
-                if filter in self._graph.node[name]['use_for'])
+        return (name for name in nx.topological_sort(self._graph)
+                if filter in self._use_for[name])
 
     def _read_from_connections(self, step_name):
-        connection_tuples = {key: ('_First', value) if isinstance(value, str) else value
+        connection_tuples = {key: ('_External', value) if isinstance(value, str) else value
                              for key, value in self.connections[step_name].items()}
 
         input_data = {inner_variable: self.data[node_and_outer_variable_tuple]
@@ -81,7 +103,7 @@ class PipeGraph(_BaseComposition):
         return input_data
 
     def _update_graph_data(self, node_name, data_dict):
-        self.pipegraph.data.update(
+        self.data.update(
             {(node_name, variable): value for variable, value in data_dict.items()}
         )
 
@@ -149,11 +171,11 @@ class StepStrategy(BaseEstimator):
     def predict(self, **kwargs):
         """ document """
 
-    def get_fit_parameters_from_signature(self):
+    def _get_fit_parameters_from_signature(self):
         return list(inspect.signature(self._adaptee.fit).parameters)
 
     @abstractmethod
-    def get_predict_parameters_from_signature(self):
+    def _get_predict_parameters_from_signature(self):
         """ For easier predict params passing"""
 
     # These two methods work by introspection, do not remove because the __getattr__ trick does not work with them
@@ -184,7 +206,7 @@ class FitTransformStrategy(StepStrategy):
         result = {'predict': self._adaptee.transform(**kwargs)}
         return result
 
-    def get_predict_parameters_from_signature(self):
+    def _get_predict_parameters_from_signature(self):
         return list(inspect.signature(self._adaptee.transform).parameters)
 
 
@@ -195,7 +217,7 @@ class FitPredictStrategy(StepStrategy):
             result['predict_proba'] = self._adaptee.predict_proba(**kwargs)
         return result
 
-    def get_predict_parameters_from_signature(self):
+    def _get_predict_parameters_from_signature(self):
         return list(inspect.signature(self._adaptee.predict).parameters)
 
 
@@ -208,8 +230,8 @@ class AtomicFitPredictStrategy(StepStrategy):
     def predict(self, **kwargs):
         return {'predict': self._adaptee.fit_predict(**kwargs)}
 
-    def get_predict_parameters_from_signature(self):
-        return self.get_fit_parameters_from_signature()
+    def _get_predict_parameters_from_signature(self):
+        return self._get_fit_parameters_from_signature()
 
 
 ################################
@@ -217,9 +239,11 @@ class AtomicFitPredictStrategy(StepStrategy):
 ################################
 
 class CustomConcatenation(BaseEstimator):
-    def fit(self, df1, df2): return self
+    def fit(self, df1, df2):
+        return self
 
-    def predict(self, df1, df2): return pd.concat([df1, df2], axis=1)
+    def predict(self, df1, df2):
+        return pd.concat([df1, df2], axis=1)
 
 
 class CustomCombination(BaseEstimator):
@@ -230,63 +254,24 @@ class CustomCombination(BaseEstimator):
         return np.where(dominant < 0, dominant, other)
 
 
-class CustomPaella(BaseEstimator):
-    def __init__(self, **kwargs):
-        self._adaptee = Paella(**kwargs)
-
-    def fit(self, X, y, classification):
-        self._adaptee.fit(X, y, classification)
-
-    def predict(self, X, y):
-        return self._adaptee.transform(X, y)
-
-    def get_params(self, deep=True):
-        return self._adaptee.get_params(deep)
-
-    def set_params(self, **params):
-        self._adaptee.set_params(**params)
-        return self
-
-
 ########################################
 
-def build_graph(steps, connections, use_for_fit='all', use_for_predict='all'):
+def build_graph(steps, connections):
     node_names = [name for name, model in steps]
-    if '_First' in node_names:
-        raise ValueError("Please use another name for the _First node. _First name is used internally.")
-
-    if use_for_fit == 'all':
-        use_for_fit = node_names
-    elif use_for_fit is None:
-        use_for_fit = []
-
-    if use_for_predict == 'all':
-        use_for_predict = node_names
-    elif use_for_predict is None:
-        use_for_predict = []
-
-    use_for = {name: [] for name in node_names}
-    for name in node_names:
-        if name in use_for_fit:
-            use_for[name].append('fit')
-        if name in use_for_predict:
-            use_for[name].append('predict')
+    if '_External' in node_names:
+        raise ValueError("Please use another name for the _External node. _External name is used internally.")
 
     graph = nx.DiGraph()
     graph.add_nodes_from(node_names)
     for name, step_model in steps:
         current_node = graph.node[name]
         current_node['name'] = name
-        current_node['step'] = make_step(adaptee=step_model)
-        current_node['use_for'] = use_for[name]
-
         ascendants_set = set( value[0]
                               for inner_variable, value in connections[name].items()
                               if isinstance(value, tuple))
-
         for ascendant in ascendants_set:
             graph.add_edge(ascendant, name)
-            logger.debug("Build graph %s", (ascendant, name))
+#            logger.debug("Build graph %s", (ascendant, name))
     return graph
 
 

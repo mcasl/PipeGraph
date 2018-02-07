@@ -44,22 +44,30 @@ connections = {
     'Concatenate_Xy': dict(df1='X',
                            df2='y'),
 
-    'Gaussian_Mixture': dict(X=('Concatenate_Xy', 'Xy')),
+    'Gaussian_Mixture': dict(X=('Concatenate_Xy', 'predict')),
 
-    'Dbscan': dict(X=('Concatenate_Xy', 'Xy')),
+    'Dbscan': dict(X=('Concatenate_Xy', 'predict')),
 
     'Combine_Clustering': dict(
         dominant=('Dbscan', 'predict'),
         other=('Gaussian_Mixture', 'predict')),
 
-    'Paella': dict(X='X', y='y', classification=('Combine_Clustering', 'classification')),
+    'Paella': dict(X='X', y='y', classification=('Combine_Clustering', 'predict')),
 
     'Regressor': dict(X='X', y='y', sample_weight=('Paella', 'predict'))
 }
+
 
 pgraph = PipeGraph(steps=steps,
                        connections=connections,
                        use_for_fit='all',
                        use_for_predict=['Regressor'])
 
-pgraph._graph.nodes
+pgraph.data = {('_External', 'X'): X,
+               ('_External', 'y'): y,
+               }
+pgraph._fit('Concatenate_Xy')
+pgraph._fit('Gaussian_Mixture')
+pgraph._fit('Dbscan')
+pgraph._fit('Combine_Clustering')
+pgraph._fit('Paella')
