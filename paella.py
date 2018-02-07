@@ -126,14 +126,11 @@ class Paella(BaseEstimator, TransformerMixin):
         self.knn.fit(data, self.appointment_)
         return self
 
-# TODO: run as an ensemble
-    def predict(self, X, y):
-        check_is_fitted(self, 'appointment_')
-
     def transform(self, X, y):
         check_is_fitted(self, 'appointment_')
         data = pd.concat([X,y], axis=1)
         appointment =  self.knn.predict(data)
+        #TODO: correct the following line to support max_it = 1 (error in dimensions)
         occurrences = (appointment == 0).sum(axis=1)
         sample_weight = 1 - occurrences/self.max_it
         return sample_weight
