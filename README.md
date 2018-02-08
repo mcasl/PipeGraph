@@ -1,7 +1,7 @@
 # PipeGraph - An extension to Scikit-Learn
 
 [![Travis Status](https://travis-ci.org/mcasl/PipeGraph.svg?branch=master)](https://travis-ci.org/mcasl/PipeGraph)
-[![Coveralls Status](https://coveralls.io/repos/scikit-learn-contrib/project-template/badge.svg?branch=master&service=github)](https://coveralls.io/r/scikit-learn-contrib/project-template)
+[![Coverage Status](https://coveralls.io/repos/github/mcasl/PipeGraph/badge.svg?branch=master)](https://coveralls.io/github/mcasl/PipeGraph?branch=master)
 [![CircleCI Status](https://circleci.com/gh/scikit-learn-contrib/project-template.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/scikit-learn-contrib/project-template/tree/master)
 
 **PipeGraph** is an exension to scikit-Learn
