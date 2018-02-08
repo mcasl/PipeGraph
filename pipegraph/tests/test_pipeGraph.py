@@ -711,24 +711,24 @@ class TestPipegraph(unittest.TestCase):
     def test_Pipegraph__node_names(self):
         pgraph = self.pgraph
         node_list = list(pgraph._graph.nodes)
-        self.assertEqual(node_list, ['Concatenate_Xy',
+        self.assertEqual(sorted(node_list), sorted(['Concatenate_Xy',
                                      'Gaussian_Mixture',
                                      'Dbscan',
                                      'Combine_Clustering',
                                      'Paella',
                                      'Regressor',
-                                     ])
+                                     ]))
 
     def test_Pipegraph__filter_nodes_fit(self):
         pgraph = self.pgraph
         fit_nodes = list(pgraph._filter_fit_nodes())
-        self.assertEqual(fit_nodes, ['Concatenate_Xy',
+        self.assertEqual(sorted(fit_nodes), sorted(['Concatenate_Xy',
                                      'Dbscan',
                                      'Gaussian_Mixture',
                                      'Combine_Clustering',
                                      'Paella',
                                      'Regressor',
-                                     ])
+                                     ]))
 
     def test_Pipegraph__filter_nodes_predict(self):
         pgraph = self.pgraph
