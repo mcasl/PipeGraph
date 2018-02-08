@@ -11,8 +11,6 @@ from sklearn.base import BaseEstimator
 from sklearn.utils import Bunch
 from sklearn.utils.metaestimators import _BaseComposition
 
-from paella import Paella
-
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 

@@ -3,10 +3,10 @@
 Plotting Template Classifier
 ============================
 
-An example plot of :class:`skltemplate.template.TemplateClassifier`
+An example plot of :class:`pipegraph.template.TemplateClassifier`
 """
 import numpy as np
-from skltemplate import TemplateClassifier
+from pipegraph import TemplateClassifier
 from matplotlib import pyplot as plt
 
 

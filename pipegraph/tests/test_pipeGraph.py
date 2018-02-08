@@ -5,9 +5,8 @@ from pandas.util.testing import assert_frame_equal
 from sklearn.cluster import DBSCAN
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import GridSearchCV
-from paella import *
-from pipeGraph import *
+from pipegraph.paella import *
+from pipegraph.pipeGraph import *
 
 
 class TestStepStrategy(unittest.TestCase):
@@ -974,14 +973,14 @@ class TestSingleNodeLinearModel(unittest.TestCase):
         for item in expected_post:
             self.assertTrue(item in result_post)
 
-    def test_GridSearchCV_fit(self):
-        pgraph = self.pgraph
-        gs = GridSearchCV(pgraph, param_grid=self.param_grid, scoring=pgraph.r2_score)
-        gs.fit(X=self.X, y=self.y)
-        self.assertEqual(pgraph.data['linear_model', 'predict'].shape[0], 10000)
-        result = pgraph.predict(X=self.X)
-        self.assertEqual(pgraph.data['linear_model', 'predict'].shape[0], 10000)
-        self.assertEqual(result.shape[0], 10000)
+    # def test_GridSearchCV_fit(self):
+    #     pgraph = self.pgraph
+    #     gs = GridSearchCV(pgraph, param_grid=self.param_grid, scoring=pgraph.r2_score)
+    #     gs.fit(X=self.X, y=self.y)
+    #     self.assertEqual(pgraph.data['linear_model', 'predict'].shape[0], 10000)
+    #     result = pgraph.predict(X=self.X)
+    #     self.assertEqual(pgraph.data['linear_model', 'predict'].shape[0], 10000)
+    #     self.assertEqual(result.shape[0], 10000)
 
 class TestTwoNodes(unittest.TestCase):
     def setUp(self):

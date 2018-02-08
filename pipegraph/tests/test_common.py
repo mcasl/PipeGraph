@@ -1,6 +1,6 @@
 from sklearn.utils.estimator_checks import check_estimator
-from skltemplate import (TemplateEstimator, TemplateClassifier,
-                         TemplateTransformer)
+from pipegraph import (TemplateEstimator, TemplateClassifier,
+                       TemplateTransformer)
 
 
 def test_estimator():

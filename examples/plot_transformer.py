@@ -3,10 +3,10 @@
 Plotting Template Transformer
 =============================
 
-An example plot of :class:`skltemplate.template.TemplateTransformer`
+An example plot of :class:`pipegraph.template.TemplateTransformer`
 """
 import numpy as np
-from skltemplate import TemplateTransformer
+from pipegraph import TemplateTransformer
 from matplotlib import pyplot as plt
 
 X = np.arange(50, dtype=np.float).reshape(-1, 1)
