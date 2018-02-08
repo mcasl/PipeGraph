@@ -5,7 +5,7 @@ machine:
     USERNAME: "mcasl"
 
     # The repository where the documentation will be hosted
-    DOC_REPO: "PipeGraph"
+    DOC_REPO: "mcasl.github.io"
 
     # The base URL for the Github page where the documentation will be hosted
     DOC_URL: ""
