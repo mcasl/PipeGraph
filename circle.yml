@@ -5,10 +5,10 @@ machine:
     USERNAME: "mcasl"
 
     # The repository where the documentation will be hosted
-    DOC_REPO: "mcasl.github.io"
+    DOC_REPO: "PipeGraph"
 
     # The base URL for the Github page where the documentation will be hosted
-    DOC_URL: ""
+    DOC_URL: "docs"
 
     # The email is to be used for commits in the Github Page
     EMAIL: "manuel.castejon@gmail.com"
