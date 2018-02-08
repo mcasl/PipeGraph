@@ -693,7 +693,7 @@ class TestPipegraph(unittest.TestCase):
         current_step = pgraph._step['Gaussian_Mixture']
         current_step.fit(X=X)
         result = current_step.predict(X=X)
-        self.assertEqual(list(result.keys()), ['predict', 'predict_proba'])
+        self.assertEqual(sorted(list(result.keys())), sorted(['predict', 'predict_proba']))
 
     def test_Pipegraph__regressor__dict_key(self):
         X = self.X
