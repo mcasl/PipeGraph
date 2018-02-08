@@ -66,7 +66,8 @@ class TestStepStrategy(unittest.TestCase):
         gm_strategy = FitPredictStrategy(gm)
         gm_strategy.fit(X=X)
         result_gm = gm_strategy.predict(X=X)
-        self.assertEqual(list(result_gm.keys()).sort(), ['predict', 'predict_proba'].sort())
+        self.assertEqual(sorted( list(result_gm.keys())),
+                         sorted(['predict', 'predict_proba']))
         self.assertEqual(result_gm['predict'].shape, (10000,))
 
     def test_stepstrategy__predict_FitTransform(self):
@@ -97,8 +98,8 @@ class TestStepStrategy(unittest.TestCase):
         result_lm = lm_strategy._get_fit_parameters_from_signature()
         result_gm = gm_strategy._get_fit_parameters_from_signature()
 
-        self.assertEqual(result_lm, ['X', 'y', 'sample_weight'])
-        self.assertEqual(result_gm, ['X', 'y'])
+        self.assertEqual(sorted(result_lm), sorted(['X', 'y', 'sample_weight']))
+        self.assertEqual(sorted(result_gm), sorted(['X', 'y']))
 
     def test_stepstrategy__get_predict_parameters_from_signature_FitPredict(self):
         lm = LinearRegression()
@@ -116,7 +117,7 @@ class TestStepStrategy(unittest.TestCase):
         db = DBSCAN()
         db_strategy = AtomicFitPredictStrategy(db)
         result_db = db_strategy._get_predict_parameters_from_signature()
-        self.assertEqual(result_db, ['X', 'y', 'sample_weight'])
+        self.assertEqual(sorted(result_db), sorted(['X', 'y', 'sample_weight']))
 
     def test_stepstrategy__get_params(self):
         lm = LinearRegression()
@@ -226,7 +227,7 @@ class TestStep(unittest.TestCase):
         result_gm = step_gm.predict(X=X)
 
         self.assertEqual(list(result_lm.keys()), ['predict'])
-        self.assertEqual(list(result_gm.keys()).sort(), ['predict', 'predict_proba'].sort())
+        self.assertEqual(sorted(list(result_gm.keys())), sorted(['predict', 'predict_proba']))
 
     def test_step__get_params(self):
         lm = LinearRegression()
@@ -346,7 +347,7 @@ class TestRootFunctions(unittest.TestCase):
                 dominant=('Dbscan', 'predict'),
                 other=('Gaussian_Mixture', 'predict')),
 
-            'Paella': dict(X='X', y='y', classification=('Combine_Clustering', 'classification')),
+            'Paella': dict(X='X', y='y', classification=('Combine_Clustering', 'predict')),
 
             'Regressor': dict(X='X', y='y', sample_weight=('Paella', 'predict'))
         }
@@ -377,13 +378,13 @@ class TestRootFunctions(unittest.TestCase):
         graph = build_graph(self.steps, self.connections)
 
         node_list = list(graph.nodes)
-        self.assertEqual(node_list, ['Concatenate_Xy',
+        self.assertEqual(sorted(node_list), sorted(['Concatenate_Xy',
                                      'Gaussian_Mixture',
                                      'Dbscan',
                                      'Combine_Clustering',
                                      'Paella',
                                      'Regressor',
-                                     ])
+                                     ]))
 
 
     def test_build_graph_node_edges(self):
@@ -391,14 +392,12 @@ class TestRootFunctions(unittest.TestCase):
 
         in_edges = {name: [origin for origin, destination in list(graph.in_edges(name))]
                     for name in graph}
-
-
-
+        logger.debug("in_edges: %s", in_edges)
         self.assertEqual(in_edges['Gaussian_Mixture'], ['Concatenate_Xy'])
         self.assertEqual(in_edges['Dbscan'], ['Concatenate_Xy'])
-        self.assertEqual(in_edges['Combine_Clustering'].sort(), ['Gaussian_Mixture', 'Dbscan'].sort())
-      #  self.assertEqual(in_edges['Paella'].sort(), ['Combine_Clustering'])
-      #  self.assertEqual(in_edges['Regressor'].sort(), ['Paella'])
+        self.assertEqual(sorted(in_edges['Combine_Clustering']), sorted(['Gaussian_Mixture', 'Dbscan']))
+        self.assertEqual(in_edges['Paella'], ['Combine_Clustering'])
+        self.assertEqual(in_edges['Regressor'], ['Paella'])
 
 
 class TestPipegraph(unittest.TestCase):
@@ -458,13 +457,13 @@ class TestPipegraph(unittest.TestCase):
                            use_for_predict='all')
 
         fit_nodes_list = list(pgraph._filter_fit_nodes())
-        self.assertEqual(fit_nodes_list.sort(), ['Concatenate_Xy',
+        self.assertEqual(sorted(fit_nodes_list), sorted(['Concatenate_Xy',
                                                  'Gaussian_Mixture',
                                                  'Dbscan',
                                                  'Combine_Clustering',
                                                  'Paella',
                                                  'Regressor',
-                                                 ].sort())
+                                                 ]))
 
     def test_Pipegraph__use_for_fit_some(self):
         pgraph = PipeGraph(self.steps,
@@ -476,10 +475,10 @@ class TestPipegraph(unittest.TestCase):
                           use_for_predict='all')
 
         fit_nodes_list = list(pgraph._filter_fit_nodes())
-        self.assertEqual(fit_nodes_list.sort(), ['Concatenate_Xy',
+        self.assertEqual(sorted(fit_nodes_list), sorted(['Concatenate_Xy',
                                                  'Gaussian_Mixture',
                                                  'Dbscan',
-                                                 ].sort())
+                                                 ]))
 
     def test_Pipegraph__use_for_fit_one(self):
         pgraph = PipeGraph(self.steps,
@@ -488,7 +487,7 @@ class TestPipegraph(unittest.TestCase):
                           use_for_predict='all')
 
         fit_nodes_list = list(pgraph._filter_fit_nodes())
-        self.assertEqual(fit_nodes_list.sort(), ['Concatenate_Xy'].sort())
+        self.assertEqual(sorted(fit_nodes_list), sorted(['Concatenate_Xy']))
 
     def test_Pipegraph__use_for_fit_Empty(self):
         self.assertRaises(ValueError, PipeGraph, self.steps, self.connections, use_for_fit=[], use_for_predict='all')
@@ -512,13 +511,13 @@ class TestPipegraph(unittest.TestCase):
                           use_for_predict='all')
 
         predict_nodes_list = list(pgraph._filter_predict_nodes())
-        self.assertEqual(predict_nodes_list.sort(), ['Concatenate_Xy',
+        self.assertEqual(sorted(predict_nodes_list), sorted(['Concatenate_Xy',
                                                      'Gaussian_Mixture',
                                                      'Dbscan',
                                                      'Combine_Clustering',
                                                      'Paella',
                                                      'Regressor',
-                                                     ].sort())
+                                                     ]))
 
     def test_Pipegraph__use_for_predict_some(self):
         pgraph = PipeGraph(self.steps,
@@ -530,10 +529,10 @@ class TestPipegraph(unittest.TestCase):
                                            ])
 
         predict_nodes_list = list(pgraph._filter_predict_nodes())
-        self.assertEqual(predict_nodes_list.sort(), ['Concatenate_Xy',
+        self.assertEqual(sorted(predict_nodes_list), sorted(['Concatenate_Xy',
                                                      'Gaussian_Mixture',
                                                      'Dbscan',
-                                                     ].sort())
+                                                     ]))
 
     def test_Pipegraph__use_for_predict_one(self):
         pgraph = PipeGraph(self.steps,
@@ -542,7 +541,7 @@ class TestPipegraph(unittest.TestCase):
                           use_for_fit='all')
 
         predict_nodes_list = list(pgraph._filter_predict_nodes())
-        self.assertEqual(predict_nodes_list.sort(), ['Concatenate_Xy'].sort())
+        self.assertEqual(sorted(predict_nodes_list), sorted(['Concatenate_Xy']))
 
     def test_Pipegraph__use_for_predict_Empty(self):
         self.assertRaises(ValueError, PipeGraph, self.steps, self.connections, use_for_fit='all', use_for_predict=[])
@@ -562,7 +561,7 @@ class TestPipegraph(unittest.TestCase):
         fit_variables = pgraph._step['Regressor']._get_fit_parameters_from_signature()
         result = pgraph._filter_data(input_data, fit_variables)
 
-        self.assertEqual(list(result.keys()).sort(), ['X', 'sample_weight', 'y'].sort())
+        self.assertEqual(sorted(list(result.keys())), sorted(['X', 'sample_weight', 'y']))
         assert_array_equal(result['X'], self.X)
         assert_array_equal(result['y'], self.y)
         self.assertTrue(result['sample_weight'] is None)
