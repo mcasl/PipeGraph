@@ -2,16 +2,14 @@
 
 [![Travis Status](https://travis-ci.org/mcasl/PipeGraph.svg?branch=master)](https://travis-ci.org/mcasl/PipeGraph)
 [![Coverage Status](https://coveralls.io/repos/github/mcasl/PipeGraph/badge.svg?branch=master)](https://coveralls.io/github/mcasl/PipeGraph?branch=master)
-[![CircleCI Status](https://circleci.com/gh/scikit-learn-contrib/project-template.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/scikit-learn-contrib/project-template/tree/master)
-
+[![CircleCI](https://circleci.com/gh/mcasl/PipeGraph/tree/master.svg?style=svg)](https://circleci.com/gh/mcasl/PipeGraph/tree/master)
 **PipeGraph** is an exension to scikit-Learn
 [scikit-learn](http://scikit-learn.org/) 
 providing a graph like class generalizing Pipeline
 
-It aids development of estimators that can be used in scikit-learn pipelines
-and (hyper)parameter search, while facilitating testing (including some API
-compliance), documentation, open source development, packaging, and continuous
-integration.
+It extends the concept of the Pipeline using a graph like structure.
+
+TO BE CONTINUED
 
 ## Important Links
 HTML Documentation - http://contrib.scikit-learn.org/project-template/
