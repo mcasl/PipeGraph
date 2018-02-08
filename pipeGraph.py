@@ -17,8 +17,6 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-#TODO: remove Paella's study case related classes
-
 class PipeGraph(_BaseComposition):
     def __init__(self, steps, connections, use_for_fit='all', use_for_predict='all'):
         self.steps = steps
@@ -27,7 +25,7 @@ class PipeGraph(_BaseComposition):
 
         node_names = [name for name, model in steps]
         if '_External' in node_names:
-            raise ValueError("Please use another name for the _External node. _External name is used internally.")
+            raise ValueError("Please use another name for the _External node. _External is used internally.")
 
         self.use_for_predict = node_names if use_for_predict == 'all' else use_for_predict
         if use_for_predict is None:
@@ -47,8 +45,6 @@ class PipeGraph(_BaseComposition):
 
     def get_params(self, deep=True):
         """
-        Copied from sklearn Pipeline
-        -----------------------------
         Get parameters for this estimator.
         Parameters
         ----------
