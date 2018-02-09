@@ -18,11 +18,11 @@ except ImportError:
     print('scipy is required during installation')
     sys.exit(1)
 
-setup(name='sklearn-template',
-      version='0.0.3',
-      description='A template for scikit-learn compatible packages',
-      author='Vighnesh Birodkar',
+setup(name='pipegraph',
+      version='0.0.1',
+      description='The PipeGraph module for extending the Pipelines in a graph like manner',
+      author='See License',
       packages=find_packages(),
       install_requires=INSTALL_REQUIRES,
-      author_email='vighneshbirodkar@nyu.edu',
+      author_email='manuel.castejon@gmail.com',
       )

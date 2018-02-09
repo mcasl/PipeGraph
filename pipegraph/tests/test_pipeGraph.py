@@ -1,12 +1,28 @@
 import unittest
 
+import logging
+import pandas as pd
 from numpy.testing import assert_array_equal
 from pandas.util.testing import assert_frame_equal
+from sklearn.linear_model import LinearRegression
 from sklearn.cluster import DBSCAN
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import MinMaxScaler
-from pipegraph.paella import *
-from pipegraph.pipeGraph import *
+from pipegraph.paella import Paella
+from pipegraph.pipeGraph import (PipeGraph,
+                                 Step,
+                                 FitPredictStrategy,
+                                 FitTransformStrategy,
+                                 AtomicFitPredictStrategy,
+                                 make_step,
+                                 build_graph,
+                                 CustomCombination,
+                                 CustomConcatenation)
+
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 
 
 class TestStepStrategy(unittest.TestCase):
