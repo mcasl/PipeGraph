@@ -19,38 +19,27 @@ logger = logging.getLogger(__name__)
 class PipeGraph(_BaseComposition):
     """
     """
-    def __init__(self, steps, connections, use_for_fit='all', use_for_predict='all'):
+    def __init__(self, steps, connections, alternative_connections=None):
         """
 
         Args:
             steps:
             connections:
-            use_for_fit:
-            use_for_predict:
+            alternative_connections:
         """
         self.steps = steps
         self.connections = connections
-        self.data = dict()
+        self.alternative_connections = alternative_connections if alternative_connections is not None else connections
 
         node_names = [name for name, model in steps]
         if '_External' in node_names:
             raise ValueError("Please use another name for the _External node. _External is used internally.")
 
-        self.use_for_predict = node_names if use_for_predict == 'all' else use_for_predict
-        if use_for_predict is None:
-            raise ValueError("use_for_predict cannot be None")
-        if not use_for_predict:
-            raise ValueError("use_for_predict cannot be an empty iterable")
-
-        self.use_for_fit = node_names if use_for_fit == 'all' else use_for_fit
-        if use_for_fit is None:
-            raise ValueError("use_for_fit cannot be None")
-        if not use_for_fit:
-            raise ValueError("use_for_fit cannot be an empty iterable")
-
-        self._graph = build_graph(steps, connections)
-
+        self._fit_graph = build_graph(self.connections)
+        self._predict_graph = build_graph(self.alternative_connections)
         self._step = {name: make_step(adaptee=step_model) for name, step_model in steps}
+        self._fit_data = {}
+        self._predict_data = {}
 
     #copied from sklearn
     def get_params(self, deep=True):
@@ -88,12 +77,12 @@ class PipeGraph(_BaseComposition):
                              "Try using keyword parameters from the third on.")
 
         external_data.update({('_External', key): item
-                               for key, item in kwargs.items()})
-        self.data.update(external_data)
+                              for key, item in kwargs.items()})
+        self._fit_data = external_data
         fit_nodes = self._filter_fit_nodes()
-        for name in fit_nodes:
-            logger.debug('Fitting: %s', name)
-            self._fit(name)
+        for step_name in fit_nodes:
+            logger.debug('Fitting: %s', step_name)
+            self._fit(step_name)
 
     def _fit(self, step_name):
         """
@@ -101,15 +90,18 @@ class PipeGraph(_BaseComposition):
         Args:
             step_name:
         """
-        current_step = self._step[step_name]
         logger.debug("under_Fitting: %s", step_name)
-        input_data = self._read_from_connections(step_name)
-        fit_dict = self._filter_data(input_data, current_step._get_fit_parameters_from_signature())
-        predict_dict = self._filter_data(input_data, current_step._get_predict_parameters_from_signature())
+        fit_inputs = self._read_fit_signature_variables_from_graph_data(graph_data=self._fit_data,
+                                                                        step_name=step_name)
+        self._step[step_name].fit(**fit_inputs)
 
-        current_step.fit(**fit_dict)
-        results = current_step.predict(**predict_dict)
-        self._update_graph_data(step_name,  results)
+        predict_inputs = self._read_predict_signature_variables_from_graph_data(graph_data=self._fit_data,
+                                                                                step_name=step_name)
+        results = self._step[step_name].predict(**predict_inputs)
+
+        self._write_step_outputs(graph_data=self._fit_data,
+                                 step_name=step_name,
+                                 output_data=results)
 
     def predict(self, *pargs, **kwargs):
         """
@@ -130,17 +122,19 @@ class PipeGraph(_BaseComposition):
                              ('_External', 'y'): pargs[1]
                             }
         else:
-            raise ValueError("The developer never thought that 3 positional parameters were possible."
+            raise ValueError("The developer never thought that 3 positional parameters were possible. "
                              "Try using keyword parameters from the third on.")
 
-        external_data = {('_External', key): item for key, item in kwargs.items()}
-        self.data.update(external_data)
+        external_data.update({('_External', key): item for key, item in kwargs.items()})
+        self._predict_data = external_data
         predict_nodes = self._filter_predict_nodes()
+
         for name in predict_nodes:
             logger.debug("Predicting: %s", name)
             self._predict(name)
+
         desired_output_step = self.steps[-1][0]
-        return self.data[desired_output_step, 'predict']  # add a dummy Last node to get predict_proba
+        return self._predict_data[desired_output_step, 'predict']  # add a dummy Last node to get predict_proba
 
     def _predict(self, step_name):
         """
@@ -148,12 +142,12 @@ class PipeGraph(_BaseComposition):
         Args:
             step_name:
         """
-        current_step = self._step[step_name]
+
         logger.debug("under_Predicting: %s", step_name)
-        input_data = self._read_from_connections(step_name)
-        predict_dict = self._filter_data(input_data, current_step._get_predict_parameters_from_signature())
-        results = current_step.predict(**predict_dict)
-        self._update_graph_data(step_name,  results)
+        predict_inputs = self._read_predict_signature_variables_from_graph_data(graph_data=self._predict_data,
+                                                                                step_name=step_name)
+        results = self._step[step_name].predict(**predict_inputs)
+        self._write_step_outputs(graph_data=self._predict_data, step_name=step_name, output_data=results)
 
     @property
     def named_steps(self):
@@ -170,8 +164,7 @@ class PipeGraph(_BaseComposition):
         Returns:
 
         """
-        return (name for name in nx.topological_sort(self._graph)
-                if name in self.use_for_fit)
+        return (name for name in nx.topological_sort(self._fit_graph))
 
     def _filter_predict_nodes(self):
         """
@@ -179,10 +172,9 @@ class PipeGraph(_BaseComposition):
         Returns:
 
         """
-        return (name for name in nx.topological_sort(self._graph)
-                if name in self.use_for_predict)
+        return (name for name in nx.topological_sort(self._predict_graph))
 
-    def _read_from_connections(self, step_name):
+    def _read_fit_signature_variables_from_graph_data(self, graph_data, step_name):
         """
 
         Args:
@@ -191,43 +183,53 @@ class PipeGraph(_BaseComposition):
         Returns:
 
         """
+        variable_list = self._step[step_name]._get_fit_signature()
+
         connection_tuples = {key: ('_External', value) if isinstance(value, str) else value
                              for key, value in self.connections[step_name].items()}
 
-        input_data = {inner_variable: self.data[node_and_outer_variable_tuple]
-                      for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()}
+        input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
+                      for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
+                      if inner_variable in variable_list}
 
         return input_data
 
-    def _update_graph_data(self, node_name, data_dict):
+    def _read_predict_signature_variables_from_graph_data(self, graph_data, step_name):
+        """
+
+        Args:
+            step_name:
+
+        Returns:
+
+        """
+        variable_list = self._step[step_name]._get_predict_signature()
+
+        connection_tuples = {key: ('_External', value) if isinstance(value, str) else value
+                             for key, value in self.connections[step_name].items()}
+
+        input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
+                      for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
+                      if inner_variable in variable_list}
+
+        return input_data
+
+    def _write_step_outputs(self, graph_data, step_name, output_data):
         """
 
         Args:
             node_name:
             data_dict:
         """
-        self.data.update(
-            {(node_name, variable): value for variable, value in data_dict.items()}
+        graph_data.update(
+            {(step_name, variable): value for variable, value in output_data.items()}
         )
-
-    def _filter_data(self, data_dict, variable_list):
-        """
-
-        Args:
-            data_dict:
-            variable_list:
-
-        Returns:
-
-        """
-        result = { k: data_dict.get(k,None) for k in variable_list}
-        return result
 
     def r2_score(self, X, y, sample_weight=None, **kwargs):
         """
 
         Args:
-            X:
+            input_data_dict:
             y:
             sample_weight:
             kwargs:
@@ -236,7 +238,8 @@ class PipeGraph(_BaseComposition):
 
         """
         from sklearn.metrics import r2_score
-        return r2_score(y, self.predict(X, **kwargs), sample_weight=sample_weight,
+        return r2_score(y, self.predict(X, **kwargs),
+                        sample_weight=sample_weight,
                         multioutput='variance_weighted')
 
 ################################
@@ -359,7 +362,7 @@ class StepStrategy(BaseEstimator):
     def predict(self, *pargs, **kwargs):
         """ document """
 
-    def _get_fit_parameters_from_signature(self):
+    def _get_fit_signature(self):
         """
 
         Returns:
@@ -368,7 +371,7 @@ class StepStrategy(BaseEstimator):
         return list(inspect.signature(self._adaptee.fit).parameters)
 
     @abstractmethod
-    def _get_predict_parameters_from_signature(self):
+    def _get_predict_signature(self):
         """ For easier predict params passing"""
 
     # These two methods work by introspection, do not remove because the __getattr__ trick does not work with them
@@ -451,7 +454,7 @@ class FitTransform(StepStrategy):
         result = {'predict': self._adaptee.transform(*pargs, **kwargs)}
         return result
 
-    def _get_predict_parameters_from_signature(self):
+    def _get_predict_signature(self):
         """
 
         Returns:
@@ -478,7 +481,7 @@ class FitPredict(StepStrategy):
             result['predict_proba'] = self._adaptee.predict_proba(**kwargs)
         return result
 
-    def _get_predict_parameters_from_signature(self):
+    def _get_predict_signature(self):
         """
 
         Returns:
@@ -516,13 +519,13 @@ class AtomicFitPredict(StepStrategy):
         """
         return {'predict': self._adaptee.fit_predict(**kwargs)}
 
-    def _get_predict_parameters_from_signature(self):
+    def _get_predict_signature(self):
         """
 
         Returns:
 
         """
-        return self._get_fit_parameters_from_signature()
+        return self._get_fit_signature()
 
 
 class CustomStrategyWithDictionaryOutputAdaptee(StepStrategy):
@@ -555,22 +558,22 @@ class CustomStrategyWithDictionaryOutputAdaptee(StepStrategy):
         return self._adaptee.predict(**kwargs)
 
 
-    def _get_fit_parameters_from_signature(self):
+    def _get_fit_signature(self):
         """
 
         Returns:
 
         """
-        return self._get_fit_parameters_from_signature()
+        return self._get_fit_signature()
 
 
-    def _get_predict_parameters_from_signature(self):
+    def _get_predict_signature(self):
         """
 
         Returns:
 
         """
-        return self._get_fit_parameters_from_signature()
+        return self._get_fit_signature()
 
 
 ################################
@@ -635,23 +638,21 @@ class CustomCombination(BaseEstimator):
 
 ########################################
 
-def build_graph(steps, connections):
+def build_graph(connections):
     """
 
     Args:
-        steps:
         connections:
 
     Returns:
 
     """
-    node_names = [name for name, model in steps]
-    if '_External' in node_names:
+    if '_External' in connections:
         raise ValueError("Please use another name for the _External node. _External name is used internally.")
 
     graph = nx.DiGraph()
-    graph.add_nodes_from(node_names)
-    for name, step_model in steps:
+    graph.add_nodes_from(connections)
+    for name in connections:
         current_node = graph.node[name]
         current_node['name'] = name
         ascendants_set = set( value[0]
