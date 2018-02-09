@@ -10,6 +10,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.utils import Bunch
 from sklearn.utils.metaestimators import _BaseComposition
+from sklearn.model_selection import train_test_split
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -83,7 +84,8 @@ class PipeGraph(_BaseComposition):
                              ('_External', 'y'): pargs[1]
                             }
         else:
-            raise ValueError("The developer never thought that 3 positional parameters were possible")
+            raise ValueError("The developer never thought that 3 positional parameters were possible."
+                             "Try using keyword parameters from the third on.")
 
         external_data.update({('_External', key): item
                                for key, item in kwargs.items()})
@@ -119,6 +121,18 @@ class PipeGraph(_BaseComposition):
         Returns:
 
         """
+        if len(pargs) == 0:
+            external_data = {}
+        elif len(pargs) == 1:
+            external_data = {('_External', 'X'): pargs[0]}
+        elif len(pargs) == 2:
+            external_data = {('_External', 'X'): pargs[0],
+                             ('_External', 'y'): pargs[1]
+                            }
+        else:
+            raise ValueError("The developer never thought that 3 positional parameters were possible."
+                             "Try using keyword parameters from the third on.")
+
         external_data = {('_External', key): item for key, item in kwargs.items()}
         self.data.update(external_data)
         predict_nodes = self._filter_predict_nodes()
@@ -420,7 +434,8 @@ class StepStrategy(BaseEstimator):
         """
         return self._adaptee.__repr__()
 
-class FitTransformStrategy(StepStrategy):
+
+class FitTransform(StepStrategy):
     """
     """
     def predict(self, *pargs, **kwargs):
@@ -445,7 +460,7 @@ class FitTransformStrategy(StepStrategy):
         return list(inspect.signature(self._adaptee.transform).parameters)
 
 
-class FitPredictStrategy(StepStrategy):
+class FitPredict(StepStrategy):
     """
     """
     def predict(self, *pargs, **kwargs):
@@ -472,7 +487,7 @@ class FitPredictStrategy(StepStrategy):
         return list(inspect.signature(self._adaptee.predict).parameters)
 
 
-class AtomicFitPredictStrategy(StepStrategy):
+class AtomicFitPredict(StepStrategy):
     """
     """
     def fit(self, *pargs, **kwargs):
@@ -500,6 +515,54 @@ class AtomicFitPredictStrategy(StepStrategy):
 
         """
         return {'predict': self._adaptee.fit_predict(**kwargs)}
+
+    def _get_predict_parameters_from_signature(self):
+        """
+
+        Returns:
+
+        """
+        return self._get_fit_parameters_from_signature()
+
+
+class CustomStrategyWithDictionaryOutputAdaptee(StepStrategy):
+    """
+    """
+    def fit(self, *pargs, **kwargs):
+        """
+
+        Args:
+            pargs:
+            kwargs:
+
+        Returns:
+
+        """
+        return self
+
+    # Relies on the pipegraph iteration loop to run predict after fit in order to propagate the signals
+
+    def predict(self, *pargs, **kwargs):
+        """
+
+        Args:
+            pargs:
+            kwargs:
+
+        Returns:
+
+        """
+        return self._adaptee.predict(**kwargs)
+
+
+    def _get_fit_parameters_from_signature(self):
+        """
+
+        Returns:
+
+        """
+        return self._get_fit_parameters_from_signature()
+
 
     def _get_predict_parameters_from_signature(self):
         """
@@ -600,7 +663,7 @@ def build_graph(steps, connections):
     return graph
 
 
-def make_step(adaptee):
+def make_step(adaptee, strategy_class=None):
     """
 
     Args:
@@ -609,16 +672,47 @@ def make_step(adaptee):
     Returns:
 
     """
-    if hasattr(adaptee, 'transform'):
-        strategy = FitTransformStrategy(adaptee)
+    if strategy_class is not None:
+        strategy = strategy_class(adaptee)
+    elif adaptee.__class__ in strategies_for_custom_adaptees:
+        strategy = strategies_for_custom_adaptees[adaptee.__class__](adaptee)
+    elif hasattr(adaptee, 'transform'):
+        strategy = FitTransform(adaptee)
     elif hasattr(adaptee, 'predict'):
-        strategy = FitPredictStrategy(adaptee)
+        strategy = FitPredict(adaptee)
     elif hasattr(adaptee, 'fit_predict'):
-        strategy = AtomicFitPredictStrategy(adaptee)
+        strategy = AtomicFitPredict(adaptee)
     else:
         raise ValueError('Error: adaptee of unknown behaviour')
 
     step = Step(strategy)
     return step
+
+
+class TrainTestSplit(BaseEstimator):
+    def __init__(self, test_size=0.25, train_size=None, random_state=None):
+        self.test_size  = test_size
+        self.train_size = train_size
+        self.random_state = random_state
+
+    def fit(self, *pargs, **kwargs):
+        return self
+
+    def predict(self, *pargs, **kwargs):
+        if len(pargs) > 0:
+            raise ValueError("The developers assume you will use keyword parameters on the TrainTestSplit class.")
+        array_names = list(kwargs.keys())
+        train_test_array_names = sum( [[item + "_train" , item + "_test"] for item in array_names ], [])
+
+        result = dict(zip(train_test_array_names,
+                          train_test_split(*kwargs.values())))
+        return result
+
+
+
+
+strategies_for_custom_adaptees={
+    TrainTestSplit: CustomStrategyWithDictionaryOutputAdaptee,
+}
 
 

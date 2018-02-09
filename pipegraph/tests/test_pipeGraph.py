@@ -10,14 +10,19 @@ from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import MinMaxScaler
 from pipegraph.paella import Paella
 from pipegraph.pipeGraph import (PipeGraph,
-                                 Step,
-                                 FitPredictStrategy,
-                                 FitTransformStrategy,
-                                 AtomicFitPredictStrategy,
-                                 make_step,
-                                 build_graph,
-                                 CustomCombination,
-                                 CustomConcatenation)
+                                Step,
+                                StepStrategy,
+                                FitPredict,
+                                FitTransform,
+                                AtomicFitPredict,
+                                CustomStrategyWithDictionaryOutputAdaptee,
+                                make_step,
+                                build_graph,
+                                CustomCombination,
+                                CustomConcatenation,
+                                TrainTestSplit,
+                                strategies_for_custom_adaptees,
+                                )
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -34,14 +39,14 @@ class TestStepStrategy(unittest.TestCase):
 
     def test_stepstrategy__init(self):
         lm = LinearRegression()
-        stepstrategy = FitPredictStrategy(lm)
+        stepstrategy = FitPredict(lm)
         self.assertEqual(stepstrategy._adaptee, lm)
 
     def test_stepstrategy__fit_FitPredict(self):
         X = self.X
         y = self.y
         lm = LinearRegression()
-        stepstrategy = FitPredictStrategy(lm)
+        stepstrategy = FitPredict(lm)
         self.assertEqual(hasattr(stepstrategy._adaptee, 'coef_'), False)
         result = stepstrategy.fit(X=X, y=y)
         self.assertEqual(hasattr(stepstrategy._adaptee, 'coef_'), True)
@@ -50,7 +55,7 @@ class TestStepStrategy(unittest.TestCase):
     def test_stepstrategy__fit_FitTransform(self):
         X = self.X
         sc = MinMaxScaler()
-        stepstrategy = FitTransformStrategy(sc)
+        stepstrategy = FitTransform(sc)
         self.assertEqual(hasattr(stepstrategy._adaptee, 'n_samples_seen_'), False)
         result = stepstrategy.fit(X=X)
         self.assertEqual(hasattr(stepstrategy._adaptee, 'n_samples_seen_'), True)
@@ -59,7 +64,7 @@ class TestStepStrategy(unittest.TestCase):
     def test_stepstrategy__fit_AtomicFitPredict(self):
         X = self.X
         db = DBSCAN()
-        stepstrategy = AtomicFitPredictStrategy(db)
+        stepstrategy = AtomicFitPredict(db)
         self.assertEqual(hasattr(stepstrategy._adaptee, 'core_sample_indices_'), False)
         result_fit = stepstrategy.fit(X=X)
         self.assertEqual(hasattr(stepstrategy._adaptee, 'core_sample_indices_'), False)
@@ -72,14 +77,14 @@ class TestStepStrategy(unittest.TestCase):
         X = self.X
         y = self.y
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         lm_strategy.fit(X=X, y=y)
         result_lm = lm_strategy.predict(X=X)
         self.assertEqual(list(result_lm.keys()), ['predict'])
         self.assertEqual(result_lm['predict'].shape, (10000, 1))
 
         gm = GaussianMixture()
-        gm_strategy = FitPredictStrategy(gm)
+        gm_strategy = FitPredict(gm)
         gm_strategy.fit(X=X)
         result_gm = gm_strategy.predict(X=X)
         self.assertEqual(sorted( list(result_gm.keys())),
@@ -89,7 +94,7 @@ class TestStepStrategy(unittest.TestCase):
     def test_stepstrategy__predict_FitTransform(self):
         X = self.X
         sc = MinMaxScaler()
-        sc_strategy = FitTransformStrategy(sc)
+        sc_strategy = FitTransform(sc)
         sc_strategy.fit(X=X)
         result_sc = sc_strategy.predict(X=X)
         self.assertEqual(list(result_sc.keys()), ['predict'])
@@ -99,7 +104,7 @@ class TestStepStrategy(unittest.TestCase):
         X = self.X
         y = self.y
         db = DBSCAN()
-        db_strategy = AtomicFitPredictStrategy(db)
+        db_strategy = AtomicFitPredict(db)
         db_strategy.fit(X=X, y=y)
         result_db = db_strategy.predict(X=X)
         self.assertEqual(list(result_db.keys()), ['predict'])
@@ -108,8 +113,8 @@ class TestStepStrategy(unittest.TestCase):
     def test_stepstrategy__get_fit_parameters_from_signature(self):
         lm = LinearRegression()
         gm = GaussianMixture()
-        lm_strategy = FitPredictStrategy(lm)
-        gm_strategy = FitPredictStrategy(gm)
+        lm_strategy = FitPredict(lm)
+        gm_strategy = FitPredict(gm)
 
         result_lm = lm_strategy._get_fit_parameters_from_signature()
         result_gm = gm_strategy._get_fit_parameters_from_signature()
@@ -119,25 +124,25 @@ class TestStepStrategy(unittest.TestCase):
 
     def test_stepstrategy__get_predict_parameters_from_signature_FitPredict(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         result_lm = lm_strategy._get_predict_parameters_from_signature()
         self.assertEqual(result_lm, ['X'])
 
     def test_stepstrategy__get_predict_parameters_from_signature_FitTransform(self):
         sc = MinMaxScaler()
-        sc_strategy = FitTransformStrategy(sc)
+        sc_strategy = FitTransform(sc)
         result_sc = sc_strategy._get_predict_parameters_from_signature()
         self.assertEqual(result_sc, ['X'])
 
     def test_stepstrategy__get_predict_parameters_from_signature_AtomicFitPredict(self):
         db = DBSCAN()
-        db_strategy = AtomicFitPredictStrategy(db)
+        db_strategy = AtomicFitPredict(db)
         result_db = db_strategy._get_predict_parameters_from_signature()
         self.assertEqual(sorted(result_db), sorted(['X', 'y', 'sample_weight']))
 
     def test_stepstrategy__get_params(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         result_lm = lm_strategy.get_params()
         self.assertEqual(result_lm, {'copy_X': True,
                                      'fit_intercept': True,
@@ -146,7 +151,7 @@ class TestStepStrategy(unittest.TestCase):
 
     def test_stepstrategy__set_params(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         result_lm_pre = lm_strategy.get_params()
         self.assertEqual(result_lm_pre, {'copy_X': True,
                                          'fit_intercept': True,
@@ -161,12 +166,12 @@ class TestStepStrategy(unittest.TestCase):
 
     def test_stepstrategy__getattr__(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         self.assertEqual(lm_strategy.copy_X, True)
 
     def test_stepstrategy__setattr__(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         self.assertEqual(lm_strategy.copy_X, True)
         lm_strategy.copy_X = False
         self.assertEqual(lm_strategy.copy_X, False)
@@ -174,7 +179,7 @@ class TestStepStrategy(unittest.TestCase):
 
     def test_stepstrategy__delattr__(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         self.assertEqual(lm_strategy.copy_X, True)
         self.assertEqual('copy_X' in dir(lm_strategy), False)
         self.assertEqual('copy_X' in dir(lm), True)
@@ -183,7 +188,7 @@ class TestStepStrategy(unittest.TestCase):
 
     def test_stepstrategy__repr__(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         result = lm_strategy.__repr__()
         self.assertEqual(result, lm.__repr__())
 
@@ -197,7 +202,7 @@ class TestStep(unittest.TestCase):
 
     def test_step__init(self):
         lm = LinearRegression()
-        stepstrategy = FitPredictStrategy(lm)
+        stepstrategy = FitPredict(lm)
         step = Step(stepstrategy)
         self.assertEqual(step._strategy, stepstrategy)
 
@@ -205,7 +210,7 @@ class TestStep(unittest.TestCase):
         X = self.X
         y = self.y
         lm = LinearRegression()
-        stepstrategy = FitPredictStrategy(lm)
+        stepstrategy = FitPredict(lm)
         step = Step(stepstrategy)
         self.assertEqual(hasattr(step, 'coef_'), False)
         result = step.fit(X=X, y=y)
@@ -216,7 +221,7 @@ class TestStep(unittest.TestCase):
         X = self.X
         y = self.y
         db = DBSCAN()
-        stepstrategy = AtomicFitPredictStrategy(db)
+        stepstrategy = AtomicFitPredict(db)
         step = Step(stepstrategy)
         self.assertEqual(hasattr(step, 'core_sample_indices_'), False)
         result_fit = step.fit(X=X)
@@ -231,8 +236,8 @@ class TestStep(unittest.TestCase):
         y = self.y
         lm = LinearRegression()
         gm = GaussianMixture()
-        lm_strategy = FitPredictStrategy(lm)
-        gm_strategy = FitPredictStrategy(gm)
+        lm_strategy = FitPredict(lm)
+        gm_strategy = FitPredict(gm)
         step_lm = Step(lm_strategy)
         step_gm = Step(gm_strategy)
 
@@ -247,7 +252,7 @@ class TestStep(unittest.TestCase):
 
     def test_step__get_params(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         step = Step(lm_strategy)
         result_lm = step.get_params()
         self.assertEqual(result_lm, {'copy_X': True,
@@ -257,7 +262,7 @@ class TestStep(unittest.TestCase):
 
     def test_step__set_params(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         step = Step(lm_strategy)
         result_lm_pre = step.get_params()
         self.assertEqual(result_lm_pre, {'copy_X': True,
@@ -274,8 +279,8 @@ class TestStep(unittest.TestCase):
     def test_step__get_fit_parameters_from_signature(self):
         lm = LinearRegression()
         gm = GaussianMixture()
-        lm_strategy = FitPredictStrategy(lm)
-        gm_strategy = FitPredictStrategy(gm)
+        lm_strategy = FitPredict(lm)
+        gm_strategy = FitPredict(gm)
         step_lm = Step(lm_strategy)
         step_gm = Step(gm_strategy)
         result_lm = step_lm._get_fit_parameters_from_signature()
@@ -286,20 +291,20 @@ class TestStep(unittest.TestCase):
 
     def test_step__get_predict_parameters_from_signature_lm(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         step_lm = Step(lm_strategy)
         result_lm = step_lm._get_predict_parameters_from_signature()
         self.assertEqual(result_lm, ['X'])
 
     def test_step__getattr__(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         step = Step(lm_strategy)
         self.assertEqual(step.copy_X, True)
 
     def test_step__setattr__(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         step = Step(lm_strategy)
         self.assertEqual(step.copy_X, True)
         step.copy_X = False
@@ -308,7 +313,7 @@ class TestStep(unittest.TestCase):
 
     def test_step__delattr__(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         step = Step(lm_strategy)
         self.assertEqual(step.copy_X, True)
         self.assertEqual('copy_X' in dir(step), False)
@@ -318,7 +323,7 @@ class TestStep(unittest.TestCase):
 
     def test_step__repr__(self):
         lm = LinearRegression()
-        lm_strategy = FitPredictStrategy(lm)
+        lm_strategy = FitPredict(lm)
         step = Step(lm_strategy)
         result = step.__repr__()
         self.assertEqual(result, lm.__repr__())
@@ -372,13 +377,13 @@ class TestRootFunctions(unittest.TestCase):
     def test_make_step(self):
         tests_table = [
             {'model': LinearRegression(),
-             'expected_class': FitPredictStrategy},
+             'expected_class': FitPredict},
 
             {'model': MinMaxScaler(),
-             'expected_class': FitTransformStrategy},
+             'expected_class': FitTransform},
 
             {'model': DBSCAN(),
-             'expected_class': AtomicFitPredictStrategy},
+             'expected_class': AtomicFitPredict},
         ]
 
         for test_dict in tests_table:
@@ -1031,6 +1036,24 @@ class TestTwoNodes(unittest.TestCase):
         result = pgraph.predict(X=self.X)
         self.assertEqual(pgraph.data['linear_model', 'predict'].shape[0], 11)
         self.assertEqual(result.shape[0], 11)
+
+
+class TestTrainTestSplit(unittest.TestCase):
+    def setUp(self):
+        self.X = [1, 2, 3, 4, 5, 6, 7, 8]
+        self.y = [101, 200, 300, 400, 500, 600, 700, 800]
+
+    def test_train_test_predict(self):
+        tts = TrainTestSplit()
+        step = make_step(tts)
+        result = step.predict(X=self.X, y=self.y)
+        self.assertEqual(len(result), 4)
+        self.assertEqual(sorted(list(result.keys())),
+                         sorted(['X_train', 'X_test', 'y_train', 'y_test']))
+        self.assertEqual(len(result['X_train']), 6)
+        self.assertEqual(len(result['X_test']),  2)
+        self.assertEqual(len(result['y_train']), 6)
+        self.assertEqual(len(result['y_test']), 2)
 
 
 
