@@ -7,13 +7,142 @@ from abc import abstractmethod
 import networkx as nx
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
 from sklearn.utils import Bunch
 from sklearn.utils.metaestimators import _BaseComposition
 from sklearn.model_selection import train_test_split
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+
+class PipeGraphRegressor(BaseEstimator, RegressorMixin):
+    def __init__(self, steps, connections, alternative_connections=None):
+        self.pipegraph = PipeGraph(steps, connections, alternative_connections)
+
+    def get_params(self, deep=True):
+        """Get parameters for this estimator.
+        Parameters
+        ----------
+        deep : boolean, optional
+            If True, will return the parameters for this estimator and
+            contained subobjects that are estimators.
+        Returns
+        -------
+        params : mapping of string to any
+            Parameter names mapped to their values.
+        """
+        return self.pipegraph.get_params(deep=deep)
+
+    def set_params(self, **kwargs):
+        """Set the parameters of this estimator.
+        Valid parameter keys can be listed with ``get_params()``.
+        Returns
+        -------
+        self
+        """
+        self.pipegraph.set_params(**kwargs)
+        return self
+
+    @property
+    def named_steps(self):
+        return pipegraph.named_steps
+
+    def fit(self, X, y=None, **fit_params):
+        self.pipegraph.fit(X, y=y, **fit_params)
+        return self
+
+    def predict(self, X):
+        return self.pipegraph.predict(X)['predict']
+
+    def fit_predict(self, X, y=None, **fit_params):
+        self.pipegraph.fit(X, y=y, **fit_params)
+        return self.pipegraph.predict(X)
+
+    def predict_proba(self, X):
+        return self.pipegraph.predict(X)['predict_proba']
+
+    def decision_function(self, X):
+        self.pipegraph.predict(X)
+        return self.pipegraph.steps[-1][-1].decision_function(X)
+
+    def predict_log_proba(self, X):
+        return self.pipegraph.predict(X)['predict_log_proba']
+
+    def score(self, X, y=None, sample_weight=None):
+        self.pipegraph.predict(X)
+        score_params = {}
+        if sample_weight is not None:
+            score_params['sample_weight'] = sample_weight
+        final_step_name = self.pipegraph.steps[-1][0]
+        Xt = self.pipegraph._predict_data[self.pipegraph.connections[final_step_name]['X']]
+        return self.pipegraph.steps[-1][-1].score(Xt, y, **score_params)
+
+
+
+class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
+    def __init__(self, steps, connections, alternative_connections=None):
+        self.pipegraph = PipeGraph(steps, connections, alternative_connections)
+
+    def get_params(self, deep=True):
+        """Get parameters for this estimator.
+        Parameters
+        ----------
+        deep : boolean, optional
+            If True, will return the parameters for this estimator and
+            contained subobjects that are estimators.
+        Returns
+        -------
+        params : mapping of string to any
+            Parameter names mapped to their values.
+        """
+        return self.pipegraph.get_params(deep=deep)
+
+    def set_params(self, **kwargs):
+        """Set the parameters of this estimator.
+        Valid parameter keys can be listed with ``get_params()``.
+        Returns
+        -------
+        self
+        """
+        self.pipegraph.set_params(**kwargs)
+        return self
+
+    @property
+    def named_steps(self):
+        return pipegraph.named_steps
+
+    def fit(self, X, y=None, **fit_params):
+        self.pipegraph.fit(X, y=y, **fit_params)
+        return self
+
+    def predict(self, X):
+        return self.pipegraph.predict(X)['predict']
+
+    def fit_predict(self, X, y=None, **fit_params):
+        self.pipegraph.fit(X, y=y, **fit_params)
+        return self.pipegraph.predict(X)
+
+    def predict_proba(self, X):
+        return self.pipegraph.predict(X)['predict_proba']
+
+    def decision_function(self, X):
+        self.pipegraph.predict(X)
+        return self.pipegraph.steps[-1][-1].decision_function(X)
+
+    def predict_log_proba(self, X):
+        return self.pipegraph.predict(X)['predict_log_proba']
+
+    def score(self, X, y=None, sample_weight=None):
+        self.pipegraph.predict(X)
+        score_params = {}
+        if sample_weight is not None:
+            score_params['sample_weight'] = sample_weight
+        final_step_name = self.pipegraph.steps[-1][0]
+        Xt = self.pipegraph._predict_data[self.pipegraph.connections[final_step_name]['X']]
+        return self.pipegraph.steps[-1][-1].score(Xt, y, **score_params)
+
+
 
 
 class PipeGraph(_BaseComposition):
@@ -134,7 +263,9 @@ class PipeGraph(_BaseComposition):
             self._predict(name)
 
         desired_output_step = self.steps[-1][0]
-        return self._predict_data[desired_output_step, 'predict']  # add a dummy Last node to get predict_proba
+        result_dict = {label: self._predict_data.get((desired_output_step, label), None)
+                       for label in {'predict', 'predict_proba', 'predict_log_proba'}}
+        return result_dict
 
     def _predict(self, step_name):
         """
@@ -225,22 +356,6 @@ class PipeGraph(_BaseComposition):
             {(step_name, variable): value for variable, value in output_data.items()}
         )
 
-    def r2_score(self, X, y, sample_weight=None, **kwargs):
-        """
-
-        Args:
-            input_data_dict:
-            y:
-            sample_weight:
-            kwargs:
-
-        Returns:
-
-        """
-        from sklearn.metrics import r2_score
-        return r2_score(y, self.predict(X, **kwargs),
-                        sample_weight=sample_weight,
-                        multioutput='variance_weighted')
 
 ################################
 #  STEP
@@ -479,6 +594,8 @@ class FitPredict(StepStrategy):
         result = {'predict': self._adaptee.predict(*pargs, **kwargs)}
         if hasattr(self._adaptee, 'predict_proba'):
             result['predict_proba'] = self._adaptee.predict_proba(**kwargs)
+        if hasattr(self._adaptee, 'predict_log_proba'):
+            result['predict_log_proba'] = self._adaptee.predict_log_proba(**kwargs)
         return result
 
     def _get_predict_signature(self):

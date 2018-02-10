@@ -2,15 +2,18 @@ import logging
 import unittest
 
 import pandas as pd
+from sklearn.naive_bayes import GaussianNB
 from numpy.testing import assert_array_equal
 from pandas.util.testing import assert_frame_equal
 from sklearn.cluster import DBSCAN
 from sklearn.linear_model import LinearRegression
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import MinMaxScaler
-
+from sklearn.model_selection import GridSearchCV
 from pipegraph.paella import Paella
-from pipegraph.pipeGraph import (PipeGraph,
+from pipegraph.pipeGraph import (PipeGraphRegressor,
+                                 PipeGraphClassifier,
+                                 PipeGraph,
                                  Step,
                                  FitPredict,
                                  FitTransform,
@@ -1113,6 +1116,70 @@ class TestTrainTestSplit(unittest.TestCase):
         self.assertEqual(len(result['X_test']), 2)
         self.assertEqual(len(result['y_train']), 6)
         self.assertEqual(len(result['y_test']), 2)
+
+
+class TestPipeGraphRegressor(unittest.TestCase):
+    def setUp(self):
+        URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
+        data = pd.read_csv(URL, usecols=['V1', 'V2'])
+        X = data[['V1']]
+        y = data[['V2']]
+        sc = MinMaxScaler()
+        lm = LinearRegression()
+        steps = [('scaler', sc),
+                 ('model', lm),
+                 ]
+        connections = {'scaler': {'X': 'X'},
+                       'model': {'X': ('scaler', 'predict'), 'y': 'y'}, }
+        model = PipeGraphRegressor(steps, connections)
+
+        self.sc =sc
+        self.lm = lm
+        self.X = X
+        self.y = y
+        self.model = model
+
+    def test_PipeGraphRegressor__GridSearchCV(self):
+        model = self.model
+        X = self.X
+        y = self.y
+        param_grid = [{'model__fit_intercept': [True, False]}, ]
+        gs = GridSearchCV(estimator=model, param_grid=param_grid)
+        gs.fit(X, y)
+        result = gs.best_estimator_.predict(X)
+        self.assertEqual(result.shape, X.shape)
+
+
+class TestPipeGraphClassifier(unittest.TestCase):
+    def setUp(self):
+        URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
+        data = pd.read_csv(URL, usecols=['V1', 'V2'])
+        X = data[['V1']]
+        y = (data[['V2']] > 0).astype(int)
+        sc = MinMaxScaler()
+        nb = GaussianNB()
+        steps = [('scaler', sc),
+                 ('model', nb),
+                 ]
+        connections = {'scaler': {'X': 'X'},
+                       'model': {'X': ('scaler', 'predict'), 'y': 'y'}, }
+        model = PipeGraphClassifier(steps, connections)
+
+        self.sc =sc
+        self.nb = nb
+        self.X = X
+        self.y = y
+        self.model = model
+
+    def test_PipeGraphRegressor__GridSearchCV(self):
+        model = self.model
+        X = self.X
+        y = self.y
+        param_grid = [{'scaler__feature_range': [(-0.5, 0.5), (0, 1), (-0.9, 0.9)]}, ]
+        gs = GridSearchCV(estimator=model, param_grid=param_grid)
+        gs.fit(X, y)
+        result = gs.best_estimator_.predict(X)
+        self.assertEqual(result.shape[0], X.shape[0])
 
 
 if __name__ == '__main__':
