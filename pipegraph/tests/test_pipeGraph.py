@@ -1015,7 +1015,7 @@ class TestSingleNodeLinearModel(unittest.TestCase):
         self.assertAlmostEqual(pgraph._step['linear_model'].coef_[0][0], 2)
 
         self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], 11)
-        result = pgraph.predict(X=self.X)
+        result = pgraph.predict(X=self.X)['predict']
         self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], 11)
         self.assertEqual(result.shape[0], 11)
 
@@ -1095,7 +1095,7 @@ class TestTwoNodes(unittest.TestCase):
         self.assertAlmostEqual(pgraph._step['linear_model'].coef_[0][0], 20)
 
         self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], 11)
-        result = pgraph.predict(X=self.X)
+        result = pgraph.predict(X=self.X)['predict']
         self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], 11)
         self.assertEqual(result.shape[0], 11)
 
