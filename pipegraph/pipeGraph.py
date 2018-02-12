@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
-import logging
 import inspect
-
+import logging
 from abc import abstractmethod
 
 import networkx as nx
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
+from sklearn.model_selection import train_test_split
 from sklearn.utils import Bunch
 from sklearn.utils.metaestimators import _BaseComposition
-from sklearn.model_selection import train_test_split
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -79,7 +78,6 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         return self.pipegraph.steps[-1][-1].score(Xt, y, **score_params)
 
 
-
 class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self, steps, connections, alternative_connections=None):
         self.pipegraph = PipeGraph(steps, connections, alternative_connections)
@@ -143,11 +141,10 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         return self.pipegraph.steps[-1][-1].score(Xt, y, **score_params)
 
 
-
-
 class PipeGraph(_BaseComposition):
     """
     """
+
     def __init__(self, steps, connections, alternative_connections=None):
         """
 
@@ -170,7 +167,7 @@ class PipeGraph(_BaseComposition):
         self._fit_data = {}
         self._predict_data = {}
 
-    #copied from sklearn
+    # copied from sklearn
     def get_params(self, deep=True):
         """
         Get parameters for this estimator.
@@ -200,7 +197,7 @@ class PipeGraph(_BaseComposition):
         elif len(pargs) == 2:
             external_data = {('_External', 'X'): pargs[0],
                              ('_External', 'y'): pargs[1]
-                            }
+                             }
         else:
             raise ValueError("The developer never thought that 3 positional parameters were possible."
                              "Try using keyword parameters from the third on.")
@@ -249,7 +246,7 @@ class PipeGraph(_BaseComposition):
         elif len(pargs) == 2:
             external_data = {('_External', 'X'): pargs[0],
                              ('_External', 'y'): pargs[1]
-                            }
+                             }
         else:
             raise ValueError("The developer never thought that 3 positional parameters were possible. "
                              "Try using keyword parameters from the third on.")
@@ -357,10 +354,6 @@ class PipeGraph(_BaseComposition):
         )
 
 
-################################
-#  STEP
-################################
-
 class Step(BaseEstimator):
     """
     """
@@ -445,13 +438,12 @@ class Step(BaseEstimator):
         """
         return self._strategy.__repr__()
 
-################################
-#  Strategies
-################################
+
 
 class StepStrategy(BaseEstimator):
     """
     """
+
     def __init__(self, adaptee):
         """
 
@@ -556,6 +548,7 @@ class StepStrategy(BaseEstimator):
 class FitTransform(StepStrategy):
     """
     """
+
     def predict(self, *pargs, **kwargs):
         """
 
@@ -581,6 +574,7 @@ class FitTransform(StepStrategy):
 class FitPredict(StepStrategy):
     """
     """
+
     def predict(self, *pargs, **kwargs):
         """
 
@@ -610,6 +604,7 @@ class FitPredict(StepStrategy):
 class AtomicFitPredict(StepStrategy):
     """
     """
+
     def fit(self, *pargs, **kwargs):
         """
 
@@ -648,6 +643,7 @@ class AtomicFitPredict(StepStrategy):
 class CustomStrategyWithDictionaryOutputAdaptee(StepStrategy):
     """
     """
+
     def fit(self, *pargs, **kwargs):
         """
 
@@ -658,9 +654,9 @@ class CustomStrategyWithDictionaryOutputAdaptee(StepStrategy):
         Returns:
 
         """
+        self._adaptee.fit(*pargs, **kwargs)
         return self
 
-    # Relies on the pipegraph iteration loop to run predict after fit in order to propagate the signals
 
     def predict(self, *pargs, **kwargs):
         """
@@ -672,17 +668,7 @@ class CustomStrategyWithDictionaryOutputAdaptee(StepStrategy):
         Returns:
 
         """
-        return self._adaptee.predict(**kwargs)
-
-
-    def _get_fit_signature(self):
-        """
-
-        Returns:
-
-        """
-        return self._get_fit_signature()
-
+        return self._adaptee.predict(*pargs, **kwargs)
 
     def _get_predict_signature(self):
         """
@@ -690,16 +676,13 @@ class CustomStrategyWithDictionaryOutputAdaptee(StepStrategy):
         Returns:
 
         """
-        return self._get_fit_signature()
+        return list(inspect.signature(self._adaptee.predict).parameters)
 
-
-################################
-#  Custom models
-################################
 
 class CustomConcatenation(BaseEstimator):
     """
     """
+
     def fit(self, df1, df2):
         """
 
@@ -728,6 +711,7 @@ class CustomConcatenation(BaseEstimator):
 class CustomCombination(BaseEstimator):
     """
     """
+
     def fit(self, dominant, other):
         """
 
@@ -753,8 +737,6 @@ class CustomCombination(BaseEstimator):
         return np.where(dominant < 0, dominant, other)
 
 
-########################################
-
 def build_graph(connections):
     """
 
@@ -772,12 +754,12 @@ def build_graph(connections):
     for name in connections:
         current_node = graph.node[name]
         current_node['name'] = name
-        ascendants_set = set( value[0]
-                              for inner_variable, value in connections[name].items()
-                              if isinstance(value, tuple))
+        ascendants_set = set(value[0]
+                             for inner_variable, value in connections[name].items()
+                             if isinstance(value, tuple))
         for ascendant in ascendants_set:
             graph.add_edge(ascendant, name)
-#            logger.debug("Build graph %s", (ascendant, name))
+    #            logger.debug("Build graph %s", (ascendant, name))
     return graph
 
 
@@ -809,7 +791,7 @@ def make_step(adaptee, strategy_class=None):
 
 class TrainTestSplit(BaseEstimator):
     def __init__(self, test_size=0.25, train_size=None, random_state=None):
-        self.test_size  = test_size
+        self.test_size = test_size
         self.train_size = train_size
         self.random_state = random_state
 
@@ -820,17 +802,54 @@ class TrainTestSplit(BaseEstimator):
         if len(pargs) > 0:
             raise ValueError("The developers assume you will use keyword parameters on the TrainTestSplit class.")
         array_names = list(kwargs.keys())
-        train_test_array_names = sum( [[item + "_train" , item + "_test"] for item in array_names ], [])
+        train_test_array_names = sum([[item + "_train", item + "_test"] for item in array_names], [])
 
         result = dict(zip(train_test_array_names,
                           train_test_split(*kwargs.values())))
         return result
 
 
+class ColumnSelector(BaseEstimator):
+    def __init__(self, mapping=None):
+        self.mapping = mapping
+
+    def fit(self):
+        return self
+
+    def predict(self, X):
+        if self.mapping is None:
+            return {'predict': X}
+        result = {name: X.iloc[:, column_slice]
+                  for name, column_slice in self.mapping.items()}
+        return result
 
 
-strategies_for_custom_adaptees={
+class CustomPower(BaseEstimator):
+    def __init__(self, power=1):
+        self.power=power
+
+    def fit(self):
+        return self
+
+    def predict(self, X):
+        return X.values.reshape(-1,) ** self.power
+
+
+class Reshape(BaseEstimator):
+    def __init__(self, dimension):
+        self.dimension=dimension
+
+    def fit(self):
+        return self
+
+    def predict(self, X):
+        if isinstance(X, pd.DataFrame) or isinstance(X, pd.Series):
+            X = X.values
+        return X.reshape(self.dimension)
+
+
+
+strategies_for_custom_adaptees = {
     TrainTestSplit: CustomStrategyWithDictionaryOutputAdaptee,
+    ColumnSelector: CustomStrategyWithDictionaryOutputAdaptee,
 }
-
-

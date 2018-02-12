@@ -1,6 +1,6 @@
 import logging
 import unittest
-
+import numpy as np
 import pandas as pd
 from sklearn.naive_bayes import GaussianNB
 from numpy.testing import assert_array_equal
@@ -23,6 +23,7 @@ from pipegraph.pipeGraph import (PipeGraphRegressor,
                                  CustomCombination,
                                  CustomConcatenation,
                                  TrainTestSplit,
+                                 ColumnSelector,
                                  )
 
 logging.basicConfig(level=logging.DEBUG)
@@ -31,10 +32,10 @@ logger = logging.getLogger(__name__)
 
 class TestStepStrategy(unittest.TestCase):
     def setUp(self):
-        URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
-        data = pd.read_csv(URL, usecols=['V1', 'V2'])
-        self.X = data[['V1']]
-        self.y = data[['V2']]
+        self.size = 100
+        self.X = np.random.rand(self.size, 1)
+        self.y = self.X + np.random.randn(self.size, 1)
+
 
     def test_stepstrategy__init(self):
         lm = LinearRegression()
@@ -70,7 +71,7 @@ class TestStepStrategy(unittest.TestCase):
         self.assertEqual(stepstrategy, result_fit)
         result_predict = stepstrategy.predict(X=X)['predict']
         self.assertEqual(hasattr(stepstrategy._adaptee, 'core_sample_indices_'), True)
-        self.assertEqual(result_predict.shape, (10000,))
+        self.assertEqual(result_predict.shape, (self.size,))
 
     def test_stepstrategy__predict_FitPredict(self):
         X = self.X
@@ -80,7 +81,7 @@ class TestStepStrategy(unittest.TestCase):
         lm_strategy.fit(X=X, y=y)
         result_lm = lm_strategy.predict(X=X)
         self.assertEqual(list(result_lm.keys()), ['predict'])
-        self.assertEqual(result_lm['predict'].shape, (10000, 1))
+        self.assertEqual(result_lm['predict'].shape, (self.size, 1))
 
         gm = GaussianMixture()
         gm_strategy = FitPredict(gm)
@@ -88,7 +89,7 @@ class TestStepStrategy(unittest.TestCase):
         result_gm = gm_strategy.predict(X=X)
         self.assertEqual(sorted(list(result_gm.keys())),
                          sorted(['predict', 'predict_proba']))
-        self.assertEqual(result_gm['predict'].shape, (10000,))
+        self.assertEqual(result_gm['predict'].shape, (self.size,))
 
     def test_stepstrategy__predict_FitTransform(self):
         X = self.X
@@ -97,7 +98,7 @@ class TestStepStrategy(unittest.TestCase):
         sc_strategy.fit(X=X)
         result_sc = sc_strategy.predict(X=X)
         self.assertEqual(list(result_sc.keys()), ['predict'])
-        self.assertEqual(result_sc['predict'].shape, (10000, 1))
+        self.assertEqual(result_sc['predict'].shape, (self.size, 1))
 
     def test_stepstrategy__predict_AtomicFitPredict(self):
         X = self.X
@@ -107,7 +108,7 @@ class TestStepStrategy(unittest.TestCase):
         db_strategy.fit(X=X, y=y)
         result_db = db_strategy.predict(X=X)
         self.assertEqual(list(result_db.keys()), ['predict'])
-        self.assertEqual(result_db['predict'].shape, (10000,))
+        self.assertEqual(result_db['predict'].shape, (self.size,))
 
     def test_stepstrategy__get_fit_signature(self):
         lm = LinearRegression()
@@ -194,10 +195,9 @@ class TestStepStrategy(unittest.TestCase):
 
 class TestStep(unittest.TestCase):
     def setUp(self):
-        URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
-        data = pd.read_csv(URL, usecols=['V1', 'V2'])
-        self.X = data[['V1']]
-        self.y = data[['V2']]
+        self.size = 100
+        self.X = np.random.rand(self.size, 1)
+        self.y = self.X + np.random.randn(self.size, 1)
 
     def test_step__init(self):
         lm = LinearRegression()
@@ -228,7 +228,7 @@ class TestStep(unittest.TestCase):
         self.assertEqual(step, result_fit)
         result_predict = step.predict(X=X)['predict']
         self.assertEqual(hasattr(step, 'core_sample_indices_'), True)
-        self.assertEqual(result_predict.shape, (10000,))
+        self.assertEqual(result_predict.shape, (self.size,))
 
     def test_step__predict(self):
         X = self.X
@@ -330,10 +330,9 @@ class TestStep(unittest.TestCase):
 
 class TestRootFunctions(unittest.TestCase):
     def setUp(self):
-        URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
-        data = pd.read_csv(URL, usecols=['V1', 'V2'])
-        self.X = X = data[['V1']]
-        self.y = y = data[['V2']]
+        self.size = 100
+        self.X = np.random.rand(self.size, 1)
+        self.y = self.X + np.random.randn(self.size, 1)
         concatenator = CustomConcatenation()
         gaussian_clustering = GaussianMixture(n_components=3)
         dbscan = DBSCAN(eps=0.5)
@@ -420,10 +419,9 @@ class TestRootFunctions(unittest.TestCase):
 
 class TestPipegraph(unittest.TestCase):
     def setUp(self):
-        URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
-        data = pd.read_csv(URL, usecols=['V1', 'V2'])
-        self.X = X = data[['V1']]
-        self.y = y = data[['V2']]
+        self.size = 1000
+        self.X = pd.DataFrame(dict(X=np.random.rand(self.size, )))
+        self.y = pd.DataFrame(dict(y=(np.random.rand(self.size, ))))
         concatenator = CustomConcatenation()
         gaussian_clustering = GaussianMixture(n_components=3)
         dbscan = DBSCAN(eps=0.5)
@@ -896,10 +894,9 @@ class TestPipegraph(unittest.TestCase):
 
 class TestPaella(unittest.TestCase):
     def setUp(self):
-        URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
-        data = pd.read_csv(URL, usecols=['V1', 'V2'])
-        self.X = data[['V1']]
-        self.y = data[['V2']]
+        self.size = 100
+        self.X = pd.DataFrame(dict(X=np.random.rand(self.size, )))
+        self.y = pd.DataFrame(dict(y=np.random.rand(self.size, )))
         concatenator = CustomConcatenation()
         gaussian_clustering = GaussianMixture(n_components=3)
         dbscan = DBSCAN(eps=0.5)
@@ -976,7 +973,7 @@ class TestPaella(unittest.TestCase):
         y = pgraph._fit_data[('_External', 'y')]
         paellador = pgraph._step['Paella']._strategy._adaptee
         result = paellador.transform(X=X, y=y)
-        self.assertEqual(result.shape[0], 10000)
+        self.assertEqual(result.shape[0], self.size)
 
     def test_Paella__get_params(self):
         pgraph = self.pgraph
@@ -995,8 +992,10 @@ class TestPaella(unittest.TestCase):
 
 class TestSingleNodeLinearModel(unittest.TestCase):
     def setUp(self):
-        self.X = X = pd.DataFrame(dict(X=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))
-        self.y = y = 2 * X
+        self.size = 100
+        self.X = np.random.rand(self.size, 1)
+        self.y = 2*self.X
+
         lm = LinearRegression()
         steps = [('linear_model', lm)]
         connections = {'linear_model': dict(X='X', y='y')}
@@ -1014,10 +1013,10 @@ class TestSingleNodeLinearModel(unittest.TestCase):
         self.assertTrue(hasattr(pgraph._step['linear_model'], 'coef_'))
         self.assertAlmostEqual(pgraph._step['linear_model'].coef_[0][0], 2)
 
-        self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], 11)
+        self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], self.size)
         result = pgraph.predict(X=self.X)['predict']
-        self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], 11)
-        self.assertEqual(result.shape[0], 11)
+        self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], self.size)
+        self.assertEqual(result.shape[0], self.size)
 
     def test_get_params(self):
         pgraph = self.pgraph
@@ -1060,17 +1059,18 @@ class TestSingleNodeLinearModel(unittest.TestCase):
     #     pgraph = self.pgraph
     #     gs = GridSearchCV(pgraph, param_grid=self.param_grid, scoring=pgraph.r2_score)
     #     gs.fit(X=self.X, y=self.y)
-    #     self.assertEqual(pgraph.data['linear_model', 'predict'].shape[0], 10000)
+    #     self.assertEqual(pgraph.data['linear_model', 'predict'].shape[0], self.size)
     #     result = pgraph.predict(X=self.X)
-    #     self.assertEqual(pgraph.data['linear_model', 'predict'].shape[0], 10000)
-    #     self.assertEqual(result.shape[0], 10000)
+    #     self.assertEqual(pgraph.data['linear_model', 'predict'].shape[0], self.size)
+    #     self.assertEqual(result.shape[0], self.size)
 
 
 class TestTwoNodes(unittest.TestCase):
     def setUp(self):
-        self.X = X = pd.DataFrame(dict(X=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))
-        self.y = y = 2 * X
-        sc = MinMaxScaler()
+        self.size = 1000
+        self.X = np.random.rand(self.size, 1)
+        self.y = self.X * 2
+        sc = MinMaxScaler(feature_range=(0, 1))
         lm = LinearRegression()
         steps = [('scaler', sc),
                  ('linear_model', lm)]
@@ -1092,12 +1092,12 @@ class TestTwoNodes(unittest.TestCase):
         self.assertFalse(hasattr(pgraph._step['linear_model'], 'coef_'))
         pgraph.fit(X=self.X, y=self.y)
         self.assertTrue(hasattr(pgraph._step['linear_model'], 'coef_'))
-        self.assertAlmostEqual(pgraph._step['linear_model'].coef_[0][0], 20)
+        self.assertTrue(1.9 < pgraph._step['linear_model'].coef_[0][0] < 2.1)
 
-        self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], 11)
+        self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], self.size)
         result = pgraph.predict(X=self.X)['predict']
-        self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], 11)
-        self.assertEqual(result.shape[0], 11)
+        self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], self.size)
+        self.assertEqual(result.shape[0], self.size)
 
 
 class TestTrainTestSplit(unittest.TestCase):
@@ -1118,16 +1118,54 @@ class TestTrainTestSplit(unittest.TestCase):
         self.assertEqual(len(result['y_test']), 2)
 
 
+class TestColumnSelector(unittest.TestCase):
+    def setUp(self):
+        self.X = pd.DataFrame.from_dict({'V1':[1, 2, 3, 4, 5, 6, 7, 8],
+                               'V2':[10, 20, 30, 40, 50, 60, 70, 80],
+                               'V3':[100, 200, 300, 400, 500, 600, 700, 800]})
+
+    def test_ColumnSelector__mapping_is_None(self):
+        X = self.X
+        selector = ColumnSelector()
+        self.assertTrue(selector.fit() is selector)
+        assert_frame_equal(selector.predict(X)['predict'], X)
+
+    def test_ColumnSelector__pick_one_column_first(self):
+        X = self.X
+        selector = ColumnSelector(mapping={'X': slice(0,1)})
+        self.assertTrue(selector.fit() is selector)
+        assert_frame_equal(selector.predict(X)['X'], X.loc[:, ["V1"]])
+
+
+    def test_ColumnSelector__pick_one_column_last(self):
+        X = self.X
+        selector = ColumnSelector(mapping={'y': slice(2, 3)})
+        self.assertTrue(selector.fit() is selector)
+        assert_frame_equal(selector.predict(X)['y'], X.loc[:, ["V3"]])
+
+    def test_ColumnSelector__pick_two_columns(self):
+        X = self.X
+        selector = ColumnSelector(mapping={'X': slice(0, 2)})
+        self.assertTrue(selector.fit() is selector)
+        assert_frame_equal(selector.predict(X)['X'], X.loc[:, ["V1", "V2"]])
+
+
+    def test_ColumnSelector__pick_three_columns(self):
+        X = self.X
+        selector = ColumnSelector(mapping={'X': slice(0, 3)})
+        self.assertTrue(selector.fit() is selector)
+        assert_frame_equal(selector.predict(X)['X'], X)
+
+
 class TestPipeGraphRegressor(unittest.TestCase):
     def setUp(self):
-        URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
-        data = pd.read_csv(URL, usecols=['V1', 'V2'])
-        X = data[['V1']]
-        y = data[['V2']]
+        self.size = 100
+        self.X = pd.DataFrame(dict(X=np.random.rand(self.size, )))
+        self.y = pd.DataFrame(dict(y=(np.random.rand(self.size, ))))
         sc = MinMaxScaler()
         lm = LinearRegression()
         steps = [('scaler', sc),
-                 ('model', lm),
+                 ('model',  lm),
                  ]
         connections = {'scaler': {'X': 'X'},
                        'model': {'X': ('scaler', 'predict'), 'y': 'y'}, }
@@ -1135,8 +1173,6 @@ class TestPipeGraphRegressor(unittest.TestCase):
 
         self.sc =sc
         self.lm = lm
-        self.X = X
-        self.y = y
         self.model = model
 
     def test_PipeGraphRegressor__GridSearchCV(self):
@@ -1152,10 +1188,9 @@ class TestPipeGraphRegressor(unittest.TestCase):
 
 class TestPipeGraphClassifier(unittest.TestCase):
     def setUp(self):
-        URL = "https://raw.githubusercontent.com/mcasl/PAELLA/master/data/sin_60_percent_noise.csv"
-        data = pd.read_csv(URL, usecols=['V1', 'V2'])
-        X = data[['V1']]
-        y = (data[['V2']] > 0).astype(int)
+        self.size = 100
+        self.X = pd.DataFrame(dict(X=np.random.rand(self.size, )))
+        self.y = pd.DataFrame(dict(y=(np.random.rand(self.size, ) > 0.5).astype(int)))
         sc = MinMaxScaler()
         nb = GaussianNB()
         steps = [('scaler', sc),
@@ -1167,8 +1202,6 @@ class TestPipeGraphClassifier(unittest.TestCase):
 
         self.sc =sc
         self.nb = nb
-        self.X = X
-        self.y = y
         self.model = model
 
     def test_PipeGraphRegressor__GridSearchCV(self):
