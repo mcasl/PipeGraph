@@ -21,7 +21,7 @@ from pipegraph.pipeGraph import (PipeGraphRegressor,
                                  make_step,
                                  build_graph,
                                  CustomCombination,
-                                 CustomConcatenation,
+                                 Concatenator,
                                  TrainTestSplit,
                                  ColumnSelector,
                                  )
@@ -333,7 +333,7 @@ class TestRootFunctions(unittest.TestCase):
         self.size = 100
         self.X = np.random.rand(self.size, 1)
         self.y = self.X + np.random.randn(self.size, 1)
-        concatenator = CustomConcatenation()
+        concatenator = Concatenator()
         gaussian_clustering = GaussianMixture(n_components=3)
         dbscan = DBSCAN(eps=0.5)
         mixer = CustomCombination()
@@ -422,7 +422,7 @@ class TestPipegraph(unittest.TestCase):
         self.size = 1000
         self.X = pd.DataFrame(dict(X=np.random.rand(self.size, )))
         self.y = pd.DataFrame(dict(y=(np.random.rand(self.size, ))))
-        concatenator = CustomConcatenation()
+        concatenator = Concatenator()
         gaussian_clustering = GaussianMixture(n_components=3)
         dbscan = DBSCAN(eps=0.5)
         mixer = CustomCombination()
@@ -616,7 +616,7 @@ class TestPipegraph(unittest.TestCase):
         pgraph = self.pgraph
         expected = pd.concat([X, y], axis=1)
         current_step = pgraph._step['Concatenate_Xy']
-        current_step.fit(df1=X, df2=y)
+        current_step.fit()
         result = current_step.predict(df1=X, df2=y)['predict']
         assert_frame_equal(expected, result)
 
@@ -664,7 +664,7 @@ class TestPipegraph(unittest.TestCase):
         y = self.y
         pgraph = self.pgraph
         current_step = pgraph._step['Concatenate_Xy']
-        current_step.fit(df1=X, df2=y)
+        current_step.fit()
         result = current_step.predict(df1=X, df2=y)
         self.assertEqual(list(result.keys()), ['predict'])
 
@@ -897,7 +897,7 @@ class TestPaella(unittest.TestCase):
         self.size = 100
         self.X = pd.DataFrame(dict(X=np.random.rand(self.size, )))
         self.y = pd.DataFrame(dict(y=np.random.rand(self.size, )))
-        concatenator = CustomConcatenation()
+        concatenator = Concatenator()
         gaussian_clustering = GaussianMixture(n_components=3)
         dbscan = DBSCAN(eps=0.5)
         mixer = CustomCombination()

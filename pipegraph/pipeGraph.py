@@ -316,9 +316,13 @@ class PipeGraph(_BaseComposition):
         connection_tuples = {key: ('_External', value) if isinstance(value, str) else value
                              for key, value in self.connections[step_name].items()}
 
-        input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
-                      for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
-                      if inner_variable in variable_list}
+        if variable_list == ['kwargs']:
+            input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
+                          for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()}
+        else:
+            input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
+                          for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
+                          if inner_variable in variable_list}
 
         return input_data
 
@@ -336,9 +340,13 @@ class PipeGraph(_BaseComposition):
         connection_tuples = {key: ('_External', value) if isinstance(value, str) else value
                              for key, value in self.connections[step_name].items()}
 
-        input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
-                      for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
-                      if inner_variable in variable_list}
+        if variable_list == ['kwargs']:
+            input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
+                          for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()}
+        else:
+            input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
+                          for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
+                          if inner_variable in variable_list}
 
         return input_data
 
@@ -437,7 +445,6 @@ class Step(BaseEstimator):
 
         """
         return self._strategy.__repr__()
-
 
 
 class StepStrategy(BaseEstimator):
@@ -657,7 +664,6 @@ class CustomStrategyWithDictionaryOutputAdaptee(StepStrategy):
         self._adaptee.fit(*pargs, **kwargs)
         return self
 
-
     def predict(self, *pargs, **kwargs):
         """
 
@@ -679,33 +685,21 @@ class CustomStrategyWithDictionaryOutputAdaptee(StepStrategy):
         return list(inspect.signature(self._adaptee.predict).parameters)
 
 
-class CustomConcatenation(BaseEstimator):
+class Concatenator(BaseEstimator):
     """
     """
 
-    def fit(self, df1, df2):
-        """
-
-        Args:
-            df1:
-            df2:
-
-        Returns:
-
-        """
+    def fit(self):
         return self
 
-    def predict(self, df1, df2):
-        """
-
-        Args:
-            df1:
-            df2:
-
-        Returns:
-
-        """
-        return pd.concat([df1, df2], axis=1)
+    def predict(self, **kwargs):
+        df_list = []
+        for item in kwargs.values():
+            if isinstance(item, pd.Series) or isinstance(item, pd.DataFrame):
+                df_list.append(item)
+            else:
+                df_list.append(pd.DataFrame(data=item))
+        return pd.concat(df_list, axis=1)
 
 
 class CustomCombination(BaseEstimator):
@@ -735,6 +729,65 @@ class CustomCombination(BaseEstimator):
 
         """
         return np.where(dominant < 0, dominant, other)
+
+
+class TrainTestSplit(BaseEstimator):
+    def __init__(self, test_size=0.25, train_size=None, random_state=None):
+        self.test_size = test_size
+        self.train_size = train_size
+        self.random_state = random_state
+
+    def fit(self, *pargs, **kwargs):
+        return self
+
+    def predict(self, *pargs, **kwargs):
+        if len(pargs) > 0:
+            raise ValueError("The developers assume you will use keyword parameters on the TrainTestSplit class.")
+        array_names = list(kwargs.keys())
+        train_test_array_names = sum([[item + "_train", item + "_test"] for item in array_names], [])
+
+        result = dict(zip(train_test_array_names,
+                          train_test_split(*kwargs.values())))
+        return result
+
+
+class ColumnSelector(BaseEstimator):
+    def __init__(self, mapping=None):
+        self.mapping = mapping
+
+    def fit(self):
+        return self
+
+    def predict(self, X):
+        if self.mapping is None:
+            return {'predict': X}
+        result = {name: X.iloc[:, column_slice]
+                  for name, column_slice in self.mapping.items()}
+        return result
+
+
+class CustomPower(BaseEstimator):
+    def __init__(self, power=1):
+        self.power = power
+
+    def fit(self):
+        return self
+
+    def predict(self, X):
+        return X.values.reshape(-1, ) ** self.power
+
+
+class Reshape(BaseEstimator):
+    def __init__(self, dimension):
+        self.dimension = dimension
+
+    def fit(self):
+        return self
+
+    def predict(self, X):
+        if isinstance(X, pd.DataFrame) or isinstance(X, pd.Series):
+            X = X.values
+        return X.reshape(self.dimension)
 
 
 def build_graph(connections):
@@ -787,66 +840,6 @@ def make_step(adaptee, strategy_class=None):
 
     step = Step(strategy)
     return step
-
-
-class TrainTestSplit(BaseEstimator):
-    def __init__(self, test_size=0.25, train_size=None, random_state=None):
-        self.test_size = test_size
-        self.train_size = train_size
-        self.random_state = random_state
-
-    def fit(self, *pargs, **kwargs):
-        return self
-
-    def predict(self, *pargs, **kwargs):
-        if len(pargs) > 0:
-            raise ValueError("The developers assume you will use keyword parameters on the TrainTestSplit class.")
-        array_names = list(kwargs.keys())
-        train_test_array_names = sum([[item + "_train", item + "_test"] for item in array_names], [])
-
-        result = dict(zip(train_test_array_names,
-                          train_test_split(*kwargs.values())))
-        return result
-
-
-class ColumnSelector(BaseEstimator):
-    def __init__(self, mapping=None):
-        self.mapping = mapping
-
-    def fit(self):
-        return self
-
-    def predict(self, X):
-        if self.mapping is None:
-            return {'predict': X}
-        result = {name: X.iloc[:, column_slice]
-                  for name, column_slice in self.mapping.items()}
-        return result
-
-
-class CustomPower(BaseEstimator):
-    def __init__(self, power=1):
-        self.power=power
-
-    def fit(self):
-        return self
-
-    def predict(self, X):
-        return X.values.reshape(-1,) ** self.power
-
-
-class Reshape(BaseEstimator):
-    def __init__(self, dimension):
-        self.dimension=dimension
-
-    def fit(self):
-        return self
-
-    def predict(self, X):
-        if isinstance(X, pd.DataFrame) or isinstance(X, pd.Series):
-            X = X.values
-        return X.reshape(self.dimension)
-
 
 
 strategies_for_custom_adaptees = {
