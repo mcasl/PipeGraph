@@ -3,12 +3,31 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to sklearn-template's documentation!
+Welcome to PipeGraph!
 ============================================
 
-This project is a reference implementation to anyone who wishes to develop
-scikit-learn compatible classes. It comes with a `template` module which
-contains a single estimator with unit tests.
+Introduction
+------------
+
+Scikit-Learn's Pipeline is a very useful tool to bind a sequence of transformers and a final estimator
+in a single unit capable of working itself as an estimator. This eases managing the fit and predict
+of the complete sequence of steps through a simple call to their fit and predict methods,
+and in combination with the GridSearchCV function allows to tune the hyperparameters of these steps
+while in the search for the best model.
+
+PipeGraph extends the concept of Pipeline by using a graph structure that can handle Scikit-Learn's
+objects in imaginative layouts. This allows the user to:
+
+- Express simple and complex sequences of steps, from linear workflows to elaborated graphs
+- To have access to all the data generated along the intermediate steps
+- To use GridSearchCV on those graphs
+
+Let's see a few examples to understand how we can express these situations through PipeGraph objects.
+
+
+
+
+
 
 
     .. toctree::
@@ -18,8 +37,6 @@ contains a single estimator with unit tests.
        auto_examples/index
        ...
 
-See the `README <https://github.com/vighneshbirodkar/project-template/blob/master/README.md>`_
-for more information.
 
 
 Indices and tables

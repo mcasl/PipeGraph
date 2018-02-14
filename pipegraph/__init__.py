@@ -1,6 +1,9 @@
-from .template import (TemplateEstimator, TemplateClassifier,
-                       TemplateTransformer)
-from . import template
+from .pipeGraph import (PipeGraphRegressor,
+                        PipeGraphClassifier,
+                        )
+from . import pipeGraph
 
-__all__ = ['TemplateEstimator', 'TemplateClassifier',
-           'TemplateTransformer', 'template']
+__all__ = ['PipeGraphClassifier',
+           'PipeGraphRegressor',
+           'pipeGraph',
+           ]
