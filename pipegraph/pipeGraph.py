@@ -48,6 +48,25 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         return self.pipegraph.named_steps
 
     def fit(self, X, y=None, **fit_params):
+        """Fit the model
+                Fit the PipeGraph steps one after the other and following the tolopogical order of the graph.
+                Parameters
+                ----------
+                X : iterable
+                    Training data. Must fulfill input requirements of first step of the
+                    pipeline.
+                y : iterable, default=None
+                    Training targets. Must fulfill label requirements for all steps of
+                    the pipeline.
+                **fit_params : dict of string -> object
+                    Parameters passed to the ``fit`` method of each step, where
+                    each parameter name is prefixed such that parameter ``p`` for step
+                    ``s`` has key ``s__p``.
+                Returns
+                -------
+                self : PipeGraphRegressor
+                    This estimator
+        """
         self.pipegraph.fit(X, y=y, **fit_params)
         return self
 
