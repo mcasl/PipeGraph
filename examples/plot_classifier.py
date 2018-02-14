@@ -3,7 +3,7 @@
 Plotting Template Classifier
 ============================
 
-An example plot of :class:`pipegraph.template.TemplateClassifier`
+An example plot of :class:`pipegraph.pipeGraph.TemplateClassifier`
 """
 import numpy as np
 from pipegraph import TemplateClassifier
