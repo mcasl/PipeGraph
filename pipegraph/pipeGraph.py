@@ -49,31 +49,73 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
 
     def fit(self, X, y=None, **fit_params):
         """Fit the model
-                Fit the PipeGraph steps one after the other and following the tolopogical order of the graph.
-                Parameters
-                ----------
-                X : iterable
-                    Training data. Must fulfill input requirements of first step of the
-                    pipeline.
-                y : iterable, default=None
-                    Training targets. Must fulfill label requirements for all steps of
-                    the pipeline.
-                **fit_params : dict of string -> object
-                    Parameters passed to the ``fit`` method of each step, where
-                    each parameter name is prefixed such that parameter ``p`` for step
-                    ``s`` has key ``s__p``.
-                Returns
-                -------
-                self : PipeGraphRegressor
-                    This estimator
+
+        Fit the PipeGraph steps one after the other and following the topological order of the graph.
+
+
+        Parameters
+        ----------
+        X : iterable
+            Training data. Must fulfill input requirements of first step of the
+            pipeline.
+
+        y : iterable, default=None
+            Training targets. Must fulfill label requirements for all steps of
+            the pipeline.
+
+        **fit_params : dict of string -> object
+            Parameters passed to the ``fit`` method of each step, where
+            each parameter name is prefixed such that parameter ``p`` for step
+            ``s`` has key ``s__p``.
+
+        Returns
+        -------
+        self : PipeGraphRegressor
+            This estimator
         """
         self.pipegraph.fit(X, y=y, **fit_params)
         return self
 
     def predict(self, X):
+        """Predict the PipeGraph steps one after the other and following the topological
+        order of the graph.
+
+        Parameters
+        ----------
+        X : iterable
+            Data to predict on. Must fulfill input requirements of first step
+            of the pipeline.
+
+        Returns
+        -------
+        y_pred : array-like
+        """
         return self.pipegraph.predict(X)['predict']
 
     def fit_predict(self, X, y=None, **fit_params):
+        """Applies fit_predict of last step in PipeGraph after it predicts the PipeGraph steps one after
+        the other and following the topological order of the graph.
+
+        Applies predict of a PipeGraph to the data following the topological order of the graph, followed by the
+        fit_predict method of the final step in the PipeGraph. Valid only if the final step implements fit_predict.
+
+        Parameters
+        ----------
+        X : iterable
+            Training data. Must fulfill input requirements of first step of
+            the pipeline.
+        y : iterable, default=None
+            Training targets. Must fulfill label requirements for all steps
+            of the pipeline.
+        **fit_params : dict of string -> object
+            Parameters passed to the ``fit`` method of each step, where
+            each parameter name is prefixed such that parameter ``p`` for step
+            ``s`` has key ``s__p``.
+
+        Returns
+        -------
+        y_pred : array-like
+        """
         self.pipegraph.fit(X, y=y, **fit_params)
         return self.pipegraph.predict(X)
 
@@ -130,13 +172,74 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         return pipegraph.named_steps
 
     def fit(self, X, y=None, **fit_params):
+        """Fit the model
+
+        Fit the PipeGraph steps one after the other and following the topological order of the graph.
+
+
+        Parameters
+        ----------
+        X : iterable
+            Training data. Must fulfill input requirements of first step of the
+            pipeline.
+
+        y : iterable, default=None
+            Training targets. Must fulfill label requirements for all steps of
+            the pipeline.
+
+        **fit_params : dict of string -> object
+            Parameters passed to the ``fit`` method of each step, where
+            each parameter name is prefixed such that parameter ``p`` for step
+            ``s`` has key ``s__p``.
+
+        Returns
+        -------
+        self : PipeGraphRegressor
+            This estimator
+        """
         self.pipegraph.fit(X, y=y, **fit_params)
         return self
 
     def predict(self, X):
+        """Predict the PipeGraph steps one after the other and following the topological
+        order of the graph.
+
+        Parameters
+        ----------
+        X : iterable
+            Data to predict on. Must fulfill input requirements of first step
+            of the pipeline.
+
+        Returns
+        -------
+        y_pred : array-like
+        """
         return self.pipegraph.predict(X)['predict']
 
     def fit_predict(self, X, y=None, **fit_params):
+        """Applies fit_predict of last step in PipeGraph after it predicts the PipeGraph steps one after
+        the other and following the topological order of the graph.
+
+        Applies predict of a PipeGraph to the data following the topological order of the graph, followed by the
+        fit_predict method of the final step in the PipeGraph. Valid only if the final step implements fit_predict.
+
+        Parameters
+        ----------
+        X : iterable
+            Training data. Must fulfill input requirements of first step of
+            the pipeline.
+        y : iterable, default=None
+            Training targets. Must fulfill label requirements for all steps
+            of the pipeline.
+        **fit_params : dict of string -> object
+            Parameters passed to the ``fit`` method of each step, where
+            each parameter name is prefixed such that parameter ``p`` for step
+            ``s`` has key ``s__p``.
+
+        Returns
+        -------
+        y_pred : array-like
+        """
         self.pipegraph.fit(X, y=y, **fit_params)
         return self.pipegraph.predict(X)
 
