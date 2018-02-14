@@ -45,7 +45,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
 
     @property
     def named_steps(self):
-        return pipegraph.named_steps
+        return self.pipegraph.named_steps
 
     def fit(self, X, y=None, **fit_params):
         self.pipegraph.fit(X, y=y, **fit_params)
@@ -311,12 +311,14 @@ class PipeGraph(_BaseComposition):
         Returns:
 
         """
+        connections = self.connections if graph_data is self._fit_data else self.alternative_connections
+
         variable_list = self._step[step_name]._get_fit_signature()
 
         connection_tuples = {key: ('_External', value) if isinstance(value, str) else value
-                             for key, value in self.connections[step_name].items()}
+                             for key, value in connections[step_name].items()}
 
-        if variable_list == ['kwargs']:
+        if 'kwargs' in variable_list:
             input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
                           for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()}
         else:
@@ -335,10 +337,12 @@ class PipeGraph(_BaseComposition):
         Returns:
 
         """
+        connections = self.connections if graph_data is self._fit_data else self.alternative_connections
+
         variable_list = self._step[step_name]._get_predict_signature()
 
         connection_tuples = {key: ('_External', value) if isinstance(value, str) else value
-                             for key, value in self.connections[step_name].items()}
+                             for key, value in connections[step_name].items()}
 
         if variable_list == ['kwargs']:
             input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
@@ -790,6 +794,35 @@ class Reshape(BaseEstimator):
         return X.reshape(self.dimension)
 
 
+class Demultiplexer(BaseEstimator):
+    def fit(self):
+        return self
+
+    def predict(self, **kwargs):
+        selection = kwargs.pop('selection')
+        result = dict()
+        for variable, value in kwargs.items():
+            for class_number in set(selection):
+                if value is None:
+                    result[variable + "_" + str(class_number)] = None
+                else:
+                    result[variable + "_" + str(class_number)] = pd.DataFrame(value).loc[selection == class_number, :]
+        return result
+
+
+class Multiplexer(BaseEstimator):
+    def fit(self):
+        return self
+
+    def predict(self, **kwargs):
+        selection = kwargs['selection']
+        array_list = [pd.DataFrame(data=kwargs[str(class_number)],
+                                   index=np.flatnonzero(selection == class_number))
+                      for class_number in set(selection)]
+        result = pd.concat(array_list, axis=0).sort_index()
+        return result
+
+
 def build_graph(connections):
     """
 
@@ -845,4 +878,6 @@ def make_step(adaptee, strategy_class=None):
 strategies_for_custom_adaptees = {
     TrainTestSplit: CustomStrategyWithDictionaryOutputAdaptee,
     ColumnSelector: CustomStrategyWithDictionaryOutputAdaptee,
+    Multiplexer: FitPredict,
+    Demultiplexer: CustomStrategyWithDictionaryOutputAdaptee,
 }
