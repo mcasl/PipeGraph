@@ -180,9 +180,9 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
          ----------
 
          X : iterable
-             Data to predict on. Must fulfill input requirements of first step of the pipeline.
+             Data to predict on. Must fulfill input requirements of first step of the pipeGrpaph.
          y : iterable, default=None
-            Targets used for scoring. Must fulfill label requirements for all steps of the pipeline.
+            Targets used for scoring. Must fulfill label requirements for all steps of the pipeGrpaph.
          sample_weight : array-like, default=None
             If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.
          Returns
@@ -199,6 +199,23 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
 
 
 class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
+    """PipeGraph of transforms with a final estimator.
+    Implements a complex graph...................MANONOLO LUCETE AQUI
+    Parameters
+    ----------
+    steps : list
+        List of (name, transform) tuples (implementing fit/transform) that are
+        chained, in the order in which they are chained, with the last object
+        an estimator.
+
+    connections: dictionary
+        Dictionary whose top level entries are the steps labels and  whose values are dictionaries themselves expressing,
+        for each node, the relationship between the output from a previous node and the input variables of the current node.
+        This is written as either:
+        -A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.
+        - A string representing a variable from  a source external to the PipeGraphClasifier object,
+        i.e. they represent the values passed to fit and predict methods.
+    """
     def __init__(self, steps, connections, alternative_connections=None):
         self.pipegraph = PipeGraph(steps, connections, alternative_connections)
 
@@ -346,9 +363,9 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
          ----------
 
          X : iterable
-             Data to predict on. Must fulfill input requirements of first step of the pipeline.
+             Data to predict on. Must fulfill input requirements of first step of the pipeGrpaph.
          y : iterable, default=None
-            Targets used for scoring. Must fulfill label requirements for all steps of the pipeline.
+            Targets used for scoring. Must fulfill label requirements for all steps of the pipeGrpaph.
          sample_weight : array-like, default=None
             If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.
          Returns
@@ -591,7 +608,7 @@ class PipeGraph(_BaseComposition):
 
 class Step(BaseEstimator):
     """
-    Wrapper of strategy. This strategy contain a Scikit-Learn model or othje pipeGraph BaseEstimator .
+    Wrapper of strategy. This strategy contain a Scikit-Learn model or pipeGraph CustomBlock.
     """
 
     def __init__(self, strategy):
@@ -603,7 +620,7 @@ class Step(BaseEstimator):
         self._strategy = strategy
 
     def get_params(self):
-        """Get parameters for this estimator.
+        """Get parameters for this estimator or pipeGraph CustomBlock.
         Parameters
         -------
         params : mapping of string to any
@@ -929,7 +946,7 @@ class Concatenator(BaseEstimator):
     Concatenate a set of data
     """
     def fit(self):
-        """Fit the model included in the step
+        """Fit the estimator or pipeGraph CustomBlock included in the step
         Returns
         -------
             self : returns an instance of _Concatenator.
@@ -941,11 +958,13 @@ class Concatenator(BaseEstimator):
 
         Parameters
         ----------
-        **kwargs : list of arrays with the same dimension
+        **kwargs :  sequence of indexables with same length / shape[0]
+            Allowed inputs are lists, numpy arrays, scipy-sparse
+            matrices or pandas dataframes.
             Data to concatenate.
         Returns
         -------
-        y_pred : list with the data input concatenated
+        Pandas series or Pandas DataFrame with the data input concatenated
         """
         df_list = []
         for item in kwargs.values():
@@ -958,6 +977,7 @@ class Concatenator(BaseEstimator):
 
 class CustomCombination(BaseEstimator):
     """
+    For PAELLA purposes
     """
 
     def fit(self, dominant, other):
@@ -994,7 +1014,6 @@ class TrainTestSplit(BaseEstimator):
         Read more in the :ref:`User Guide <cross_validation>`.
         Parameters
         ----------
-
         test_size : float, int, None, optional
             If float, should be between 0.0 and 1.0 and represent the proportion
             of the dataset to include in the test split. If int, represents the
@@ -1029,7 +1048,8 @@ class TrainTestSplit(BaseEstimator):
 
     def predict(self, *pargs, **kwargs):
         """Fit the model included in the step
-
+        Parameters
+        ----------
         **kwargs: sequence of indexables with same length / shape[0]
             Allowed inputs are lists, numpy arrays, scipy-sparse
             matrices or pandas dataframes.
@@ -1049,28 +1069,67 @@ class TrainTestSplit(BaseEstimator):
 
 
 class ColumnSelector(BaseEstimator):
+    """ Slice X data in columns
+    Parameters
+    ----------
+    mapping : list. Each element contains data-column and the new name asigned
+    """
     def __init__(self, mapping=None):
         self.mapping = mapping
 
     def fit(self):
+    """"
+    Returns
+    -------
+    self : returns an instance of _CustomPower.
+    """
         return self
 
     def predict(self, X):
+        """"
+        X: iterable
+                Data to slice.
+        Returns
+        -------
+        returns a list with data-column and the new name assigned for each column selected
+        """
+
         if self.mapping is None:
             return {'predict': X}
         result = {name: X.iloc[:, column_slice]
-                  for name, column_slice in self.mapping.items()}
+            for name, column_slice in self.mapping.items()}
         return result
 
 
 class CustomPower(BaseEstimator):
+    """ Raises X data to power defined such as range as parameter
+    Parameters
+    ----------
+    power : range of integers for the powering operation
+    """
+
     def __init__(self, power=1):
+        
         self.power = power
 
     def fit(self):
+        """"
+        Returns
+        -------
+            self : returns an instance of _CustomPower.
+        """
         return self
 
     def predict(self, X):
+        """"
+        Parameters
+        ----------
+        X: iterable
+            Data to power.
+        Returns
+        -------
+        result of raising power operation
+        """
         return X.values.reshape(-1, ) ** self.power
 
 
