@@ -4,12 +4,16 @@ First example: A simple linear workflow
 
 Let's start with a simple example that could be perfectly expressed using a Pipeline. The data is transformed using a MinMaxScaler step and the preprocessed data is fed to a linear model.
 
-.. image:: ../examples/images/imageExample.png
+Steps of the PipeGraph:
+
+- scaler: implements MinMaxScaler() class
+- linear_model: implements LinearRegression() class
+
+.. image:: https://github.com/mcasl/PipeGraph/blob/feature/Tutorials/examples/images/imageExample.png
 """
 
 ###############################################################################
-# .. image:: ../examples/images/imageExample.png
-
+# .. image:: https://github.com/mcasl/PipeGraph/blob/feature/Tutorials/examples/images/imageExample.png
 
 
 import numpy as np

@@ -3,6 +3,13 @@ Second example: GridSearchCV demonstration
 ---------------------------------------------
 
 This example shows how to use GridSearchCv with PipeGraph to effectively fit the best model across a number of hyperparameters.
+It is equivalent to use GridSearchCv with Pipeline.
+
+Steps of the PipeGraph:
+
+- scaler: implements MinMaxScaler() class
+- polynomial_features: implements PolynomialFeatures() class
+- linear_model: implements LinearRegression() class
 """
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -35,8 +42,13 @@ pgraph = PipeGraphRegressor(steps=steps, connections=connections)
 grid_search_regressor  = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
 grid_search_regressor.fit(X, y)
 y_pred = grid_search_regressor.predict(X)
+
 plt.scatter(X, y)
 plt.scatter(X, y_pred)
 plt.show()
-grid_search_regressor.best_estimator_.get_params()['linear_model'].coef_
-grid_search_regressor.best_estimator_.get_params()['polynomial_features'].degree
+
+
+coef = grid_search_regressor.best_estimator_.get_params()['linear_model'].coef_
+degree = grid_search_regressor.best_estimator_.get_params()['polynomial_features'].degree
+
+print('Information about the parameters of the best estimator: \n degree: {} \n coefficients: {} '.format(degree, coef))
