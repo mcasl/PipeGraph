@@ -591,7 +591,7 @@ class PipeGraph(_BaseComposition):
 
 class Step(BaseEstimator):
     """
-    Contain a scikit-learn estimator or pipeGrpah custom estimator
+    Wrapper of strategy. This strategy contain a Scikit-Learn model or othje pipeGraph BaseEstimator .
     """
 
     def __init__(self, strategy):
@@ -605,11 +605,6 @@ class Step(BaseEstimator):
     def get_params(self):
         """Get parameters for this estimator.
         Parameters
-        ----------
-        deep : boolean, optional
-            If True, will return the parameters for this estimator and
-            contained subobjects that are estimators.
-        Returns
         -------
         params : mapping of string to any
             Parameter names mapped to their values.
@@ -631,14 +626,18 @@ class Step(BaseEstimator):
         return self
 
     def fit(self, *pargs, **kwargs):
-        """
-
-        Args:
-            pargs:
-            kwargs:
-
-        Returns:
-
+        """Fit the model included in the step
+        ----------
+        *pargs : iterable
+            Training data. Must fulfill input requirements of first step of the
+            pipeline.
+        **kwargs : dict of string -> object
+            Parameters passed to the ``fit`` method of each step, where
+            each parameter name is prefixed such that parameter ``p`` for step
+            ``s`` has key ``s__p``.
+        Returns
+        -------
+            self : returns an instance of _strategy.
         """
         self._strategy.fit(*pargs, **kwargs)
         return self
@@ -816,6 +815,7 @@ class FitTransform(StepStrategy):
 
 class FitPredict(StepStrategy):
     """
+
     """
 
     def predict(self, *pargs, **kwargs):
@@ -846,6 +846,9 @@ class FitPredict(StepStrategy):
 
 class AtomicFitPredict(StepStrategy):
     """
+
+    Handler of estimator that implements only fit & predict
+
     """
 
     def fit(self, *pargs, **kwargs):
@@ -923,13 +926,27 @@ class CustomStrategyWithDictionaryOutputAdaptee(StepStrategy):
 
 class Concatenator(BaseEstimator):
     """
+    Concatenate a set of data
     """
-
     def fit(self):
+        """Fit the model included in the step
+        Returns
+        -------
+            self : returns an instance of _Concatenator.
+        """
         return self
 
     def predict(self, **kwargs):
+        """Check the input data type for correct concatenating.
 
+        Parameters
+        ----------
+        **kwargs : list of arrays with the same dimension
+            Data to concatenate.
+        Returns
+        -------
+        y_pred : list with the data input concatenated
+        """
         df_list = []
         for item in kwargs.values():
             if isinstance(item, pd.Series) or isinstance(item, pd.DataFrame):
@@ -969,15 +986,58 @@ class CustomCombination(BaseEstimator):
 
 
 class TrainTestSplit(BaseEstimator):
+    """Split arrays or matrices into random train and test subsets
+        Quick utility that wraps input validation and
+        ``next(ShuffleSplit().split(X, y))`` and application to input data
+        into a single call for splitting (and optionally subsampling) data in a
+        oneliner.
+        Read more in the :ref:`User Guide <cross_validation>`.
+        Parameters
+        ----------
+
+        test_size : float, int, None, optional
+            If float, should be between 0.0 and 1.0 and represent the proportion
+            of the dataset to include in the test split. If int, represents the
+            absolute number of test samples. If None, the value is set to the
+            complement of the train size. By default, the value is set to 0.25.
+            The default will change in version 0.21. It will remain 0.25 only
+            if ``train_size`` is unspecified, otherwise it will complement
+            the specified ``train_size``.
+        train_size : float, int, or None, default None
+            If float, should be between 0.0 and 1.0 and represent the
+            proportion of the dataset to include in the train split. If
+            int, represents the absolute number of train samples. If None,
+            the value is automatically set to the complement of the test size.
+        random_state : int, RandomState instance or None, optional (default=None)
+            If int, random_state is the seed used by the random number generator;
+            If RandomState instance, random_state is the random number generator;
+            If None, the random number generator is the RandomState instance used
+            by `np.random`.
+    """
     def __init__(self, test_size=0.25, train_size=None, random_state=None):
         self.test_size = test_size
         self.train_size = train_size
         self.random_state = random_state
 
     def fit(self, *pargs, **kwargs):
+        """Fit the model included in the step
+        Returns
+        -------
+            self : returns an instance of _TrainTestSplit.
+        """
         return self
 
     def predict(self, *pargs, **kwargs):
+        """Fit the model included in the step
+
+        **kwargs: sequence of indexables with same length / shape[0]
+            Allowed inputs are lists, numpy arrays, scipy-sparse
+            matrices or pandas dataframes.
+        Returns
+        -------
+        splitting : list, length=2 * len(arrays)
+            List containing train-test split of inputs.
+        """
         if len(pargs) > 0:
             raise ValueError("The developers assume you will use keyword parameters on the TrainTestSplit class.")
         array_names = list(kwargs.keys())
