@@ -16,6 +16,23 @@ logger = logging.getLogger(__name__)
 
 
 class PipeGraphRegressor(BaseEstimator, RegressorMixin):
+    """PipeGraph of transforms with a final estimator.
+    Implements a complex graph...................MANONOLO LUCETE AQUI
+    Parameters
+    ----------
+    steps : list
+        List of (name, transform) tuples (implementing fit/transform) that are
+        chained, in the order in which they are chained, with the last object
+        an estimator.
+
+    connections: dictionary
+        Dictionary whose top level entries are the steps labels and  whose values are dictionaries themselves expressing,
+        for each node, the relationship between the output from a previous node and the input variables of the current node.
+        This is written as either:
+        -A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.
+        - A string representing a variable from  a source external to the PipeGraphRegressor object,
+        i.e. they represent the values passed to fit and predict methods.
+    """
     def __init__(self, steps, connections, alternative_connections=None):
         self.pipegraph = PipeGraph(steps, connections, alternative_connections)
 
@@ -120,16 +137,58 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         return self.pipegraph.predict(X)
 
     def predict_proba(self, X):
+        """Apply transforms, and predict_proba of the final estimator
+        Parameters
+        ----------
+        X : iterable
+            Data to predict on. Must fulfill input requirements of first step of the pipeline.
+        Returns
+        -------
+        y_proba : array-like, shape = [n_samples, n_classes]
+        """
         return self.pipegraph.predict(X)['predict_proba']
 
     def decision_function(self, X):
+        """Apply transforms, and decision_function of the final estimator
+         Parameters
+         ----------
+         X : iterable
+            Data to predict on. Must fulfill input requirements of first step of the pipeline.
+        Returns
+        -------
+        y_score : array-like, shape = [n_samples, n_classes]
+        """
         self.pipegraph.predict(X)
         return self.pipegraph.steps[-1][-1].decision_function(X)
 
     def predict_log_proba(self, X):
+
+        """Apply transforms, and predict_log_proba of the final estimator
+        Parameters
+        ----------
+        X : iterable
+            Data to predict on. Must fulfill input requirements of first step of the pipeline.
+        Returns
+        -------
+        y_proba : array-like, shape = [n_samples, n_classes]
+        """
         return self.pipegraph.predict(X)['predict_log_proba']
 
     def score(self, X, y=None, sample_weight=None):
+        """Apply transforms, and score with the final estimator
+         Parameters
+         ----------
+
+         X : iterable
+             Data to predict on. Must fulfill input requirements of first step of the pipeline.
+         y : iterable, default=None
+            Targets used for scoring. Must fulfill label requirements for all steps of the pipeline.
+         sample_weight : array-like, default=None
+            If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.
+         Returns
+         -------
+         y_proba : array-like, shape = [n_samples, n_classes]
+         """
         self.pipegraph.predict(X)
         score_params = {}
         if sample_weight is not None:
@@ -244,16 +303,58 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         return self.pipegraph.predict(X)
 
     def predict_proba(self, X):
+
+        """Apply transforms, and predict_proba of the final estimator
+        Parameters
+        ----------
+        X : iterable
+            Data to predict on. Must fulfill input requirements of first step of the pipeline.
+        Returns
+        -------
+        y_proba : array-like, shape = [n_samples, n_classes]
+        """
         return self.pipegraph.predict(X)['predict_proba']
 
     def decision_function(self, X):
+        """Apply transforms, and decision_function of the final estimator
+         Parameters
+         ----------
+         X : iterable
+            Data to predict on. Must fulfill input requirements of first step of the pipeline.
+        Returns
+        -------
+        y_score : array-like, shape = [n_samples, n_classes]
+        """
         self.pipegraph.predict(X)
         return self.pipegraph.steps[-1][-1].decision_function(X)
 
     def predict_log_proba(self, X):
+        """Apply transforms, and predict_log_proba of the final estimator
+        Parameters
+        ----------
+        X : iterable
+            Data to predict on. Must fulfill input requirements of first step of the pipeline.
+        Returns
+        -------
+        y_proba : array-like, shape = [n_samples, n_classes]
+        """
         return self.pipegraph.predict(X)['predict_log_proba']
 
     def score(self, X, y=None, sample_weight=None):
+        """Apply transforms, and score with the final estimator
+         Parameters
+         ----------
+
+         X : iterable
+             Data to predict on. Must fulfill input requirements of first step of the pipeline.
+         y : iterable, default=None
+            Targets used for scoring. Must fulfill label requirements for all steps of the pipeline.
+         sample_weight : array-like, default=None
+            If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.
+         Returns
+         -------
+         y_proba : array-like, shape = [n_samples, n_classes]
+         """
         self.pipegraph.predict(X)
         score_params = {}
         if sample_weight is not None:
@@ -490,6 +591,7 @@ class PipeGraph(_BaseComposition):
 
 class Step(BaseEstimator):
     """
+    Contain a scikit-learn estimator or pipeGrpah custom estimator
     """
 
     def __init__(self, strategy):
@@ -501,21 +603,29 @@ class Step(BaseEstimator):
         self._strategy = strategy
 
     def get_params(self):
-        """
-
-        Returns:
-
+        """Get parameters for this estimator.
+        Parameters
+        ----------
+        deep : boolean, optional
+            If True, will return the parameters for this estimator and
+            contained subobjects that are estimators.
+        Returns
+        -------
+        params : mapping of string to any
+            Parameter names mapped to their values.
         """
         return self._strategy.get_params()
 
     def set_params(self, **params):
-        """
-
-        Args:
-            params:
-
-        Returns:
-
+        """"
+        Set the parameters of this estimator.
+        The method works on simple estimators as well as on nested objects
+        such as pipeGraph). The latter have parameters of the form
+        ``<component>__<parameter>`` so that it's possible to update each
+        component of a nested object.
+        Returns
+        -------
+        self
         """
         self._strategy.set_params(**params)
         return self
@@ -819,6 +929,7 @@ class Concatenator(BaseEstimator):
         return self
 
     def predict(self, **kwargs):
+
         df_list = []
         for item in kwargs.values():
             if isinstance(item, pd.Series) or isinstance(item, pd.DataFrame):
@@ -937,6 +1048,7 @@ class Multiplexer(BaseEstimator):
         return self
 
     def predict(self, **kwargs):
+        #list of arrays with the samen dimension
         selection = kwargs['selection']
         array_list = [pd.DataFrame(data=kwargs[str(class_number)],
                                    index=np.flatnonzero(selection == class_number))
