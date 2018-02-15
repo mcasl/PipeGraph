@@ -56,7 +56,7 @@ connections = {'scaler': { 'X': 'X'},
 
 ###############################################################################
 # Here we show how to construct the PipeGraphRegressor with the steps and connections previously defined and how to fit
-# and predict data.
+# and predict data. Use PipeGraphRegressor when the result is a regression
 
 pgraph = PipeGraphRegressor(steps=steps, connections=connections)
 pgraph.fit(X, y)

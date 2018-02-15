@@ -60,6 +60,9 @@ param_grid = {'polynomial_features__degree': range(1, 3),
               'linear_model__fit_intercept': [True, False],
               'custom_power__power': [1, 5, 10, 20, 30]}
 
+###############################################################################
+# Use PipeGraphRegressor when the result is a regression
+
 pgraph = PipeGraphRegressor(steps=steps, connections=connections)
 grid_search_regressor = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
 grid_search_regressor.fit(X, y)

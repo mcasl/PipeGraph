@@ -2,7 +2,16 @@
 Fourth Example: Combination of classifiers
 -------------------------------------------------
 
-A set of classifiers is combined as input to a neural network. Additionally, the scaled inputs are injected as well to the neural network.
+A set of classifiers is combined as input to a neural network. Additionally, the scaled inputs are injected as well to
+the neural network. The data is firstly transformed by scaling its features.
+
+Steps of the PipeGraph:
+
+- scaler: implements MinMaxScaler() class
+- gaussian_nb: implements GaussianNB() class
+- svc: implements SVC() class
+- concat: implements Concatenator() class. It appends the outputs of the GaussianNB and SVC classifiers and the scaled inputs.
+- mlp: implements MLPClassifier() class
 """
 import numpy as np
 import pandas as pd
@@ -49,10 +58,14 @@ param_grid = {'svc__C': [0.1, 0.5, 1.0],
               'mlp__hidden_layer_sizes': [(3,), (6,), (9,),],
               'mlp__max_iter': [5000, 10000]}
 
+###############################################################################
+# Use PipeGraphClassifier when the result is a classification
+
 pgraph = PipeGraphClassifier(steps=steps, connections=connections)
 grid_search_classifier  = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
 grid_search_classifier.fit(X, y)
 y_pred = grid_search_classifier.predict(X)
+
 grid_search_classifier.best_estimator_.get_params()
 
 

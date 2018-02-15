@@ -4,6 +4,15 @@ Fifth Example: Demultiplexor - multiplexor
 
 An imaginative layout using a classifier to predict the cluster labels and fitting a separate model for each cluster.
 
+Steps of the PipeGraph:
+
+- scaler: implements MinMaxScaler() class
+- classifier: implements GaussianMixture() class
+- demux: implements Demultiplexer() class
+- lm_0: implements LinearRegression() class
+- lm_1: implements LinearRegression() class
+- lm_2: implements LinearRegression() class
+- mux: implements Multiplexer() class
 """
 import numpy as np
 import pandas as pd
@@ -62,6 +71,9 @@ connections = { 'scaler': {'X': 'X'},
                         '1': ('lm_1', 'predict'),
                         '2': ('lm_2', 'predict'),
                         'selection': ('classifier', 'predict')}}
+
+###############################################################################
+# Use PipeGraph when predict needs (X,y)
 
 pgraph = PipeGraph(steps=steps, connections=connections)
 pgraph.fit(X, y)
