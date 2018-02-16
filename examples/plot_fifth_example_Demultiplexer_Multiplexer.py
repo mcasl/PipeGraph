@@ -13,6 +13,8 @@ Steps of the PipeGraph:
 - lm_1: implements LinearRegression() class
 - lm_2: implements LinearRegression() class
 - mux: implements Multiplexer() class
+
+.. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva5.png
 """
 import numpy as np
 import pandas as pd

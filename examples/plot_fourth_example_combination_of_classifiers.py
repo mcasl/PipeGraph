@@ -12,6 +12,8 @@ Steps of the PipeGraph:
 - svc: implements SVC() class
 - concat: implements Concatenator() class. It appends the outputs of the GaussianNB and SVC classifiers and the scaled inputs.
 - mlp: implements MLPClassifier() class
+
+.. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva4.png
 """
 import numpy as np
 import pandas as pd

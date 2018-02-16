@@ -10,6 +10,8 @@ Steps of the PipeGraph:
 - scaler: implements MinMaxScaler() class
 - polynomial_features: implements PolynomialFeatures() class
 - linear_model: implements LinearRegression() class
+
+.. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva2.png
 """
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler

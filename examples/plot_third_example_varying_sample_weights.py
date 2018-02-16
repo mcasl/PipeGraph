@@ -18,6 +18,8 @@ Steps of the PipeGraph:
 - polynomial_features: implements PolynomialFeatures() class
 - linear_model: implements LinearRegression() class
 
+.. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva3.png
+
 """
 import numpy as np
 import pandas as pd

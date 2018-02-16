@@ -9,11 +9,9 @@ Steps of the PipeGraph:
 - scaler: implements MinMaxScaler() class
 - linear_model: implements LinearRegression() class
 
-.. image:: PipeGraph/examples/images/imageExample.png
+.. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva1.png
 """
 
-###############################################################################
-# .. image:: https://github.com/mcasl/PipeGraph/blob/feature/Tutorials/examples/images/imageExample.png
 
 
 import numpy as np
