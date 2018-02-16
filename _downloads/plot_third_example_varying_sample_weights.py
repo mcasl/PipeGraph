@@ -16,7 +16,7 @@ Steps of the PipeGraph:
 - **polynomial_features**: Contains a PolynomialFeatures object
 - **linear_model**: Contains a LinearRegression model
 
-.. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva3.png
+.. figure:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva3.png
 
     Figure 1. PipeGraph diagram showing the steps and their connections
 """

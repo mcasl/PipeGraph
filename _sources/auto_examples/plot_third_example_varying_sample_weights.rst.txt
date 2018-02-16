@@ -20,7 +20,7 @@ Steps of the PipeGraph:
 - **polynomial_features**: Contains a PolynomialFeatures object
 - **linear_model**: Contains a LinearRegression model
 
-.. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva3.png
+.. figure:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva3.png
 
     Figure 1. PipeGraph diagram showing the steps and their connections
 
@@ -138,7 +138,7 @@ This example displayed a non linear workflow successfully implemented by PipeGra
 Next examples show more elaborated examples in increasing complexity order.
 
 
-**Total running time of the script:** ( 0 minutes  0.923 seconds)
+**Total running time of the script:** ( 0 minutes  0.916 seconds)
 
 
 

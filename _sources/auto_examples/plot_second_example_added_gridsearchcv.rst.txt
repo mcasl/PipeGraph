@@ -13,9 +13,9 @@ Steps of the PipeGraph:
 
 - ``scaler``: a preprocessing step using a :class:`MinMaxScaler` object
 - ``polynomial_features``: a transformer step
-- ``linear_model`: the :class:`LinearRegression` object we want to fit and use for predict.
+- ``linear_model``: the :class:`LinearRegression` object we want to fit and use for predict.
 
-.. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva2.png
+.. figure:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva2.png
 
     Figure 1. PipeGraph diagram showing the steps and their connections
 
@@ -108,16 +108,16 @@ Now, we use PipeGraphRegressor as estimator for GridSearchCV and perform the fit
  Out::
 
     Information about the parameters of the best estimator: 
-     degree: 6 
-     coefficients: [[  -43.75139433   341.7185897  -1136.31296375  1585.84636601
-       -172.14894354 -1481.81796264   951.28725722]]
+     degree: 5 
+     coefficients: [[    0.           325.1261013  -1120.60862808  2183.48850652
+      -2257.53026712   956.12061352]]
 
 
 This example showed how to use GridSearchCV with PipeGraphRegressor in a simple linear workflow.
 Next example provides detail on how to proceed with a non linear case.
 
 
-**Total running time of the script:** ( 0 minutes  0.509 seconds)
+**Total running time of the script:** ( 0 minutes  0.536 seconds)
 
 
 

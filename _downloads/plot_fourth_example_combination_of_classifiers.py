@@ -13,7 +13,7 @@ Steps of the PipeGraph:
 - **concat**: A Concatenator custom class that appends the outputs of the GaussianNB, SVC classifiers, and the scaled inputs.
 - **mlp**: A MLPClassifier() object
 
-.. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva4.png
+.. figure:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva4.png
 
     Figure 1. PipeGraph diagram showing the steps and their connections
 """
