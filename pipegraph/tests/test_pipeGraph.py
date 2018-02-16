@@ -620,6 +620,9 @@ class TestPipegraph(unittest.TestCase):
         current_step = pgraph._step['Concatenate_Xy']
         current_step.fit()
         result = current_step.predict(df1=X, df2=y)['predict']
+        self.assertEqual(expected.shape, result.shape)
+        assert_frame_equal(self.X, result.loc[:,['X']])
+        assert_frame_equal(self.y, result.loc[:,['y']])
         assert_frame_equal(expected, result)
 
     def test_Pipegraph__predict__gaussian_mixture(self):
