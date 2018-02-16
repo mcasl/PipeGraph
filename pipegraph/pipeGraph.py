@@ -922,7 +922,7 @@ class Concatenator(BaseEstimator):
     Concatenate a set of data
     """
     def fit(self):
-        """Fit the estimator or pipeGraph CustomBlock included in the step
+        """Fit method that does, in this case, nothing but returning self.
         Returns
         -------
             self : returns an instance of _Concatenator.

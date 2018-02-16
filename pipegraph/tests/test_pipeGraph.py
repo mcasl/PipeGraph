@@ -597,7 +597,9 @@ class TestPipegraph(unittest.TestCase):
                             }
         expected = pd.concat([self.X, self.y], axis=1)
         pgraph._fit('Concatenate_Xy')
-        assert_frame_equal(expected, pgraph._fit_data['Concatenate_Xy', 'predict'])
+        self.assertEqual(expected.shape, pgraph._fit_data['Concatenate_Xy', 'predict'].shape)
+        assert_frame_equal(self.X, pgraph._fit_data['Concatenate_Xy', 'predict'].loc[:,['X']])
+        assert_frame_equal(self.y, pgraph._fit_data['Concatenate_Xy', 'predict'].loc[:,['y']])
 
     def test_Pipegraph__under_fit__Paella__fit(self):
         pgraph = self.pgraph
