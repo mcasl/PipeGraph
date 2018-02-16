@@ -16,6 +16,23 @@ logger = logging.getLogger(__name__)
 
 
 class PipeGraphRegressor(BaseEstimator, RegressorMixin):
+    """PipeGraph of transforms with a final estimator.
+    Implements a complex graph...................MANONOLO LUCETE AQUI
+    Parameters
+    ----------
+    steps : list
+        List of (name, transform) tuples (implementing fit/transform) that are
+        chained, in the order in which they are chained, with the last object
+        an estimator.
+
+    connections: dictionary
+        Dictionary whose top level entries are the steps labels and  whose values are dictionaries themselves expressing,
+        for each node, the relationship between the output from a previous node and the input variables of the current node.
+        This is written as either:
+        -A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.
+        - A string representing a variable from  a source external to the PipeGraphRegressor object,
+        i.e. they represent the values passed to fit and predict methods.
+    """
     def __init__(self, steps, connections, alternative_connections=None):
         self.pipegraph = PipeGraph(steps, connections, alternative_connections)
 
@@ -48,27 +65,127 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         return self.pipegraph.named_steps
 
     def fit(self, X, y=None, **fit_params):
+        """
+        Fit the PipeGraph steps one after the other and following the topological order of the graph.
+        Parameters
+        ----------
+        X: iterable object
+            Training data. Must fulfill input requirements of first step of the
+            pipeline.
+
+        y : iterable, default=None
+            Training targets. Must fulfill label requirements for all steps of
+            the pipeline.
+
+        **fit_params : dict of string -> object
+            Parameters passed to the ``fit`` method of each step, where
+            each parameter name is prefixed such that parameter ``p`` for step
+            ``s`` has key ``s__p``.
+
+        Returns
+        -------
+        self : PipeGraphRegressor
+            This estimator
+        """
         self.pipegraph.fit(X, y=y, **fit_params)
         return self
 
     def predict(self, X):
+        """Predict the PipeGraph steps one after the other and following the topological
+        order of the graph.
+
+        Parameters
+        ----------
+        X: iterable object
+            Data to predict on. Must fulfill input requirements of first step
+            of the pipeline.
+
+        Returns
+        -------
+        y_pred : array-like
+        """
         return self.pipegraph.predict(X)['predict']
 
     def fit_predict(self, X, y=None, **fit_params):
+        """Applies fit_predict of last step in PipeGraph after it predicts the PipeGraph steps one after
+        the other and following the topological order of the graph.
+
+        Applies predict of a PipeGraph to the data following the topological order of the graph, followed by the
+        fit_predict method of the final step in the PipeGraph. Valid only if the final step implements fit_predict.
+
+        Parameters
+        ----------
+        X : iterable
+            Training data. Must fulfill input requirements of first step of
+            the pipeline.
+        y : iterable, default=None
+            Training targets. Must fulfill label requirements for all steps
+            of the pipeline.
+        **fit_params : dict of string -> object
+            Parameters passed to the ``fit`` method of each step, where
+            each parameter name is prefixed such that parameter ``p`` for step
+            ``s`` has key ``s__p``.
+
+        Returns
+        -------
+        y_pred : array-like
+        """
         self.pipegraph.fit(X, y=y, **fit_params)
         return self.pipegraph.predict(X)
 
     def predict_proba(self, X):
+        """Apply transforms, and predict_proba of the final estimator
+        Parameters
+        ----------
+        X: iterable object
+            Data to predict on. Must fulfill input requirements of first step of the pipeline.
+        Returns
+        -------
+        y_proba : array-like, shape = [n_samples, n_classes]
+        """
         return self.pipegraph.predict(X)['predict_proba']
 
     def decision_function(self, X):
+        """Apply transforms, and decision_function of the final estimator
+         Parameters
+         ----------
+         X: iterable object
+            Data to predict on. Must fulfill input requirements of first step of the pipeline.
+        Returns
+        -------
+        y_score : array-like, shape = [n_samples, n_classes]
+        """
         self.pipegraph.predict(X)
         return self.pipegraph.steps[-1][-1].decision_function(X)
 
     def predict_log_proba(self, X):
+
+        """Apply transforms, and predict_log_proba of the final estimator
+        Parameters
+        ----------
+        X: iterable object
+            Data to predict on. Must fulfill input requirements of first step of the pipeline.
+        Returns
+        -------
+        y_proba : array-like, shape = [n_samples, n_classes]
+        """
         return self.pipegraph.predict(X)['predict_log_proba']
 
     def score(self, X, y=None, sample_weight=None):
+        """Apply transforms, and score with the final estimator
+         Parameters
+         ----------
+
+         X : iterable
+             Data to predict on. Must fulfill input requirements of first step of the pipeGrpaph.
+         y : iterable, default=None
+            Targets used for scoring. Must fulfill label requirements for all steps of the pipeGrpaph.
+         sample_weight : array-like, default=None
+            If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.
+         Returns
+         -------
+         y_proba : array-like, shape = [n_samples, n_classes]
+         """
         self.pipegraph.predict(X)
         score_params = {}
         if sample_weight is not None:
@@ -79,6 +196,23 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
 
 
 class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
+    """PipeGraph of transforms with a final estimator.
+    Implements a complex graph...................MANONOLO LUCETE AQUI
+    Parameters
+    ----------
+    steps : list
+        List of (name, transform) tuples (implementing fit/transform) that are
+        chained, in the order in which they are chained, with the last object
+        an estimator.
+
+    connections: dictionary
+        Dictionary whose top level entries are the steps labels and  whose values are dictionaries themselves expressing,
+        for each node, the relationship between the output from a previous node and the input variables of the current node.
+        This is written as either:
+        -A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.
+        - A string representing a variable from  a source external to the PipeGraphClasifier object,
+        i.e. they represent the values passed to fit and predict methods.
+    """
     def __init__(self, steps, connections, alternative_connections=None):
         self.pipegraph = PipeGraph(steps, connections, alternative_connections)
 
@@ -111,27 +245,124 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         return pipegraph.named_steps
 
     def fit(self, X, y=None, **fit_params):
+        """Fit the PipeGraph steps one after the other and following the topological order of the graph.
+        Parameters
+        ----------
+        X: iterable object
+            Training data. Must fulfill input requirements of first step of the
+            pipeline.
+
+        y : iterable, default=None
+            Training targets. Must fulfill label requirements for all steps of
+            the pipeline.
+
+        **fit_params : dict of string -> object
+            Parameters passed to the ``fit`` method of each step, where
+            each parameter name is prefixed such that parameter ``p`` for step
+            ``s`` has key ``s__p``.
+
+        Returns
+        -------
+        self : PipeGraphRegressor
+            This estimator
+        """
         self.pipegraph.fit(X, y=y, **fit_params)
         return self
 
     def predict(self, X):
+        """Predict the PipeGraph steps one after the other and following the topological
+        order of the graph.
+
+        Parameters
+        ----------
+        X: iterable object
+            Data to predict on. Must fulfill input requirements of first step
+            of the pipeline.
+
+        Returns
+        -------
+        y_pred : array-like
+        """
         return self.pipegraph.predict(X)['predict']
 
     def fit_predict(self, X, y=None, **fit_params):
+        """Applies fit_predict of last step in PipeGraph after it predicts the PipeGraph steps one after
+        the other and following the topological order of the graph.
+
+        Applies predict of a PipeGraph to the data following the topological order of the graph, followed by the
+        fit_predict method of the final step in the PipeGraph. Valid only if the final step implements fit_predict.
+
+        Parameters
+        ----------
+        X: iterable object
+            Training data. Must fulfill input requirements of first step of
+            the pipeline.
+        y : iterable, default=None
+            Training targets. Must fulfill label requirements for all steps
+            of the pipeline.
+        **fit_params : dict of string -> object
+            Parameters passed to the ``fit`` method of each step, where
+            each parameter name is prefixed such that parameter ``p`` for step
+            ``s`` has key ``s__p``.
+
+        Returns
+        -------
+        y_pred : array-like
+        """
         self.pipegraph.fit(X, y=y, **fit_params)
         return self.pipegraph.predict(X)
 
     def predict_proba(self, X):
+        """Apply transforms, and predict_proba of the final estimator
+        Parameters
+        ----------
+        X: iterable object
+            Data to predict on. Must fulfill input requirements of first step of the pipeline.
+        Returns
+        -------
+        y_proba : array-like, shape = [n_samples, n_classes]
+        """
         return self.pipegraph.predict(X)['predict_proba']
 
     def decision_function(self, X):
+        """Apply transforms, and decision_function of the final estimator
+         Parameters
+         ----------
+         X: iterable object
+            Data to predict on. Must fulfill input requirements of first step of the pipeline.
+        Returns
+        -------
+        y_score : array-like, shape = [n_samples, n_classes]
+        """
         self.pipegraph.predict(X)
         return self.pipegraph.steps[-1][-1].decision_function(X)
 
     def predict_log_proba(self, X):
+        """Apply transforms, and predict_log_proba of the final estimator
+        Parameters
+        ----------
+        X: iterable object
+            Data to predict on. Must fulfill input requirements of first step of the pipeline.
+        Returns
+        -------
+        y_proba : array-like, shape = [n_samples, n_classes]
+        """
         return self.pipegraph.predict(X)['predict_log_proba']
 
     def score(self, X, y=None, sample_weight=None):
+        """Apply transforms, and score with the final estimator
+         Parameters
+         ----------
+         X: iterable object
+             Data to predict on. Must fulfill input requirements of first step of the pipeGrpaph.
+         y : iterable, default=None
+            Targets used for scoring. Must fulfill label requirements for all steps of the pipeGrpaph.
+         sample_weight : array-like, default=None
+            If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.
+         Returns
+         -------
+         y_proba : array-like, shape = [n_samples, n_classes]
+         """
         self.pipegraph.predict(X)
         score_params = {}
         if sample_weight is not None:
@@ -139,7 +370,6 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         final_step_name = self.pipegraph.steps[-1][0]
         Xt = self.pipegraph._predict_data[self.pipegraph.connections[final_step_name]['X']]
         return self.pipegraph.steps[-1][-1].score(Xt, y, **score_params)
-
 
 class PipeGraph(_BaseComposition):
     """
@@ -368,6 +598,7 @@ class PipeGraph(_BaseComposition):
 
 class Step(BaseEstimator):
     """
+    Wrapper of strategy. This strategy contain a Scikit-Learn model or pipeGraph CustomBlock.
     """
 
     def __init__(self, strategy):
@@ -379,34 +610,41 @@ class Step(BaseEstimator):
         self._strategy = strategy
 
     def get_params(self):
-        """
-
-        Returns:
-
+        """Get parameters for this estimator or pipeGraph CustomBlock.
+        Parameters
+        -------
+        params : mapping of string to any
+            Parameter names mapped to their values.
         """
         return self._strategy.get_params()
 
     def set_params(self, **params):
-        """
-
-        Args:
-            params:
-
-        Returns:
-
+        """"
+        Set the parameters of this estimator.
+        The method works on simple estimators as well as on nested objects
+        such as pipeGraph). The latter have parameters of the form
+        ``<component>__<parameter>`` so that it's possible to update each
+        component of a nested object.
+        Returns
+        -------
+        self
         """
         self._strategy.set_params(**params)
         return self
 
     def fit(self, *pargs, **kwargs):
-        """
-
-        Args:
-            pargs:
-            kwargs:
-
-        Returns:
-
+        """Fit the model included in the step
+        ----------
+        *pargs : iterable
+            Training data. Must fulfill input requirements of first step of the
+            pipeline.
+        **kwargs : dict of string -> object
+            Parameters passed to the ``fit`` method of each step, where
+            each parameter name is prefixed such that parameter ``p`` for step
+            ``s`` has key ``s__p``.
+        Returns
+        -------
+            self : returns an instance of _strategy.
         """
         self._strategy.fit(*pargs, **kwargs)
         return self
@@ -584,6 +822,7 @@ class FitTransform(StepStrategy):
 
 class FitPredict(StepStrategy):
     """
+
     """
 
     def predict(self, *pargs, **kwargs):
@@ -614,6 +853,9 @@ class FitPredict(StepStrategy):
 
 class AtomicFitPredict(StepStrategy):
     """
+
+    Handler of estimator that implements only fit & predict
+
     """
 
     def fit(self, *pargs, **kwargs):
@@ -691,12 +933,29 @@ class CustomStrategyWithDictionaryOutputAdaptee(StepStrategy):
 
 class Concatenator(BaseEstimator):
     """
+    Concatenate a set of data
     """
-
     def fit(self):
+        """Fit the estimator or pipeGraph CustomBlock included in the step
+        Returns
+        -------
+            self : returns an instance of _Concatenator.
+        """
         return self
 
     def predict(self, **kwargs):
+        """Check the input data type for correct concatenating.
+
+        Parameters
+        ----------
+        **kwargs :  sequence of indexables with same length / shape[0]
+            Allowed inputs are lists, numpy arrays, scipy-sparse
+            matrices or pandas dataframes.
+            Data to concatenate.
+        Returns
+        -------
+        Pandas series or Pandas DataFrame with the data input concatenated
+        """
         df_list = []
         for item in kwargs.values():
             if isinstance(item, pd.Series) or isinstance(item, pd.DataFrame):
@@ -708,6 +967,7 @@ class Concatenator(BaseEstimator):
 
 class CustomCombination(BaseEstimator):
     """
+    Only For PAELLA purposes
     """
 
     def fit(self, dominant, other):
@@ -736,15 +996,58 @@ class CustomCombination(BaseEstimator):
 
 
 class TrainTestSplit(BaseEstimator):
+    """Split arrays or matrices into random train and test subsets
+        Quick utility that wraps input validation and
+        ``next(ShuffleSplit().split(X, y))`` and application to input data
+        into a single call for splitting (and optionally subsampling) data in a
+        oneliner.
+        Read more in the :ref:`User Guide <cross_validation>`.
+        Parameters
+        ----------
+        test_size : float, int, None, optional
+            If float, should be between 0.0 and 1.0 and represent the proportion
+            of the dataset to include in the test split. If int, represents the
+            absolute number of test samples. If None, the value is set to the
+            complement of the train size. By default, the value is set to 0.25.
+            The default will change in version 0.21. It will remain 0.25 only
+            if ``train_size`` is unspecified, otherwise it will complement
+            the specified ``train_size``.
+        train_size : float, int, or None, default None
+            If float, should be between 0.0 and 1.0 and represent the
+            proportion of the dataset to include in the train split. If
+            int, represents the absolute number of train samples. If None,
+            the value is automatically set to the complement of the test size.
+        random_state : int, RandomState instance or None, optional (default=None)
+            If int, random_state is the seed used by the random number generator;
+            If RandomState instance, random_state is the random number generator;
+            If None, the random number generator is the RandomState instance used
+            by `np.random`.
+    """
     def __init__(self, test_size=0.25, train_size=None, random_state=None):
         self.test_size = test_size
         self.train_size = train_size
         self.random_state = random_state
 
     def fit(self, *pargs, **kwargs):
+        """Fit the model included in the step
+        Returns
+        -------
+            self : returns an instance of _TrainTestSplit.
+        """
         return self
 
     def predict(self, *pargs, **kwargs):
+        """Fit the model included in the step
+        Parameters
+        ----------
+        **kwargs: sequence of indexables with same length / shape[0]
+            Allowed inputs are lists, numpy arrays, scipy-sparse
+            matrices or pandas dataframes.
+        Returns
+        -------
+        splitting : list, length=2 * len(arrays)
+            List containing train-test split of inputs.
+        """
         if len(pargs) > 0:
             raise ValueError("The developers assume you will use keyword parameters on the TrainTestSplit class.")
         array_names = list(kwargs.keys())
@@ -756,28 +1059,68 @@ class TrainTestSplit(BaseEstimator):
 
 
 class ColumnSelector(BaseEstimator):
+    """ Slice data-input data in columns
+    Parameters
+    ----------
+    mapping : list. Each element contains data-column and the new name assigned
+    """
     def __init__(self, mapping=None):
         self.mapping = mapping
 
     def fit(self):
+    """"
+
+    Returns
+    -------
+    self : returns an instance of _CustomPower.
+    """
         return self
 
     def predict(self, X):
+        """"
+        X: iterable object
+                Data to slice.
+        Returns
+        -------
+        returns a list with data-column and the new name assigned for each column selected
+        """
+
         if self.mapping is None:
             return {'predict': X}
         result = {name: X.iloc[:, column_slice]
-                  for name, column_slice in self.mapping.items()}
+            for name, column_slice in self.mapping.items()}
         return result
 
 
 class CustomPower(BaseEstimator):
+    """ Raises X data to power defined such as range as parameter
+    Parameters
+    ----------
+    power : range of integers for the powering operation
+    """
+
     def __init__(self, power=1):
+        
         self.power = power
 
     def fit(self):
+        """"
+        Returns
+        -------
+            self : returns an instance of _CustomPower.
+        """
         return self
 
     def predict(self, X):
+        """"
+        Parameters
+        ----------
+        X: iterable
+            Data to power.
+        Returns
+        -------
+        result of raising power operation
+        """
         return X.values.reshape(-1, ) ** self.power
 
 
@@ -795,6 +1138,11 @@ class Reshape(BaseEstimator):
 
 
 class Demultiplexer(BaseEstimator):
+    """ Slice data-input data in columns
+    Parameters
+    ----------
+    mapping : list. Each element contains data-column and the new name assigned
+    """
     def fit(self):
         return self
 
@@ -815,6 +1163,7 @@ class Multiplexer(BaseEstimator):
         return self
 
     def predict(self, **kwargs):
+        #list of arrays with the samen dimension
         selection = kwargs['selection']
         array_list = [pd.DataFrame(data=kwargs[str(class_number)],
                                    index=np.flatnonzero(selection == class_number))
