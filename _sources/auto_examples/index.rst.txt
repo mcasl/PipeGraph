@@ -51,13 +51,13 @@ Introductory examples.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="- The shape of the graph is not a linear sequence as those that can be implemented using Pipeli...">
+    <div class="sphx-glr-thumbcontainer" tooltip="An imaginative layout using a classifier to predict the cluster labels and fitting a separate m...">
 
 .. only:: html
 
-    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_3_example_varying_sample_weights_thumb.png
+    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_5_example_Demultiplexer_Multiplexer_thumb.png
 
-        :ref:`sphx_glr_auto_examples_plot_3_example_varying_sample_weights.py`
+        :ref:`sphx_glr_auto_examples_plot_5_example_Demultiplexer_Multiplexer.py`
 
 .. raw:: html
 
@@ -67,7 +67,7 @@ Introductory examples.
 .. toctree::
    :hidden:
 
-   /auto_examples/plot_3_example_varying_sample_weights
+   /auto_examples/plot_5_example_Demultiplexer_Multiplexer
 
 .. raw:: html
 
@@ -91,13 +91,13 @@ Introductory examples.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="An imaginative layout using a classifier to predict the cluster labels and fitting a separate m...">
+    <div class="sphx-glr-thumbcontainer" tooltip="- The shape of the graph is not a linear sequence as those that can be implemented using Pipeli...">
 
 .. only:: html
 
-    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_5_example_Demultiplexer_Multiplexer_thumb.png
+    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_3_example_varying_sample_weights_thumb.png
 
-        :ref:`sphx_glr_auto_examples_plot_5_example_Demultiplexer_Multiplexer.py`
+        :ref:`sphx_glr_auto_examples_plot_3_example_varying_sample_weights.py`
 
 .. raw:: html
 
@@ -107,7 +107,7 @@ Introductory examples.
 .. toctree::
    :hidden:
 
-   /auto_examples/plot_5_example_Demultiplexer_Multiplexer
+   /auto_examples/plot_3_example_varying_sample_weights
 .. raw:: html
 
     <div style='clear:both'></div>
