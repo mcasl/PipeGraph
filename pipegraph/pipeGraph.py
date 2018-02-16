@@ -65,14 +65,11 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         return self.pipegraph.named_steps
 
     def fit(self, X, y=None, **fit_params):
-        """Fit the model
-
+        """
         Fit the PipeGraph steps one after the other and following the topological order of the graph.
-
-
         Parameters
         ----------
-        X : iterable
+        X: iterable object
             Training data. Must fulfill input requirements of first step of the
             pipeline.
 
@@ -99,7 +96,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
 
         Parameters
         ----------
-        X : iterable
+        X: iterable object
             Data to predict on. Must fulfill input requirements of first step
             of the pipeline.
 
@@ -140,7 +137,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         """Apply transforms, and predict_proba of the final estimator
         Parameters
         ----------
-        X : iterable
+        X: iterable object
             Data to predict on. Must fulfill input requirements of first step of the pipeline.
         Returns
         -------
@@ -152,7 +149,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         """Apply transforms, and decision_function of the final estimator
          Parameters
          ----------
-         X : iterable
+         X: iterable object
             Data to predict on. Must fulfill input requirements of first step of the pipeline.
         Returns
         -------
@@ -166,7 +163,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         """Apply transforms, and predict_log_proba of the final estimator
         Parameters
         ----------
-        X : iterable
+        X: iterable object
             Data to predict on. Must fulfill input requirements of first step of the pipeline.
         Returns
         -------
@@ -248,14 +245,10 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         return pipegraph.named_steps
 
     def fit(self, X, y=None, **fit_params):
-        """Fit the model
-
-        Fit the PipeGraph steps one after the other and following the topological order of the graph.
-
-
+        """Fit the PipeGraph steps one after the other and following the topological order of the graph.
         Parameters
         ----------
-        X : iterable
+        X: iterable object
             Training data. Must fulfill input requirements of first step of the
             pipeline.
 
@@ -282,7 +275,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : iterable
+        X: iterable object
             Data to predict on. Must fulfill input requirements of first step
             of the pipeline.
 
@@ -301,7 +294,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : iterable
+        X: iterable object
             Training data. Must fulfill input requirements of first step of
             the pipeline.
         y : iterable, default=None
@@ -320,11 +313,10 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         return self.pipegraph.predict(X)
 
     def predict_proba(self, X):
-
         """Apply transforms, and predict_proba of the final estimator
         Parameters
         ----------
-        X : iterable
+        X: iterable object
             Data to predict on. Must fulfill input requirements of first step of the pipeline.
         Returns
         -------
@@ -336,7 +328,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         """Apply transforms, and decision_function of the final estimator
          Parameters
          ----------
-         X : iterable
+         X: iterable object
             Data to predict on. Must fulfill input requirements of first step of the pipeline.
         Returns
         -------
@@ -349,7 +341,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         """Apply transforms, and predict_log_proba of the final estimator
         Parameters
         ----------
-        X : iterable
+        X: iterable object
             Data to predict on. Must fulfill input requirements of first step of the pipeline.
         Returns
         -------
@@ -361,8 +353,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         """Apply transforms, and score with the final estimator
          Parameters
          ----------
-
-         X : iterable
+         X: iterable object
              Data to predict on. Must fulfill input requirements of first step of the pipeGrpaph.
          y : iterable, default=None
             Targets used for scoring. Must fulfill label requirements for all steps of the pipeGrpaph.
@@ -379,7 +370,6 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         final_step_name = self.pipegraph.steps[-1][0]
         Xt = self.pipegraph._predict_data[self.pipegraph.connections[final_step_name]['X']]
         return self.pipegraph.steps[-1][-1].score(Xt, y, **score_params)
-
 
 class PipeGraph(_BaseComposition):
     """
@@ -977,7 +967,7 @@ class Concatenator(BaseEstimator):
 
 class CustomCombination(BaseEstimator):
     """
-    For PAELLA purposes
+    Only For PAELLA purposes
     """
 
     def fit(self, dominant, other):
@@ -1069,16 +1059,17 @@ class TrainTestSplit(BaseEstimator):
 
 
 class ColumnSelector(BaseEstimator):
-    """ Slice X data in columns
+    """ Slice data-input data in columns
     Parameters
     ----------
-    mapping : list. Each element contains data-column and the new name asigned
+    mapping : list. Each element contains data-column and the new name assigned
     """
     def __init__(self, mapping=None):
         self.mapping = mapping
 
     def fit(self):
     """"
+
     Returns
     -------
     self : returns an instance of _CustomPower.
@@ -1087,7 +1078,7 @@ class ColumnSelector(BaseEstimator):
 
     def predict(self, X):
         """"
-        X: iterable
+        X: iterable object
                 Data to slice.
         Returns
         -------
@@ -1147,6 +1138,11 @@ class Reshape(BaseEstimator):
 
 
 class Demultiplexer(BaseEstimator):
+    """ Slice data-input data in columns
+    Parameters
+    ----------
+    mapping : list. Each element contains data-column and the new name assigned
+    """
     def fit(self):
         return self
 
