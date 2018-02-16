@@ -19,7 +19,7 @@ Steps of the PipeGraph:
 """
 
 ###############################################################################
-# Firstly, we import the necessary libraries and create some artificial data
+# Firstly, we import the necessary libraries and create some artificial data.
 
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
