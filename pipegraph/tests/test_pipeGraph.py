@@ -1178,12 +1178,12 @@ class TestPipeGraphRegressor(unittest.TestCase):
     def test_PipeGraphRegressor__GridSearchCV(self):
         model = self.model
         X = self.X
-        y = self.y
+        y = self.y.values.ravel()
         param_grid = [{'model__fit_intercept': [True, False]}, ]
         gs = GridSearchCV(estimator=model, param_grid=param_grid)
         gs.fit(X, y)
         result = gs.best_estimator_.predict(X)
-        self.assertEqual(result.shape, X.shape)
+        self.assertEqual(result.shape[0], X.shape[0])
 
 
 class TestPipeGraphClassifier(unittest.TestCase):
