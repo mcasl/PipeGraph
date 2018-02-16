@@ -6,13 +6,13 @@ An imaginative layout using a classifier to predict the cluster labels and fitti
 
 Steps of the PipeGraph:
 
-- scaler: implements MinMaxScaler() class
-- classifier: implements GaussianMixture() class
-- demux: implements Demultiplexer() class
-- lm_0: implements LinearRegression() class
-- lm_1: implements LinearRegression() class
-- lm_2: implements LinearRegression() class
-- mux: implements Multiplexer() class
+- **scaler**: A MinMaxScaler data preprocessor
+- **classifier**: A GaussianMixture() classifier
+- **demux**: A custom Demultiplexer class in charge of splitting the input arrays accordingly to the selection input vector
+- **lm_0**: A LinearRegression model
+- **lm_1**: A LinearRegression model
+- **lm_2**: A LinearRegression model
+- **mux**: A custom Multiplexer class in charge of combining different input arrays into a single one accordingly to the selection input vector
 
 .. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva5.png
 """
