@@ -1068,12 +1068,12 @@ class ColumnSelector(BaseEstimator):
         self.mapping = mapping
 
     def fit(self):
-    """"
+        """"
 
-    Returns
-    -------
-    self : returns an instance of _CustomPower.
-    """
+        Returns
+        -------
+        self : returns an instance of _CustomPower.
+        """
         return self
 
     def predict(self, X):
