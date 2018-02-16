@@ -6,7 +6,7 @@ Fifth Example: Demultiplexor - multiplexor
 
 An imaginative layout using a classifier to predict the cluster labels and fitting a separate model for each cluster.
 
-Steps of the PipeGraph:
+Steps of the **PipeGraph**:
 
 - **scaler**: A :class:`MinMaxScaler` data preprocessor
 - **classifier**: A :class:`GaussianMixture` classifier
@@ -79,7 +79,7 @@ connections = { 'scaler': {'X': 'X'},
                         'selection': ('classifier', 'predict')}}
 
 ###############################################################################
-# Use PipeGraph when predict needs (``X``,``y``)
+# Use **PipeGraph** when predict needs (``X``,``y``)
 
 pgraph = PipeGraph(steps=steps, connections=connections)
 pgraph.fit(X, y)

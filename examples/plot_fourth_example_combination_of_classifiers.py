@@ -7,7 +7,7 @@ Fourth Example: Combination of classifiers
 A set of classifiers is combined as input to a neural network. Additionally, the scaled inputs are injected as well to
 the neural network. The data is firstly transformed by scaling its features.
 
-Steps of the PipeGraph:
+Steps of the **PipeGraph**:
 
 - **scaler**: A :class:`MinMaxScaler` data preprocessor
 - **gaussian_nb**: A :class:`GaussianNB` classifier
@@ -89,4 +89,4 @@ plt.show()
 
 
 ###############################################################################
-# This example displayed complex data injections that are successfully managed by PipeGraph.
+# This example displayed complex data injections that are successfully managed by **PipeGraph**.
