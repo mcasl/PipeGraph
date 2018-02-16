@@ -140,7 +140,7 @@ This example displayed a non linear workflow successfully implemented by PipeGra
 :ref:`Next examples <example4>` show more elaborated examples in increasing complexity order.
 
 
-**Total running time of the script:** ( 0 minutes  0.837 seconds)
+**Total running time of the script:** ( 0 minutes  0.880 seconds)
 
 
 
