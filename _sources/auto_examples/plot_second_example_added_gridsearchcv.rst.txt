@@ -22,7 +22,7 @@ Steps of the PipeGraph:
     Figure 1. PipeGraph diagram showing the steps and their connections
 
 
-Firstly, we import the necessary libraries and create some artificial data
+Firstly, we import the necessary libraries and create some artificial data.
 
 
 
@@ -111,16 +111,16 @@ Now, we use ``PipeGraphRegressor`` as estimator for :class:`GridSearchCV` and pe
  Out::
 
     Information about the parameters of the best estimator: 
-     degree: 5 
-     coefficients: [[    0.           465.22258077 -2009.72132901  4344.51115488
-      -4507.71108526  1807.27392375]]
+     degree: 6 
+     coefficients: [[  -49.8151689    468.72795163 -2122.56365753  4990.32346564
+      -5798.50969948  2902.42572465  -342.61124688]]
 
 
 This example showed how to use :class:`GridSearchCV` with :class:`PipeGraphRegressor` in a simple linear workflow.
 :ref:`Next example <example3>` provides detail on how to proceed with a non linear case.
 
 
-**Total running time of the script:** ( 0 minutes  0.507 seconds)
+**Total running time of the script:** ( 0 minutes  0.539 seconds)
 
 
 

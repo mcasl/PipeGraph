@@ -70,12 +70,14 @@ Secondly, we define the steps of the PipeGraph as a list of tuples (label, sklea
 
 Then, we need to provide the connections amongst steps as a dictionary. Please, refer to :ref:`Figure 2 <fig2>` for a faster understanding.
 
-- The keys of the top level entries of the dictionary must the same as those of the previously defined steps.
+- The keys of the top level entries of the dictionary must be the same as those of the previously defined steps.
 - The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:
-  - The keys of the nested dictionary represents the input variable as named at the current step.
-  - The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:
-      - A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.
-      - A string representing a variable from an external source to the :class:`PipeGraphRegressor` object, such as those provided by the user while invoking the ``fit``, ``predict`` or ``fit_predict`` methods.
+
+    - The keys of the nested dictionary represents the input variable as named at the current step.
+    - The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:
+
+        - A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.
+        - A string representing a variable from an external source to the :class:`PipeGraphRegressor` object, such as those provided by the user while invoking the ``fit``, ``predict`` or ``fit_predict`` methods.
 
 For instance, the linear model accepts as input ``X`` the output named ``predict`` at the ``scaler`` step, and as input ``y`` the value of ``y`` passed to ``fit``, ``predict`` or ``fit_predict`` methods.
 
@@ -126,7 +128,7 @@ Once the steps and the connections are defined, we instantiate a :class:`PipeGra
 This example described the basic configuration of a :class:`PipeGraphRegressor`. The :ref:`following examples <example2>` show more elaborated cases in order of increasing complexity.
 
 
-**Total running time of the script:** ( 0 minutes  0.686 seconds)
+**Total running time of the script:** ( 0 minutes  0.710 seconds)
 
 
 
