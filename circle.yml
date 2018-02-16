@@ -1,4 +1,7 @@
 machine:
+  python:
+    version: 3.5.1
+
   environment:
     # The github organization or username of the repository which hosts the
     # project and documentation.
@@ -29,6 +32,7 @@ dependencies:
     - sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
     - pip install --upgrade cython numpydoc
     - pip install --upgrade scikit-learn
+    - pip install --upgrade inspect
 
   # The --user is needed to let sphinx see the source and the binaries
   # The pipefail is requested to propagate exit code
@@ -50,7 +54,7 @@ general:
   artifacts:
     - "doc/_build/html"
     - "~/log.txt"
-  # Restric the build to the branch master only
+  # Restrict the build to the branch master only
   branches:
     ignore:
        - gh-pages
