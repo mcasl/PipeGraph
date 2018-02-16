@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 class PipeGraphRegressor(BaseEstimator, RegressorMixin):
     """PipeGraph with a regressor default score.
     This class implements an interface to the PipeGraph base class which is compatible with GridSearchCV.
-    This documentation is heavily based on Scikit-Learn's Pipeline on purpose as it is the aim of this class
-    to provide an interface as similar to Pipeline as possible.
+    This documentation is heavily based on Scikit-Learn's Pipeline on purpose as its aim is to provide an interface
+    as similar to Pipeline as possible.
 
     Parameters
     ----------
@@ -31,6 +31,8 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         - The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:
             - A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.
             - A string representing a variable from an external source to the PipeGraphRegressor object, such as those provided by the user while invoking the fit, predict or fit_predict methods.
+
+    alternative_connections: a dictionary, similar to connections; provided in case a graph with different connections is desired during the predict phase. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.
     """
     def __init__(self, steps, connections, alternative_connections=None):
         self.pipegraph = PipeGraph(steps, connections, alternative_connections)
@@ -199,6 +201,8 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         - The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:
             - A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.
             - A string representing a variable from an external source to the PipeGraphRegressor object, such as those provided by the user while invoking the fit, predict or fit_predict methods.
+
+    alternative_connections: a dictionary, similar to connections; provided in case a graph with different connections is desired during the predict phase. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.
     """
     def __init__(self, steps, connections, alternative_connections=None):
         self.pipegraph = PipeGraph(steps, connections, alternative_connections)
@@ -358,7 +362,8 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         return self.pipegraph.steps[-1][-1].score(Xt, y, **score_params)
 
 class PipeGraph(_BaseComposition):
-    """
+    """Base class of the module in charge of holding the steps, connections and graphs needed to perform graph like
+    fits and predicts.
     """
 
     def __init__(self, steps, connections, alternative_connections=None):
@@ -584,7 +589,7 @@ class PipeGraph(_BaseComposition):
 
 class Step(BaseEstimator):
     """
-    Wrapper of strategy. This strategy contain a Scikit-Learn model or pipeGraph CustomBlock.
+    Wrapper of a StepStrategy object. This strategy generally is a wrapper itself of a Scikit-Learn model or pipeGraph CustomBlock.
     """
 
     def __init__(self, strategy):
@@ -677,6 +682,9 @@ class Step(BaseEstimator):
 
 class StepStrategy(BaseEstimator):
     """
+    This class is an adapter for Scikit-Learn objects in order to provide a common interface based on fit and predict
+    methods irrespectively of whether the adapted object provided a transform, fit_predict, or predict interface.
+    It is also used by the Step class as strategy.
     """
 
     def __init__(self, adaptee):
