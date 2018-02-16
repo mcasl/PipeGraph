@@ -1,20 +1,22 @@
 """
+.. _example3:
+
 Third Example: Injecting varying ``sample_weight`` vectors to a linear regression model for GridSearchCV
----------------------------------------------------
-This example illustrates a case in which a varying vector is injected to a linear regression model as ``sample_weight`` in order to evaluate them and obtain the sample_weight that generate the best results.
+-------------------------------------------------------------------------------------------------------------------
+This example illustrates a case in which a varying vector is injected to a linear regression model as ``sample_weight`` in order to evaluate them and obtain the sample_weight that generates the best results.
 Let's imagine we have a sample_weight vector and different powers of the vector are needed to be evaluated. To perform such experiment, the following constrains appear:
 
 - The shape of the graph is not a linear sequence as those that can be implemented using Pipeline.
-- More than two variables (typically: ``X`` and ``y``) need to be accordingly split in order to perform the cross validation with GridSearchCV, in this case: ``X``, ``y`` and ``sample_weight``
+- More than two variables (typically: ``X`` and ``y``) need to be accordingly split in order to perform the cross validation with GridSearchCV, in this case: ``X``, ``y`` and ``sample_weight``.
 - The information provided to the  ``sample_weight`` parameter of the LinearRegression step varies on the different scenarios explored by GridSearchCV. In a GridSearchCV with Pipeline, ``sample_weight`` can't vary because it is treated as a ``fit_param`` instead of a variable.
 
 Steps of the PipeGraph:
 
-- **selector**: Featuring a ColumnSelector custom step. This is not a sklearn original object but a custom class that allows to split an array into columns. In tnhis case, X augmented data is column-wise divided as specified in a mapping dictionary. We previously created an augmented X in which all data but ``y`` is concatenated and it will be used by GridSearchCV to make the cross validation splits. selector step de-concatenates such data.
-- **custom_power**: Featuring a CustomPower custom class. A simple transformation of the input data that is powered to a specified power as indicated in ``param_grid``.
-- **scaler**: implements MinMaxScaler() class
-- **polynomial_features**: Contains a PolynomialFeatures object
-- **linear_model**: Contains a LinearRegression model
+- **selector**: Featuring a :class:`ColumnSelector` custom step. This is not a sklearn original object but a custom class that allows to split an array into columns. In this case, ``X`` augmented data is column-wise divided as specified in a mapping dictionary. We previously created an augmented ``X`` in which all data but ``y`` is concatenated and it will be used by :class:`GridSearchCV` to make the cross validation splits. **selector** step de-concatenates such data.
+- **custom_power**: Featuring a :class:`CustomPower` custom class. A simple transformation of the input data that is powered to a specified power as indicated in ``param_grid``.
+- **scaler**: implements :class:`MinMaxScaler` class
+- **polynomial_features**: Contains a :class:`PolynomialFeatures` object
+- **linear_model**: Contains a :class:`LinearRegression` model
 
 .. figure:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva3.png
 
@@ -30,7 +32,7 @@ from pipegraph.pipeGraph import PipeGraphRegressor, CustomPower, ColumnSelector,
 import matplotlib.pyplot as plt
 
 ###############################################################################
-# We create an augmented ``X`` in which all data but ``y`` is concatenated. In this case, we concatenate ``X`` and ``sample_weight`` vectors.
+# We create an augmented ``X`` in which all data but ``y`` is concatenated. In this case, we concatenate ``X`` and ``sample_weight`` vector.
 
 X = pd.DataFrame(dict(X=np.array([   1,    2,    3,    4,    5,    6,    7,    8,    9,   10,   11]),
           sample_weight=np.array([0.01, 0.95, 0.10, 0.95, 0.95, 0.10, 0.10, 0.95, 0.95, 0.95, 0.01])))
@@ -38,8 +40,8 @@ y = np.array(                    [  10,    4,   20,   16,   25 , -60,   85,   64
 
 
 ###############################################################################
-# Next we define the steps and connections of the PipeGraph and define  ``param_grid`` as expected by GridSearchCV exploring a few possibilities of varying parameters.
-# Please, refer to the first example for a description of the connections syntax.
+# Next we define the steps and connections of the PipeGraph and define  ``param_grid`` as expected by :class:`GridSearchCV` exploring a few possibilities of varying parameters.
+# Please, refer to the :ref:`first example <example1>` for a description of the connections syntax.
 
 scaler = MinMaxScaler()
 polynomial_features = PolynomialFeatures()
@@ -67,7 +69,7 @@ param_grid = {'polynomial_features__degree': range(1, 3),
               'custom_power__power': [1, 5, 10, 20, 30]}
 
 ###############################################################################
-# The, we use PipeGraphRegressor as estimator for ``GridSearchCV`` and perform the ``fit`` and ``predict`` operations.
+# Then, we use :class:`PipeGraphRegressor` as estimator for :class:`GridSearchCV` and perform the ``fit`` and ``predict`` operations.
 
 pgraph = PipeGraphRegressor(steps=steps, connections=connections)
 grid_search_regressor = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
@@ -82,6 +84,6 @@ power = grid_search_regressor.best_estimator_.get_params()['custom_power']
 print('Power that obtains the best results in the linear model: \n {}'.format(power))
 
 ###############################################################################
-# This example displayed a non linear workflow successfully implemented by PipeGraph, while at the same time showing a way to circumvent current limitations of standard GridSearchCV, in particular, the retriction on the number of input parameters.
-# Next examples show more elaborated examples in increasing complexity order.
+# This example displayed a non linear workflow successfully implemented by PipeGraph, while at the same time showing a way to circumvent current limitations of standard :class:`GridSearchCV`, in particular, the retriction on the number of input parameters.
+# :ref:`Next examples <example4>` show more elaborated examples in increasing complexity order.
 

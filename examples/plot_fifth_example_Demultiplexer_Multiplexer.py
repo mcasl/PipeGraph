@@ -1,4 +1,6 @@
 """
+.. _example5:
+
 Fifth Example: Demultiplexor - multiplexor
 -----------------------------------------------
 
@@ -6,13 +8,13 @@ An imaginative layout using a classifier to predict the cluster labels and fitti
 
 Steps of the PipeGraph:
 
-- **scaler**: A MinMaxScaler data preprocessor
-- **classifier**: A GaussianMixture() classifier
-- **demux**: A custom Demultiplexer class in charge of splitting the input arrays accordingly to the selection input vector
-- **lm_0**: A LinearRegression model
-- **lm_1**: A LinearRegression model
-- **lm_2**: A LinearRegression model
-- **mux**: A custom Multiplexer class in charge of combining different input arrays into a single one accordingly to the selection input vector
+- **scaler**: A :class:`MinMaxScaler` data preprocessor
+- **classifier**: A :class:`GaussianMixture` classifier
+- **demux**: A custom :class:`Demultiplexer` class in charge of splitting the input arrays accordingly to the selection input vector
+- **lm_0**: A :class:`LinearRegression` model
+- **lm_1**: A :class:`LinearRegression` model
+- **lm_2**: A :class:`LinearRegression` model
+- **mux**: A custom :class:`Multiplexer` class in charge of combining different input arrays into a single one accordingly to the selection input vector
 
 .. figure:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva5.png
 
@@ -77,7 +79,7 @@ connections = { 'scaler': {'X': 'X'},
                         'selection': ('classifier', 'predict')}}
 
 ###############################################################################
-# Use PipeGraph when predict needs (X,y)
+# Use PipeGraph when predict needs (``X``,``y``)
 
 pgraph = PipeGraph(steps=steps, connections=connections)
 pgraph.fit(X, y)
