@@ -5,7 +5,7 @@ Second example: :class:`GridSearchCV` demonstration
 ----------------------------------------------------
 
 This example shows how to use :class:`GridSearchCv` with PipeGraph to effectively fit the best model across a number of hyperparameters.
-It is equivalent to use :class:`GridSearchCv with :class:`Pipeline`. More complicated cases are shown in the following examples. In this second example we wanted to show how to fit a :class:`GridSearchCV` in a yet simple scenario.
+It is equivalent to use :class:`GridSearchCv` with :class:`Pipeline`. More complicated cases are shown in the following examples. In this second example we wanted to show how to fit a :class:`GridSearchCV` in a yet simple scenario.
 
 Steps of the PipeGraph:
 
