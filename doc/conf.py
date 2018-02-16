@@ -57,11 +57,14 @@ if LooseVersion(sphinx.__version__) < LooseVersion('1.4'):
 else:
     extensions.append('sphinx.ext.imgmath')
 
+from sphinx_gallery.sorting import FileNameSortKey
 sphinx_gallery_conf = {
     # path to your examples scripts
     'examples_dirs' : '../examples',
     # path where to save gallery generated examples
-    'gallery_dirs'  : 'auto_examples'}
+    'gallery_dirs'  : 'auto_examples',
+    'within_subsection_order': FileNameSortKey,
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -232,8 +235,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'project-template.tex', u'project-template Documentation',
-   u'Vighnesh Birodkar', 'manual'),
+  ('index', 'project-template.tex', u'PipeGraph Documentation',
+   u'The PipeGraph team (see LICENSE)', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -262,8 +265,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'project-template', u'project-template Documentation',
-     [u'Vighnesh Birodkar'], 1)
+    ('index', 'project-template', u'PipeGraph Documentation',
+     [u'The PipeGraph team (see LICENSE)'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -276,8 +279,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'project-template', u'project-template Documentation',
-   u'Vighnesh Birodkar', 'project-template', 'One line description of project.',
+  ('index', 'project-template', u'PipeGraph Documentation',
+   u'The PipeGraph team (see LICENSE)', 'project-template', 'One line description of project.',
    'Miscellaneous'),
 ]
 
