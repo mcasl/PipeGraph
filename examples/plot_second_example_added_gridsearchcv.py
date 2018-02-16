@@ -2,18 +2,18 @@
 Second example: GridSearchCV demonstration
 ---------------------------------------------
 
-This example shows how to use GridSearchCv with PipeGraph to effectively fit the best model across a number of hyperparameters.
-It is equivalent to use GridSearchCv with Pipeline. More complicated cases are shown in the following examples. In this second example we wanted to show how to fit a GridSearchCV in a yet simple scenario.
+This example shows how to use :class:`GridSearchCv` with PipeGraph to effectively fit the best model across a number of hyperparameters.
+It is equivalent to use :class:`GridSearchCv with :class:`Pipeline`. More complicated cases are shown in the following examples. In this second example we wanted to show how to fit a :class:`GridSearchCV in a yet simple scenario.
 
 Steps of the PipeGraph:
 
-- scaler: a preprocessing step using a MinMaxScaler object
-- polynomial_features: a transformer step
-- linear_model: the LinearRegression object we want to fit and use for predict.
+- ``scaler``: a preprocessing step using a :class:`MinMaxScaler` object
+- ``polynomial_features``: a transformer step
+- ``linear_model`: the :class:`LinearRegression` object we want to fit and use for predict.
 
 .. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva2.png
 
-    Figure 1. PipeGraph diagram showing the steps and their connections.
+    Figure 1. PipeGraph diagram showing the steps and their connections
 """
 
 ###############################################################################
@@ -36,7 +36,7 @@ polynomial_features = PolynomialFeatures()
 linear_model = LinearRegression()
 
 ###############################################################################
-# Secondly, we define the steps and connections in a similar manner as we described in the first example. A param_grid dictionary is defined as specified by GridSearchCV. In this case we just want to explore a few possibilities varying the degree of the polynomials and whether to use or not an intercept at the linear model.
+# Secondly, we define the steps and connections in a similar manner as we described in the :ref:`first example <example1>`. A param_grid dictionary is defined as specified by GridSearchCV. In this case we just want to explore a few possibilities varying the degree of the polynomials and whether to use or not an intercept at the linear model.
 
 steps = [('scaler', scaler),
          ('polynomial_features', polynomial_features),
