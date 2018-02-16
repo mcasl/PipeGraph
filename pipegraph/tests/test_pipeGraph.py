@@ -1178,7 +1178,7 @@ class TestPipeGraphRegressor(unittest.TestCase):
     def test_PipeGraphRegressor__GridSearchCV(self):
         model = self.model
         X = self.X
-        y = self.y.values.ravel()
+        y = self.y
         param_grid = [{'model__fit_intercept': [True, False]}, ]
         gs = GridSearchCV(estimator=model, param_grid=param_grid)
         gs.fit(X, y)
@@ -1204,10 +1204,10 @@ class TestPipeGraphClassifier(unittest.TestCase):
         self.nb = nb
         self.model = model
 
-    def test_PipeGraphRegressor__GridSearchCV(self):
+    def test_PipeGraphClassifier__GridSearchCV(self):
         model = self.model
         X = self.X
-        y = self.y
+        y = self.y.values.reshape(-1,)
         param_grid = [{'scaler__feature_range': [(-0.5, 0.5), (0, 1), (-0.9, 0.9)]}, ]
         gs = GridSearchCV(estimator=model, param_grid=param_grid)
         gs.fit(X, y)
