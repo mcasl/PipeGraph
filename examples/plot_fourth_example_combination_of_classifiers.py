@@ -14,6 +14,8 @@ Steps of the PipeGraph:
 - **mlp**: A MLPClassifier() object
 
 .. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva4.png
+
+    Figure 1. PipeGraph diagram showing the steps and their connections.
 """
 import numpy as np
 import pandas as pd

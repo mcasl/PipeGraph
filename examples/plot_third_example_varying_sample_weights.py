@@ -18,6 +18,7 @@ Steps of the PipeGraph:
 
 .. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva3.png
 
+    Figure 1. PipeGraph diagram showing the steps and their connections.
 """
 import numpy as np
 import pandas as pd

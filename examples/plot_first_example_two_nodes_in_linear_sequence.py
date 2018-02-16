@@ -12,6 +12,11 @@ Steps of the PipeGraph:
 .. figure:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva1.png
 
     Figure 1. PipeGraph diagram showing the steps and their connections.
+
+
+.. figure:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva1-2.png
+
+    Figure 2. Illustration of the connections of the PipeGraph.
 """
 
 ###############################################################################

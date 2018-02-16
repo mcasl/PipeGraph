@@ -12,6 +12,8 @@ Steps of the PipeGraph:
 - linear_model: the LinearRegression object we want to fit and use for predict.
 
 .. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva2.png
+
+    Figure 1. PipeGraph diagram showing the steps and their connections.
 """
 
 ###############################################################################

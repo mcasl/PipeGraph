@@ -15,6 +15,8 @@ Steps of the PipeGraph:
 - **mux**: A custom Multiplexer class in charge of combining different input arrays into a single one accordingly to the selection input vector
 
 .. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva5.png
+
+    Figure 1. PipeGraph diagram showing the steps and their connections.
 """
 import numpy as np
 import pandas as pd
