@@ -7,11 +7,11 @@ the neural network. The data is firstly transformed by scaling its features.
 
 Steps of the PipeGraph:
 
-- scaler: implements MinMaxScaler() class
-- gaussian_nb: implements GaussianNB() class
-- svc: implements SVC() class
-- concat: implements Concatenator() class. It appends the outputs of the GaussianNB and SVC classifiers and the scaled inputs.
-- mlp: implements MLPClassifier() class
+- **scaler**: A MinMaxScaler data preprocessor
+- **gaussian_nb**: A GaussianNB classifier
+- **svc**: A SVC classifier
+- **concat**: A Concatenator custom class that appends the outputs of the GaussianNB, SVC classifiers, and the scaled inputs.
+- **mlp**: A MLPClassifier() object
 
 .. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva4.png
 """
@@ -61,7 +61,7 @@ param_grid = {'svc__C': [0.1, 0.5, 1.0],
               'mlp__max_iter': [5000, 10000]}
 
 ###############################################################################
-# Use PipeGraphClassifier when the result is a classification
+# In this example we use a PipeGraphClassifier because the result is a classification and we want to take advantage of Scikit-Learn default scoring method for classifiers.
 
 pgraph = PipeGraphClassifier(steps=steps, connections=connections)
 grid_search_classifier  = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
@@ -84,3 +84,5 @@ plt.ylabel('predicted label');
 plt.show()
 
 
+###############################################################################
+# This example displayed complex data injections that are successfully managed by PipeGraph.
