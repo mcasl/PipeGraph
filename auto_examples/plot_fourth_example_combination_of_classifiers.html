@@ -97,7 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">General examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="plot_first_example_two_nodes_in_linear_sequence.html">First example: A simple linear workflow</a></li>
-<li class="toctree-l2"><a class="reference internal" href="plot_second_example_added_gridsearchcv.html">Second example: GridSearchCV demonstration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_second_example_added_gridsearchcv.html">Second example: <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_fifth_example_Demultiplexer_Multiplexer.html">Fifth Example: Demultiplexor - multiplexor</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Fourth Example: Combination of classifiers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_third_example_varying_sample_weights.html">Third Example: Injecting varying <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> vectors to a linear regression model for GridSearchCV</a></li>
@@ -169,16 +169,16 @@
            <div itemprop="articleBody">
             
   <div class="section" id="fourth-example-combination-of-classifiers">
-<span id="sphx-glr-auto-examples-plot-fourth-example-combination-of-classifiers-py"></span><h1>Fourth Example: Combination of classifiers<a class="headerlink" href="#fourth-example-combination-of-classifiers" title="Permalink to this headline">¶</a></h1>
+<span id="example4"></span><span id="sphx-glr-auto-examples-plot-fourth-example-combination-of-classifiers-py"></span><h1>Fourth Example: Combination of classifiers<a class="headerlink" href="#fourth-example-combination-of-classifiers" title="Permalink to this headline">¶</a></h1>
 <p>A set of classifiers is combined as input to a neural network. Additionally, the scaled inputs are injected as well to
 the neural network. The data is firstly transformed by scaling its features.</p>
 <p>Steps of the PipeGraph:</p>
 <ul class="simple">
-<li><strong>scaler</strong>: A MinMaxScaler data preprocessor</li>
-<li><strong>gaussian_nb</strong>: A GaussianNB classifier</li>
-<li><strong>svc</strong>: A SVC classifier</li>
-<li><strong>concat</strong>: A Concatenator custom class that appends the outputs of the GaussianNB, SVC classifiers, and the scaled inputs.</li>
-<li><strong>mlp</strong>: A MLPClassifier() object</li>
+<li><strong>scaler</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">MinMaxScaler</span></code> data preprocessor</li>
+<li><strong>gaussian_nb</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianNB</span></code> classifier</li>
+<li><strong>svc</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">SVC</span></code> classifier</li>
+<li><strong>concat</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">Concatenator</span></code> custom class that appends the outputs of the <code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianNB</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">SVC</span></code> classifiers, and the scaled inputs.</li>
+<li><strong>mlp</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">MLPClassifier</span></code> object</li>
 </ul>
 <div class="figure" id="id1">
 <img alt="https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva4.png" src="https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva4.png" />
@@ -230,7 +230,7 @@ the neural network. The data is firstly transformed by scaling its features.</p>
               <span class="s1">&#39;mlp__max_iter&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]}</span>
 </pre></div>
 </div>
-<p>In this example we use a PipeGraphClassifier because the result is a classification and we want to take advantage of Scikit-Learn default scoring method for classifiers.</p>
+<p>In this example we use a <code class="xref py py-class docutils literal notranslate"><span class="pre">PipeGraphClassifier</span></code> because the result is a classification and we want to take advantage of Scikit-Learn default scoring method for classifiers.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pgraph</span> <span class="o">=</span> <span class="n">PipeGraphClassifier</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="o">=</span><span class="n">connections</span><span class="p">)</span>
 <span class="n">grid_search_classifier</span>  <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">pgraph</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">param_grid</span><span class="p">,</span> <span class="n">refit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">grid_search_classifier</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -254,7 +254,7 @@ the neural network. The data is firstly transformed by scaling its features.</p>
 </div>
 <img alt="../_images/sphx_glr_plot_fourth_example_combination_of_classifiers_001.png" class="align-center" src="../_images/sphx_glr_plot_fourth_example_combination_of_classifiers_001.png" />
 <p>This example displayed complex data injections that are successfully managed by PipeGraph.</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  51.657 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  51.343 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_fourth_example_combination_of_classifiers.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_fourth_example_combination_of_classifiers.py</span></code></a></div>

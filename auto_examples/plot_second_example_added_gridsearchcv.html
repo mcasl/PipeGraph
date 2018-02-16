@@ -97,7 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">General examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="plot_first_example_two_nodes_in_linear_sequence.html">First example: A simple linear workflow</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Second example: GridSearchCV demonstration</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Second example: <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_fifth_example_Demultiplexer_Multiplexer.html">Fifth Example: Demultiplexor - multiplexor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_fourth_example_combination_of_classifiers.html">Fourth Example: Combination of classifiers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_third_example_varying_sample_weights.html">Third Example: Injecting varying <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> vectors to a linear regression model for GridSearchCV</a></li>
@@ -149,7 +149,7 @@
         
           <li><a href="index.html">General examples</a> &raquo;</li>
         
-      <li>Second example: GridSearchCV demonstration</li>
+      <li>Second example: <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -169,16 +169,16 @@
            <div itemprop="articleBody">
             
   <div class="section" id="second-example-gridsearchcv-demonstration">
-<span id="sphx-glr-auto-examples-plot-second-example-added-gridsearchcv-py"></span><h1>Second example: GridSearchCV demonstration<a class="headerlink" href="#second-example-gridsearchcv-demonstration" title="Permalink to this headline">¶</a></h1>
+<span id="example2"></span><span id="sphx-glr-auto-examples-plot-second-example-added-gridsearchcv-py"></span><h1>Second example: <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration<a class="headerlink" href="#second-example-gridsearchcv-demonstration" title="Permalink to this headline">¶</a></h1>
 <p>This example shows how to use <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCv</span></code> with PipeGraph to effectively fit the best model across a number of hyperparameters.
-It is equivalent to use <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCv</span> <span class="pre">with</span> <span class="pre">:class:`Pipeline</span></code>. More complicated cases are shown in the following examples. In this second example we wanted to show how to fit a :class:<a href="#id1"><span class="problematic" id="id2">`</span></a>GridSearchCV in a yet simple scenario.</p>
+It is equivalent to use <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCv</span> <span class="pre">with</span> <span class="pre">:class:`Pipeline</span></code>. More complicated cases are shown in the following examples. In this second example we wanted to show how to fit a <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCV</span></code> in a yet simple scenario.</p>
 <p>Steps of the PipeGraph:</p>
 <ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">scaler</span></code>: a preprocessing step using a <code class="xref py py-class docutils literal notranslate"><span class="pre">MinMaxScaler</span></code> object</li>
-<li><code class="docutils literal notranslate"><span class="pre">polynomial_features</span></code>: a transformer step</li>
-<li><code class="docutils literal notranslate"><span class="pre">linear_model</span></code>: the <code class="xref py py-class docutils literal notranslate"><span class="pre">LinearRegression</span></code> object we want to fit and use for predict.</li>
+<li><strong>scaler</strong>: a preprocessing step using a <code class="xref py py-class docutils literal notranslate"><span class="pre">MinMaxScaler</span></code> object</li>
+<li><strong>polynomial_features</strong>: a transformer step</li>
+<li><strong>linear_model</strong>: the <code class="xref py py-class docutils literal notranslate"><span class="pre">LinearRegression</span></code> object we want to fit and use for predict.</li>
 </ul>
-<div class="figure" id="id3">
+<div class="figure" id="id1">
 <img alt="https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva2.png" src="https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva2.png" />
 <p class="caption"><span class="caption-text">Figure 1. PipeGraph diagram showing the steps and their connections</span></p>
 </div>
@@ -200,7 +200,8 @@ It is equivalent to use <code class="xref py py-class docutils literal notransla
 <span class="n">linear_model</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Secondly, we define the steps and connections in a similar manner as we described in the <a class="reference internal" href="plot_first_example_two_nodes_in_linear_sequence.html#example1"><span class="std std-ref">first example</span></a>. A param_grid dictionary is defined as specified by GridSearchCV. In this case we just want to explore a few possibilities varying the degree of the polynomials and whether to use or not an intercept at the linear model.</p>
+<p>Secondly, we define the steps and connections in a similar manner as we described in the <a class="reference internal" href="plot_first_example_two_nodes_in_linear_sequence.html#example1"><span class="std std-ref">first example</span></a>. A <code class="docutils literal notranslate"><span class="pre">param_grid</span></code> dictionary is defined as specified by <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCV</span></code>.
+In this case we just want to explore a few possibilities varying the degree of the polynomials and whether to use or not an intercept at the linear model.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">scaler</span><span class="p">),</span>
          <span class="p">(</span><span class="s1">&#39;polynomial_features&#39;</span><span class="p">,</span> <span class="n">polynomial_features</span><span class="p">),</span>
          <span class="p">(</span><span class="s1">&#39;linear_model&#39;</span><span class="p">,</span> <span class="n">linear_model</span><span class="p">)]</span>
@@ -214,7 +215,7 @@ It is equivalent to use <code class="xref py py-class docutils literal notransla
               <span class="s1">&#39;linear_model__fit_intercept&#39;</span><span class="p">:</span> <span class="p">[</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">]}</span>
 </pre></div>
 </div>
-<p>Now, we use PipeGraphRegressor as estimator for GridSearchCV and perform the fit and predict operations.</p>
+<p>Now, we use <code class="docutils literal notranslate"><span class="pre">PipeGraphRegressor</span></code> as estimator for <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCV</span></code> and perform the <code class="docutils literal notranslate"><span class="pre">fit</span></code> and <code class="docutils literal notranslate"><span class="pre">predict</span></code> operations.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pgraph</span> <span class="o">=</span> <span class="n">PipeGraphRegressor</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="o">=</span><span class="n">connections</span><span class="p">)</span>
 <span class="n">grid_search_regressor</span>  <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">pgraph</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">param_grid</span><span class="p">,</span> <span class="n">refit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">grid_search_regressor</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -234,14 +235,14 @@ It is equivalent to use <code class="xref py py-class docutils literal notransla
 <img alt="../_images/sphx_glr_plot_second_example_added_gridsearchcv_001.png" class="align-center" src="../_images/sphx_glr_plot_second_example_added_gridsearchcv_001.png" />
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Information</span> <span class="n">about</span> <span class="n">the</span> <span class="n">parameters</span> <span class="n">of</span> <span class="n">the</span> <span class="n">best</span> <span class="n">estimator</span><span class="p">:</span>
- <span class="n">degree</span><span class="p">:</span> <span class="mi">5</span>
- <span class="n">coefficients</span><span class="p">:</span> <span class="p">[[</span>    <span class="mf">0.</span>           <span class="mf">325.1261013</span>  <span class="o">-</span><span class="mf">1120.60862808</span>  <span class="mf">2183.48850652</span>
-  <span class="o">-</span><span class="mf">2257.53026712</span>   <span class="mf">956.12061352</span><span class="p">]]</span>
+ <span class="n">degree</span><span class="p">:</span> <span class="mi">6</span>
+ <span class="n">coefficients</span><span class="p">:</span> <span class="p">[[</span>    <span class="mf">0.</span>           <span class="mf">360.65244327</span> <span class="o">-</span><span class="mf">1184.01862582</span>  <span class="mf">1693.7409587</span>
+   <span class="o">-</span><span class="mf">568.94789867</span>  <span class="o">-</span><span class="mf">863.21615334</span>   <span class="mf">652.44212435</span><span class="p">]]</span>
 </pre></div>
 </div>
-<p>This example showed how to use GridSearchCV with PipeGraphRegressor in a simple linear workflow.
-Next example provides detail on how to proceed with a non linear case.</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.536 seconds)</p>
+<p>This example showed how to use <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCV</span></code> with <code class="xref py py-class docutils literal notranslate"><span class="pre">PipeGraphRegressor</span></code> in a simple linear workflow.
+<a class="reference internal" href="plot_third_example_varying_sample_weights.html#example3"><span class="std std-ref">Next example</span></a> provides detail on how to proceed with a non linear case.</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.501 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_second_example_added_gridsearchcv.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_second_example_added_gridsearchcv.py</span></code></a></div>

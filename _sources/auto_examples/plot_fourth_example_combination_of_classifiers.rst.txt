@@ -3,6 +3,8 @@
 .. _sphx_glr_auto_examples_plot_fourth_example_combination_of_classifiers.py:
 
 
+.. _example4:
+
 Fourth Example: Combination of classifiers
 -------------------------------------------------
 
@@ -11,11 +13,11 @@ the neural network. The data is firstly transformed by scaling its features.
 
 Steps of the PipeGraph:
 
-- **scaler**: A MinMaxScaler data preprocessor
-- **gaussian_nb**: A GaussianNB classifier
-- **svc**: A SVC classifier
-- **concat**: A Concatenator custom class that appends the outputs of the GaussianNB, SVC classifiers, and the scaled inputs.
-- **mlp**: A MLPClassifier() object
+- **scaler**: A :class:`MinMaxScaler` data preprocessor
+- **gaussian_nb**: A :class:`GaussianNB` classifier
+- **svc**: A :class:`SVC` classifier
+- **concat**: A :class:`Concatenator` custom class that appends the outputs of the :class:`GaussianNB`, :class:`SVC` classifiers, and the scaled inputs.
+- **mlp**: A :class:`MLPClassifier` object
 
 .. figure:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva4.png
 
@@ -76,7 +78,7 @@ Steps of the PipeGraph:
 
 
 
-In this example we use a PipeGraphClassifier because the result is a classification and we want to take advantage of Scikit-Learn default scoring method for classifiers.
+In this example we use a :class:`PipeGraphClassifier` because the result is a classification and we want to take advantage of Scikit-Learn default scoring method for classifiers.
 
 
 
@@ -116,7 +118,7 @@ In this example we use a PipeGraphClassifier because the result is a classificat
 This example displayed complex data injections that are successfully managed by PipeGraph.
 
 
-**Total running time of the script:** ( 0 minutes  51.657 seconds)
+**Total running time of the script:** ( 0 minutes  51.343 seconds)
 
 
 

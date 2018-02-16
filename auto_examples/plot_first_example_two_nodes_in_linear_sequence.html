@@ -97,7 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">General examples</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">First example: A simple linear workflow</a></li>
-<li class="toctree-l2"><a class="reference internal" href="plot_second_example_added_gridsearchcv.html">Second example: GridSearchCV demonstration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_second_example_added_gridsearchcv.html">Second example: <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_fifth_example_Demultiplexer_Multiplexer.html">Fifth Example: Demultiplexor - multiplexor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_fourth_example_combination_of_classifiers.html">Fourth Example: Combination of classifiers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_third_example_varying_sample_weights.html">Third Example: Injecting varying <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> vectors to a linear regression model for GridSearchCV</a></li>
@@ -169,12 +169,12 @@
            <div itemprop="articleBody">
             
   <div class="section" id="first-example-a-simple-linear-workflow">
-<span id="sphx-glr-auto-examples-plot-first-example-two-nodes-in-linear-sequence-py"></span><h1>First example: A simple linear workflow<a class="headerlink" href="#first-example-a-simple-linear-workflow" title="Permalink to this headline">¶</a></h1>
-<p id="example1">Let’s start with a simple example that could be perfectly expressed using a Pipeline. The data is transformed using a <code class="xref py py-class docutils literal notranslate"><span class="pre">MinMaxScaler</span></code> step and the preprocessed data is fed to a linear model.</p>
+<span id="example1"></span><span id="sphx-glr-auto-examples-plot-first-example-two-nodes-in-linear-sequence-py"></span><h1>First example: A simple linear workflow<a class="headerlink" href="#first-example-a-simple-linear-workflow" title="Permalink to this headline">¶</a></h1>
+<p>Let’s start with a simple example that could be perfectly expressed using a Pipeline. The data is transformed using a <code class="xref py py-class docutils literal notranslate"><span class="pre">MinMaxScaler</span></code> step and the preprocessed data is fed to a linear model.</p>
 <p>Steps of the PipeGraph:</p>
 <ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">scaler</span></code>: preprocesses the data using a <code class="xref py py-class docutils literal notranslate"><span class="pre">MinMaxScaler</span></code> object</li>
-<li><code class="docutils literal notranslate"><span class="pre">linear_model</span></code>: fits and predicts a <code class="xref py py-class docutils literal notranslate"><span class="pre">LinearRegression</span></code> model</li>
+<li><strong>scaler</strong>: preprocesses the data using a <code class="xref py py-class docutils literal notranslate"><span class="pre">MinMaxScaler</span></code> object</li>
+<li><strong>linear_model</strong>: fits and predicts a <code class="xref py py-class docutils literal notranslate"><span class="pre">LinearRegression</span></code> model</li>
 </ul>
 <div class="figure" id="id1">
 <img alt="https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva1.png" src="https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva1.png" />
@@ -203,31 +203,28 @@
         <span class="p">(</span><span class="s1">&#39;linear_model&#39;</span><span class="p">,</span> <span class="n">linear_model</span><span class="p">)]</span>
 </pre></div>
 </div>
-<p>Then, we need to provide the connections amongst steps as a dictionary. Please, refer to <a class="reference internal" href="#fig2"><span class="std std-ref">Figure 2</span></a> for a faster understanding.
-- The keys of the top level entries of the dictionary must the same as those of the previously defined steps.
-- The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</p>
+<p>Then, we need to provide the connections amongst steps as a dictionary. Please, refer to <a class="reference internal" href="#fig2"><span class="std std-ref">Figure 2</span></a> for a faster understanding.</p>
+<ul>
+<li><p class="first">The keys of the top level entries of the dictionary must the same as those of the previously defined steps.</p>
+</li>
+<li><p class="first">The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:
+- The keys of the nested dictionary represents the input variable as named at the current step.
+- The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:</p>
 <blockquote>
 <div><ul class="simple">
-<li>The keys of the nested dictionary represents the input variable as named at the current step.</li>
-<li><dl class="first docutils">
-<dt>The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:</dt>
-<dd><ul class="first last">
 <li>A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.</li>
-<li>A string representing a variable from an external source to the <code class="xref py py-class docutils literal notranslate"><span class="pre">PipeGraphRegressor</span></code> object, such as those provided by the user while invoking the fit, predict or fit_predict methods.</li>
-</ul>
-</dd>
-</dl>
-</li>
+<li>A string representing a variable from an external source to the <code class="xref py py-class docutils literal notranslate"><span class="pre">PipeGraphRegressor</span></code> object, such as those provided by the user while invoking the <code class="docutils literal notranslate"><span class="pre">fit</span></code>, <code class="docutils literal notranslate"><span class="pre">predict</span></code> or <code class="docutils literal notranslate"><span class="pre">fit_predict</span></code> methods.</li>
 </ul>
 </div></blockquote>
-<p>For instance, the linear model accepts as input <code class="docutils literal notranslate"><span class="pre">X</span></code> the output named <cite>‘predict`</cite> at the <code class="docutils literal notranslate"><span class="pre">scaler</span></code> step, and as input <code class="docutils literal notranslate"><span class="pre">y</span></code> the value of <code class="docutils literal notranslate"><span class="pre">y</span></code> passed to <code class="docutils literal notranslate"><span class="pre">fit</span></code>, <code class="docutils literal notranslate"><span class="pre">predict</span></code> or <code class="docutils literal notranslate"><span class="pre">fit_predict</span></code> methods.</p>
+</li>
+</ul>
+<p>For instance, the linear model accepts as input <code class="docutils literal notranslate"><span class="pre">X</span></code> the output named <code class="docutils literal notranslate"><span class="pre">predict</span></code> at the <code class="docutils literal notranslate"><span class="pre">scaler</span></code> step, and as input <code class="docutils literal notranslate"><span class="pre">y</span></code> the value of <code class="docutils literal notranslate"><span class="pre">y</span></code> passed to <code class="docutils literal notranslate"><span class="pre">fit</span></code>, <code class="docutils literal notranslate"><span class="pre">predict</span></code> or <code class="docutils literal notranslate"><span class="pre">fit_predict</span></code> methods.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connections</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;scaler&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="s1">&#39;X&#39;</span><span class="p">},</span>
                 <span class="s1">&#39;linear_model&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="s1">&#39;predict&#39;</span><span class="p">),</span>
                                  <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;y&#39;</span><span class="p">}}</span>
 </pre></div>
 </div>
-<p>Once the steps and the connections are defined, we instantiate a PipeGraphRegressor and show the results from applying <code class="docutils literal notranslate"><span class="pre">fit</span></code> and <code class="docutils literal notranslate"><span class="pre">predict</span></code>
-and predict data. Use PipeGraphRegressor when the result is a regression</p>
+<p>Once the steps and the connections are defined, we instantiate a <code class="xref py py-class docutils literal notranslate"><span class="pre">PipeGraphRegressor</span></code> and show the results from applying <code class="docutils literal notranslate"><span class="pre">fit</span></code> and <code class="docutils literal notranslate"><span class="pre">predict</span></code> and predict data. Use PipeGraphRegressor when the result is a regression.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pgraph</span> <span class="o">=</span> <span class="n">PipeGraphRegressor</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="o">=</span><span class="n">connections</span><span class="p">)</span>
 <span class="n">pgraph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="n">y_pred</span> <span class="o">=</span> <span class="n">pgraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -243,8 +240,8 @@ and predict data. Use PipeGraphRegressor when the result is a regression</p>
 </pre></div>
 </div>
 <img alt="../_images/sphx_glr_plot_first_example_two_nodes_in_linear_sequence_001.png" class="align-center" src="../_images/sphx_glr_plot_first_example_two_nodes_in_linear_sequence_001.png" />
-<p>This example described the basic configuration of a <code class="xref py py-class docutils literal notranslate"><span class="pre">PipeGraphRegressor</span></code>. The following examples show more elaborated cases in order of increasing complexity.</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.737 seconds)</p>
+<p>This example described the basic configuration of a <code class="xref py py-class docutils literal notranslate"><span class="pre">PipeGraphRegressor</span></code>. The <a class="reference internal" href="plot_second_example_added_gridsearchcv.html#example2"><span class="std std-ref">following examples</span></a> show more elaborated cases in order of increasing complexity.</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.963 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_first_example_two_nodes_in_linear_sequence.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_first_example_two_nodes_in_linear_sequence.py</span></code></a></div>

@@ -97,7 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">General examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="plot_first_example_two_nodes_in_linear_sequence.html">First example: A simple linear workflow</a></li>
-<li class="toctree-l2"><a class="reference internal" href="plot_second_example_added_gridsearchcv.html">Second example: GridSearchCV demonstration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_second_example_added_gridsearchcv.html">Second example: <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Fifth Example: Demultiplexor - multiplexor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_fourth_example_combination_of_classifiers.html">Fourth Example: Combination of classifiers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_third_example_varying_sample_weights.html">Third Example: Injecting varying <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> vectors to a linear regression model for GridSearchCV</a></li>
@@ -169,17 +169,17 @@
            <div itemprop="articleBody">
             
   <div class="section" id="fifth-example-demultiplexor-multiplexor">
-<span id="sphx-glr-auto-examples-plot-fifth-example-demultiplexer-multiplexer-py"></span><h1>Fifth Example: Demultiplexor - multiplexor<a class="headerlink" href="#fifth-example-demultiplexor-multiplexor" title="Permalink to this headline">¶</a></h1>
+<span id="example5"></span><span id="sphx-glr-auto-examples-plot-fifth-example-demultiplexer-multiplexer-py"></span><h1>Fifth Example: Demultiplexor - multiplexor<a class="headerlink" href="#fifth-example-demultiplexor-multiplexor" title="Permalink to this headline">¶</a></h1>
 <p>An imaginative layout using a classifier to predict the cluster labels and fitting a separate model for each cluster.</p>
 <p>Steps of the PipeGraph:</p>
 <ul class="simple">
-<li><strong>scaler</strong>: A MinMaxScaler data preprocessor</li>
-<li><strong>classifier</strong>: A GaussianMixture() classifier</li>
-<li><strong>demux</strong>: A custom Demultiplexer class in charge of splitting the input arrays accordingly to the selection input vector</li>
-<li><strong>lm_0</strong>: A LinearRegression model</li>
-<li><strong>lm_1</strong>: A LinearRegression model</li>
-<li><strong>lm_2</strong>: A LinearRegression model</li>
-<li><strong>mux</strong>: A custom Multiplexer class in charge of combining different input arrays into a single one accordingly to the selection input vector</li>
+<li><strong>scaler</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">MinMaxScaler</span></code> data preprocessor</li>
+<li><strong>classifier</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianMixture</span></code> classifier</li>
+<li><strong>demux</strong>: A custom <code class="xref py py-class docutils literal notranslate"><span class="pre">Demultiplexer</span></code> class in charge of splitting the input arrays accordingly to the selection input vector</li>
+<li><strong>lm_0</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">LinearRegression</span></code> model</li>
+<li><strong>lm_1</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">LinearRegression</span></code> model</li>
+<li><strong>lm_2</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">LinearRegression</span></code> model</li>
+<li><strong>mux</strong>: A custom <code class="xref py py-class docutils literal notranslate"><span class="pre">Multiplexer</span></code> class in charge of combining different input arrays into a single one accordingly to the selection input vector</li>
 </ul>
 <div class="figure" id="id1">
 <img alt="https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva5.png" src="https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva5.png" />
@@ -244,7 +244,7 @@
                         <span class="s1">&#39;selection&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;classifier&#39;</span><span class="p">,</span> <span class="s1">&#39;predict&#39;</span><span class="p">)}}</span>
 </pre></div>
 </div>
-<p>Use PipeGraph when predict needs (X,y)</p>
+<p>Use PipeGraph when predict needs (<code class="docutils literal notranslate"><span class="pre">X</span></code>,``y``)</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pgraph</span> <span class="o">=</span> <span class="n">PipeGraph</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="o">=</span><span class="n">connections</span><span class="p">)</span>
 <span class="n">pgraph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="c1">#%%</span>
@@ -254,7 +254,7 @@
 </pre></div>
 </div>
 <img alt="../_images/sphx_glr_plot_fifth_example_Demultiplexer_Multiplexer_001.png" class="align-center" src="../_images/sphx_glr_plot_fifth_example_Demultiplexer_Multiplexer_001.png" />
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.120 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.107 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_fifth_example_Demultiplexer_Multiplexer.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_fifth_example_Demultiplexer_Multiplexer.py</span></code></a></div>

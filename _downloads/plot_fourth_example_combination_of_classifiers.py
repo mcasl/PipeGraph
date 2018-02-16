@@ -1,4 +1,6 @@
 """
+.. _example4:
+
 Fourth Example: Combination of classifiers
 -------------------------------------------------
 
@@ -7,11 +9,11 @@ the neural network. The data is firstly transformed by scaling its features.
 
 Steps of the PipeGraph:
 
-- **scaler**: A MinMaxScaler data preprocessor
-- **gaussian_nb**: A GaussianNB classifier
-- **svc**: A SVC classifier
-- **concat**: A Concatenator custom class that appends the outputs of the GaussianNB, SVC classifiers, and the scaled inputs.
-- **mlp**: A MLPClassifier() object
+- **scaler**: A :class:`MinMaxScaler` data preprocessor
+- **gaussian_nb**: A :class:`GaussianNB` classifier
+- **svc**: A :class:`SVC` classifier
+- **concat**: A :class:`Concatenator` custom class that appends the outputs of the :class:`GaussianNB`, :class:`SVC` classifiers, and the scaled inputs.
+- **mlp**: A :class:`MLPClassifier` object
 
 .. figure:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva4.png
 
@@ -63,7 +65,7 @@ param_grid = {'svc__C': [0.1, 0.5, 1.0],
               'mlp__max_iter': [5000, 10000]}
 
 ###############################################################################
-# In this example we use a PipeGraphClassifier because the result is a classification and we want to take advantage of Scikit-Learn default scoring method for classifiers.
+# In this example we use a :class:`PipeGraphClassifier` because the result is a classification and we want to take advantage of Scikit-Learn default scoring method for classifiers.
 
 pgraph = PipeGraphClassifier(steps=steps, connections=connections)
 grid_search_classifier  = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
