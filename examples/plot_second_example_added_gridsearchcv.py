@@ -9,9 +9,9 @@ Steps of the PipeGraph:
 
 - ``scaler``: a preprocessing step using a :class:`MinMaxScaler` object
 - ``polynomial_features``: a transformer step
-- ``linear_model`: the :class:`LinearRegression` object we want to fit and use for predict.
+- ``linear_model``: the :class:`LinearRegression` object we want to fit and use for predict.
 
-.. image:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva2.png
+.. figure:: https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva2.png
 
     Figure 1. PipeGraph diagram showing the steps and their connections
 """
