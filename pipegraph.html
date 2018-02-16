@@ -174,7 +174,7 @@ to provide an interface as similar to Pipeline as possible.</p>
 <div><p>List of (name, action) tuples that are chained. The last one is considered to be the output step.</p>
 </div></blockquote>
 <p><strong>connections: dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</strong></p>
-<blockquote class="last">
+<blockquote>
 <div><ul class="simple">
 <li>The keys of the nested dictionary represents the input variable as named at the current step.</li>
 <li><dl class="first docutils">
@@ -188,6 +188,7 @@ to provide an interface as similar to Pipeline as possible.</p>
 </li>
 </ul>
 </div></blockquote>
+<p class="last"><strong>alternative_connections: a dictionary, similar to connections; provided in case a graph with different connections is desired during the predict phase. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.</strong></p>
 </td>
 </tr>
 </tbody>
@@ -370,8 +371,8 @@ self</p>
 <em class="property">class </em><code class="descclassname">pipegraph.</code><code class="descname">PipeGraphRegressor</code><span class="sig-paren">(</span><em>steps</em>, <em>connections</em>, <em>alternative_connections=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor" title="Permalink to this definition">¶</a></dt>
 <dd><p>PipeGraph with a regressor default score.
 This class implements an interface to the PipeGraph base class which is compatible with GridSearchCV.
-This documentation is heavily based on Scikit-Learn’s Pipeline on purpose as it is the aim of this class
-to provide an interface as similar to Pipeline as possible.</p>
+This documentation is heavily based on Scikit-Learn’s Pipeline on purpose as its aim is to provide an interface
+as similar to Pipeline as possible.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -381,7 +382,7 @@ to provide an interface as similar to Pipeline as possible.</p>
 <div><p>List of (name, action) tuples that are chained. The last one is considered to be the output step.</p>
 </div></blockquote>
 <p><strong>connections: dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</strong></p>
-<blockquote class="last">
+<blockquote>
 <div><ul class="simple">
 <li>The keys of the nested dictionary represents the input variable as named at the current step.</li>
 <li><dl class="first docutils">
@@ -395,6 +396,7 @@ to provide an interface as similar to Pipeline as possible.</p>
 </li>
 </ul>
 </div></blockquote>
+<p class="last"><strong>alternative_connections: a dictionary, similar to connections; provided in case a graph with different connections is desired during the predict phase. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.</strong></p>
 </td>
 </tr>
 </tbody>
