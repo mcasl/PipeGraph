@@ -57,13 +57,13 @@ if LooseVersion(sphinx.__version__) < LooseVersion('1.4'):
 else:
     extensions.append('sphinx.ext.imgmath')
 
-from sphinx_gallery.sorting import FileNameSortKey
+#from sphinx_gallery.sorting import FileNameSortKey
 sphinx_gallery_conf = {
     # path to your examples scripts
     'examples_dirs' : '../examples',
     # path where to save gallery generated examples
     'gallery_dirs'  : 'auto_examples',
-    'within_subsection_order': FileNameSortKey,
+    #'within_subsection_order': FileNameSortKey,
 }
 
 # Add any paths that contain templates here, relative to this directory.
