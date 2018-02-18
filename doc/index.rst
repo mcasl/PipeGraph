@@ -25,17 +25,11 @@ objects in imaginative layouts. This allows the user to:
 Let's see a few examples to understand how we can express these situations through PipeGraph objects.
 
 
-
-
-
-
-
     .. toctree::
        :maxdepth: 2
        
        api
        auto_examples/index
-       ...
 
 
 

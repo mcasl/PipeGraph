@@ -38,6 +38,8 @@ except:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+#    'sphinx.ext.napoleon',
+    'sphinx.ext.autosummary',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
@@ -60,11 +62,11 @@ else:
 #from sphinx_gallery.sorting import FileNameSortKey
 sphinx_gallery_conf = {
     # path to your examples scripts
-    'examples_dirs' : '../examples',
+    'examples_dirs': '../examples',
     # path where to save gallery generated examples
-    'gallery_dirs'  : 'auto_examples',
+    'gallery_dirs': 'auto_examples',
     #'within_subsection_order': FileNameSortKey,
-    'backreferences_dir' : 'modules\generated',
+    'backreferences_dir': 'modules\generated',
 }
 
 # Add any paths that contain templates here, relative to this directory.
