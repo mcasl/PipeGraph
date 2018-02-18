@@ -162,78 +162,83 @@
 <span class="target" id="module-pipegraph"></span><dl class="class">
 <dt id="pipegraph.PipeGraphClassifier">
 <em class="property">class </em><code class="descclassname">pipegraph.</code><code class="descname">PipeGraphClassifier</code><span class="sig-paren">(</span><em>steps</em>, <em>connections</em>, <em>alternative_connections=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier" title="Permalink to this definition">¶</a></dt>
-<dd><p>This class implements an interface to the PipeGraph base class which is compatible with GridSearchCV.
+<dd><p>PipeGraph with a classifier default score.
+This class implements an interface to the PipeGraph base class which is compatible with GridSearchCV.
 This documentation is heavily based on Scikit-Learn’s Pipeline on purpose as it is the aim of this class
 to provide an interface as similar to Pipeline as possible.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>steps</strong> : list</p>
-<blockquote>
-<div><p>List of (name, action) tuples that are chained. The last one is considered to be the output step.</p>
-</div></blockquote>
-<p><strong>connections: dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</strong></p>
-<blockquote>
-<div><ul class="simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>steps</strong> (<em>list</em>) – List of (name, action) tuples that are chained. The last one is considered to be the output step.</li>
+<li><strong>connections</strong> (<em>dictionary</em>) – <dl class="docutils">
+<dt>A dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</dt>
+<dd><ul class="first last">
 <li>The keys of the nested dictionary represents the input variable as named at the current step.</li>
 <li><dl class="first docutils">
-<dt>The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:</dt>
+<dt>The values associated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:</dt>
 <dd><ul class="first last">
 <li>A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.</li>
-<li>A string representing a variable from an external source to the PipeGraphRegressor object, such as those provided by the user while invoking the fit, predict or fit_predict methods.</li>
+<li>A string representing a variable from an external source to the PipeGraphClassifier object, such as those provided by the user while invoking the fit, predict or fit_predict methods.</li>
 </ul>
 </dd>
 </dl>
 </li>
 </ul>
-</div></blockquote>
-<p class="last"><strong>alternative_connections: a dictionary, similar to connections; provided in case a graph with different connections is desired during the predict phase. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.</strong></p>
+</dd>
+</dl>
+</li>
+<li><strong>alternative_connections</strong> (<em>dictionary</em>) – A dictionary as described for <code class="docutils literal notranslate"><span class="pre">connections</span></code>. This parameters provides the possibility of specifying a PipeGraph
+that uses different connection dictionaries during fit than during predict. The default value, <code class="docutils literal notranslate"><span class="pre">None</span></code>, implies that it is equivalent to the <code class="docutils literal notranslate"><span class="pre">connections</span></code> value, and thus PipeGraph uses the same graph for both <code class="docutils literal notranslate"><span class="pre">fit</span></code> and <code class="docutils literal notranslate"><span class="pre">predict</span></code>.</li>
+</ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Attributes</p>
-<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.decision_function">
 <code class="descname">decision_function</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.decision_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.decision_function" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Applies PipeGraphClasifier’s predict method and returns the decision_function output of the final estimator</dt>
-<dd><dl class="first last docutils">
+<dd><p>Applies PipeGraphClasifier’s predict method and returns the decision_function output of the final estimator</p>
+<blockquote>
+<div><dl class="docutils">
 <dt>X: iterable object</dt>
 <dd>Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</dd>
 </dl>
-</dd>
-</dl>
-<p>y_score : array-like, shape = [n_samples, n_classes]</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>y_score</strong></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">array-like, shape = [n_samples, n_classes]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.fit">
 <code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.fit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.
-Parameters
-———-
-X: iterable object</p>
-<blockquote>
-<div>Training data. Must fulfill input requirements of first step of the PipeGraph.</div></blockquote>
-<dl class="docutils">
-<dt>y <span class="classifier-delimiter">:</span> <span class="classifier">iterable, default=None</span></dt>
-<dd>Training targets. Must fulfill label requirements for all steps of the PipeGraph.</dd>
-<dt><a href="#id1"><span class="problematic" id="id2">**</span></a>fit_params <span class="classifier-delimiter">:</span> <span class="classifier">dict of string -&gt; object</span></dt>
-<dd>Parameters passed to the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method of each step, where
-each parameter name is prefixed such that parameter <code class="docutils literal notranslate"><span class="pre">p</span></code> for step
-<code class="docutils literal notranslate"><span class="pre">s</span></code> has key <code class="docutils literal notranslate"><span class="pre">s__p</span></code>.</dd>
-</dl>
+<dd><p>Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self</strong> : PipeGraphClassifier</p>
-<blockquote class="last">
-<div><p>This estimator</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>iterable object</em>) – Training data. Must fulfill input requirements of first step of the PipeGraph.</li>
+<li><strong>y</strong> (<em>iterable</em><em>, </em><em>default=None</em>) – Training targets. Must fulfill label requirements for all steps of the PipeGraph.</li>
+<li><strong>**fit_params</strong> (<em>dict of string -&gt; object</em>) – Parameters passed to the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method of each step, where
+each parameter name is prefixed such that parameter <code class="docutils literal notranslate"><span class="pre">p</span></code> for step
+<code class="docutils literal notranslate"><span class="pre">s</span></code> has key <code class="docutils literal notranslate"><span class="pre">s__p</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self</strong> – This estimator</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#pipegraph.PipeGraphClassifier" title="pipegraph.PipeGraphClassifier">PipeGraphClassifier</a></p>
 </td>
 </tr>
 </tbody>
@@ -251,25 +256,21 @@ fit_predict method of the final step in the PipeGraph. Valid only if the final s
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X: iterable object</strong></p>
-<blockquote>
-<div><p>Training data. Must fulfill input requirements of first step of
-the pipeline.</p>
-</div></blockquote>
-<p><strong>y</strong> : iterable, default=None</p>
-<blockquote>
-<div><p>Training targets. Must fulfill label requirements for all steps
-of the pipeline.</p>
-</div></blockquote>
-<p><strong>**fit_params</strong> : dict of string -&gt; object</p>
-<blockquote>
-<div><p>Parameters passed to the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method of each step, where
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>iterable object</em>) – Training data. Must fulfill input requirements of first step of
+the pipeline.</li>
+<li><strong>y</strong> (<em>iterable</em><em>, </em><em>default=None</em>) – Training targets. Must fulfill label requirements for all steps
+of the pipeline.</li>
+<li><strong>**fit_params</strong> (<em>dict of string -&gt; object</em>) – Parameters passed to the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method of each step, where
 each parameter name is prefixed such that parameter <code class="docutils literal notranslate"><span class="pre">p</span></code> for step
-<code class="docutils literal notranslate"><span class="pre">s</span></code> has key <code class="docutils literal notranslate"><span class="pre">s__p</span></code>.</p>
-</div></blockquote>
+<code class="docutils literal notranslate"><span class="pre">s</span></code> has key <code class="docutils literal notranslate"><span class="pre">s__p</span></code>.</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>y_pred</strong> : array-like</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y_pred</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array-like</p>
 </td>
 </tr>
 </tbody>
@@ -279,16 +280,19 @@ each parameter name is prefixed such that parameter <code class="docutils litera
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.get_params">
 <code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.get_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get parameters for this estimator.
-Parameters
-———-
-deep : boolean, optional</p>
-<blockquote>
-<div>If True, will return the parameters for this estimator and its nested estimators.</div></blockquote>
-<dl class="docutils">
-<dt>params <span class="classifier-delimiter">:</span> <span class="classifier">mapping of string to any</span></dt>
-<dd>Parameter names mapped to their values.</dd>
-</dl>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and its nested estimators.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>params</strong> – Parameter names mapped to their values.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">mapping of string to any</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -300,14 +304,11 @@ order defined by the alternative_connections attribute, in case it is not None, 
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X: iterable object</strong></p>
-<blockquote>
-<div><p>Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</p>
-</div></blockquote>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>iterable object</em>) – Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>y_pred</strong> : array-like</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>y_pred</strong></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array-like</td>
 </tr>
 </tbody>
 </table>
@@ -316,34 +317,45 @@ order defined by the alternative_connections attribute, in case it is not None, 
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.predict_log_proba">
 <code class="descname">predict_log_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.predict_log_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.predict_log_proba" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies PipeGraphRegressor’s predict method and returns the predict_log_proba output of the final estimator
-Parameters
-———-
-X: iterable object</p>
-<blockquote>
-<div>Data to predict on. Must fulfill input requirements of first step of the PipeGraph</div></blockquote>
-<p>y_proba : array-like, shape = [n_samples, n_classes]</p>
+<dd><p>Applies PipeGraphRegressor’s predict method and returns the predict_log_proba output of the final estimator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>iterable object</em>) – Data to predict on. Must fulfill input requirements of first step of the PipeGraph</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>y_proba</strong></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array-like, shape = [n_samples, n_classes]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.predict_proba">
 <code class="descname">predict_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.predict_proba" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies PipeGraphClassifier’s predict method and returns the predict_proba output of the final estimator
-Parameters
-———-
-X: iterable object</p>
-<blockquote>
-<div>Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</div></blockquote>
-<p>y_proba : array-like, shape = [n_samples, n_classes]</p>
+<dd><p>Applies PipeGraphClassifier’s predict method and returns the predict_proba output of the final estimator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>iterable object</em>) – Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>y_proba</strong></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array-like, shape = [n_samples, n_classes]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.score">
 <code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>sample_weight=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.score" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies PipeGraphRegressor’s predict method and returns the score output of the final estimator
-Parameters
-———-</p>
-<dl class="docutils">
+<dd><p>Applies PipeGraphRegressor’s predict method and returns the score output of the final estimator</p>
+<blockquote>
+<div><dl class="docutils">
 <dt>X <span class="classifier-delimiter">:</span> <span class="classifier">iterable</span></dt>
 <dd>Data to predict on. Must fulfill input requirements of first step of the pipeGrpaph.</dd>
 <dt>y <span class="classifier-delimiter">:</span> <span class="classifier">iterable, default=None</span></dt>
@@ -352,16 +364,24 @@ Parameters
 <dd>If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.</dd>
 </dl>
 <p>y_proba : array-like, shape = [n_samples, n_classes]</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.set_params">
 <code class="descname">set_params</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the parameters of this estimator.
-Valid parameter keys can be listed with <code class="docutils literal notranslate"><span class="pre">get_params()</span></code>.
-Returns
-——-
-self</p>
+Valid parameter keys can be listed with <code class="docutils literal notranslate"><span class="pre">get_params()</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -377,71 +397,72 @@ as similar to Pipeline as possible.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>steps</strong> : list</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>steps</strong> (<em>list</em>) – List of (name, action) tuples that are chained. The last one is considered to be the output step.</li>
+<li><strong>connections</strong> (<em>dictionary</em>) – <p>A dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</p>
 <blockquote>
-<div><p>List of (name, action) tuples that are chained. The last one is considered to be the output step.</p>
-</div></blockquote>
-<p><strong>connections: dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</strong></p>
-<blockquote>
-<div><ul class="simple">
+<div><ul>
 <li>The keys of the nested dictionary represents the input variable as named at the current step.</li>
-<li><dl class="first docutils">
-<dt>The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:</dt>
-<dd><ul class="first last">
+<li>The values associated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:<blockquote>
+<div><ul>
 <li>A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.</li>
 <li>A string representing a variable from an external source to the PipeGraphRegressor object, such as those provided by the user while invoking the fit, predict or fit_predict methods.</li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 </li>
 </ul>
 </div></blockquote>
-<p class="last"><strong>alternative_connections: a dictionary, similar to connections; provided in case a graph with different connections is desired during the predict phase. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.</strong></p>
+</li>
+<li><strong>alternative_connections</strong> (<em>dictionary</em>) – A dictionary as described for <code class="docutils literal notranslate"><span class="pre">connections</span></code>. This parameters provides the possibility of specifying a PipeGraph
+that uses a different connection dictionary during fit than during predict. The default value, <code class="docutils literal notranslate"><span class="pre">None</span></code>, implies that it is equivalent to the <code class="docutils literal notranslate"><span class="pre">connections</span></code> value, and thus PipeGraph uses the same graph for both <code class="docutils literal notranslate"><span class="pre">fit</span></code> and <code class="docutils literal notranslate"><span class="pre">predict</span></code>.</li>
+</ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Attributes</p>
-<p class="rubric">Methods</p>
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.decision_function">
 <code class="descname">decision_function</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.decision_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.decision_function" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Applies PipeGraphRegressor’s predict method and returns the decision_function output of the final estimator</dt>
-<dd><dl class="first last docutils">
+<dd><p>Applies PipeGraphRegressor’s predict method and returns the decision_function output of the final estimator</p>
+<blockquote>
+<div><dl class="docutils">
 <dt>X: iterable object</dt>
 <dd>Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</dd>
 </dl>
-</dd>
-</dl>
-<p>y_score : array-like, shape = [n_samples, n_classes]</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>y_score</strong></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">array-like, shape = [n_samples, n_classes]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.fit">
 <code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.fit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.
-Parameters
-———-
-X: iterable object</p>
-<blockquote>
-<div>Training data. Must fulfill input requirements of first step of the PipeGraph.</div></blockquote>
-<dl class="docutils">
-<dt>y <span class="classifier-delimiter">:</span> <span class="classifier">iterable, default=None</span></dt>
-<dd>Training targets. Must fulfill label requirements for all steps of the PipeGraph.</dd>
-<dt><a href="#id3"><span class="problematic" id="id4">**</span></a>fit_params <span class="classifier-delimiter">:</span> <span class="classifier">dict of string -&gt; object</span></dt>
-<dd>Parameters passed to the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method of each step, where
-each parameter name is prefixed such that parameter <code class="docutils literal notranslate"><span class="pre">p</span></code> for step
-<code class="docutils literal notranslate"><span class="pre">s</span></code> has key <code class="docutils literal notranslate"><span class="pre">s__p</span></code>.</dd>
-</dl>
+<dd><p>Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self</strong> : PipeGraphRegressor</p>
-<blockquote class="last">
-<div><p>This estimator</p>
-</div></blockquote>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>iterable object</em>) – Training data. Must fulfill input requirements of first step of the PipeGraph.</li>
+<li><strong>y</strong> (<em>iterable</em><em>, </em><em>default=None</em>) – Training targets. Must fulfill label requirements for all steps of the PipeGraph.</li>
+<li><strong>**fit_params</strong> (<em>dict of string -&gt; object</em>) – Parameters passed to the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method of each step, where
+each parameter name is prefixed such that parameter <code class="docutils literal notranslate"><span class="pre">p</span></code> for step
+<code class="docutils literal notranslate"><span class="pre">s</span></code> has key <code class="docutils literal notranslate"><span class="pre">s__p</span></code>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self</strong> – This estimator</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#pipegraph.PipeGraphRegressor" title="pipegraph.PipeGraphRegressor">PipeGraphRegressor</a></p>
 </td>
 </tr>
 </tbody>
@@ -456,24 +477,20 @@ each parameter name is prefixed such that parameter <code class="docutils litera
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X</strong> : iterable</p>
-<blockquote>
-<div><p>Training data. Must fulfill input requirements of first step of
-the PipeGraph</p>
-</div></blockquote>
-<p><strong>y</strong> : iterable, default=None</p>
-<blockquote>
-<div><p>Training targets. Must fulfill label requirements for all steps of the PipeGraph.</p>
-</div></blockquote>
-<p><strong>**fit_params</strong> : dict of string -&gt; object</p>
-<blockquote>
-<div><p>Parameters passed to the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method of each step, where
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> (<em>iterable</em>) – Training data. Must fulfill input requirements of first step of
+the PipeGraph</li>
+<li><strong>y</strong> (<em>iterable</em><em>, </em><em>default=None</em>) – Training targets. Must fulfill label requirements for all steps of the PipeGraph.</li>
+<li><strong>**fit_params</strong> (<em>dict of string -&gt; object</em>) – Parameters passed to the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method of each step, where
 each parameter name is prefixed such that parameter <code class="docutils literal notranslate"><span class="pre">p</span></code> for step
-<code class="docutils literal notranslate"><span class="pre">s</span></code> has key <code class="docutils literal notranslate"><span class="pre">s__p</span></code>.</p>
-</div></blockquote>
+<code class="docutils literal notranslate"><span class="pre">s</span></code> has key <code class="docutils literal notranslate"><span class="pre">s__p</span></code>.</li>
+</ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>y_pred</strong> : array-like</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y_pred</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array-like</p>
 </td>
 </tr>
 </tbody>
@@ -483,16 +500,19 @@ each parameter name is prefixed such that parameter <code class="docutils litera
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.get_params">
 <code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.get_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get parameters for this estimator.
-Parameters
-———-
-deep : boolean, optional</p>
-<blockquote>
-<div>If True, will return the parameters for this estimator and its nested estimators.</div></blockquote>
-<dl class="docutils">
-<dt>params <span class="classifier-delimiter">:</span> <span class="classifier">mapping of string to any</span></dt>
-<dd>Parameter names mapped to their values.</dd>
-</dl>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>deep</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, will return the parameters for this estimator and its nested estimators.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>params</strong> – Parameter names mapped to their values.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">mapping of string to any</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -504,14 +524,11 @@ order defined by the alternative_connections attribute, in case it is not None, 
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>X: iterable object</strong></p>
-<blockquote>
-<div><p>Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</p>
-</div></blockquote>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>iterable object</em>) – Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>y_pred</strong> : array-like</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>y_pred</strong></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array-like</td>
 </tr>
 </tbody>
 </table>
@@ -520,42 +537,59 @@ order defined by the alternative_connections attribute, in case it is not None, 
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.predict_log_proba">
 <code class="descname">predict_log_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.predict_log_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.predict_log_proba" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies PipeGraphRegressor’s predict method and returns the predict_log_proba output of the final estimator
-Parameters
-———-
-X: iterable object</p>
-<blockquote>
-<div>Data to predict on. Must fulfill input requirements of first step of the PipeGraph</div></blockquote>
-<p>y_proba : array-like, shape = [n_samples, n_classes]</p>
+<dd><p>Applies PipeGraphRegressor’s predict method and returns the predict_log_proba output of the final estimator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>iterable object</em>) – Data to predict on. Must fulfill input requirements of first step of the PipeGraph</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>y_proba</strong></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array-like, shape = [n_samples, n_classes]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.predict_proba">
 <code class="descname">predict_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.predict_proba" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies PipeGraphRegressor’s predict method and returns the predict_proba output of the final estimator
-Parameters
-———-
-X: iterable object</p>
-<blockquote>
-<div>Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</div></blockquote>
-<p>y_proba : array-like, shape = [n_samples, n_classes]</p>
+<dd><p>Applies PipeGraphRegressor’s predict method and returns the predict_proba output of the final estimator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> (<em>iterable object</em>) – Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>y_proba</strong></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array-like, shape = [n_samples, n_classes]</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.score">
 <code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>sample_weight=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.score" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies PipeGraphRegressor’s predict method and returns the score output of the final estimator
-Parameters
-———-</p>
-<dl class="docutils">
-<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">iterable</span></dt>
-<dd>Data to predict on. Must fulfill input requirements of first step of the pipeGrpaph.</dd>
-<dt>y <span class="classifier-delimiter">:</span> <span class="classifier">iterable, default=None</span></dt>
-<dd>Targets used for scoring. Must fulfill label requirements for all steps of the pipeGrpaph.</dd>
-<dt>sample_weight <span class="classifier-delimiter">:</span> <span class="classifier">array-like, default=None</span></dt>
-<dd>If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.</dd>
-</dl>
-<p>y_proba : array-like, shape = [n_samples, n_classes]</p>
+<dd><p>Applies PipeGraphRegressor’s predict method and returns the score output of the final estimator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>X</strong> (<em>iterable</em>) – Data to predict on. Must fulfill input requirements of first step of the pipeGrpaph.</li>
+<li><strong>y</strong> (<em>iterable</em><em>, </em><em>default=None</em>) – Targets used for scoring. Must fulfill label requirements for all steps of the pipeGrpaph.</li>
+<li><strong>sample_weight</strong> (<em>array-like</em><em>, </em><em>default=None</em>) – If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.</li>
+<li><strong>Returns</strong> – </li>
+<li><strong>-------</strong> – </li>
+<li><strong>y_proba</strong> (<em>array-like</em><em>, </em><em>shape =</em><em> [</em><em>n_samples</em><em>, </em><em>n_classes</em><em>]</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -563,9 +597,8 @@ Parameters
 <code class="descname">set_params</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the parameters of this estimator.
 Valid parameter keys can be listed with <code class="docutils literal notranslate"><span class="pre">get_params()</span></code>.
-Returns
-——-
-self</p>
+:returns:
+:rtype: self</p>
 </dd></dl>
 
 </dd></dl>

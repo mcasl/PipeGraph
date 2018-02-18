@@ -171,12 +171,13 @@
 <span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="k">import</span> <span class="n">Bunch</span>
 <span class="kn">from</span> <span class="nn">sklearn.utils.metaestimators</span> <span class="k">import</span> <span class="n">_BaseComposition</span>
 
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">NOTSET</span><span class="p">)</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="PipeGraphRegressor"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor">[docs]</a><span class="k">class</span> <span class="nc">PipeGraphRegressor</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">RegressorMixin</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;PipeGraph with a regressor default score.</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    PipeGraph with a regressor default score.</span>
 <span class="sd">    This class implements an interface to the PipeGraph base class which is compatible with GridSearchCV.</span>
 <span class="sd">    This documentation is heavily based on Scikit-Learn&#39;s Pipeline on purpose as its aim is to provide an interface</span>
 <span class="sd">    as similar to Pipeline as possible.</span>
@@ -186,23 +187,31 @@
 <span class="sd">    steps : list</span>
 <span class="sd">        List of (name, action) tuples that are chained. The last one is considered to be the output step.</span>
 
-<span class="sd">    connections: dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</span>
-<span class="sd">        - The keys of the nested dictionary represents the input variable as named at the current step.</span>
-<span class="sd">        - The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:</span>
-<span class="sd">            - A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.</span>
-<span class="sd">            - A string representing a variable from an external source to the PipeGraphRegressor object, such as those provided by the user while invoking the fit, predict or fit_predict methods.</span>
+<span class="sd">    connections: dictionary</span>
+<span class="sd">        A dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</span>
 
-<span class="sd">    alternative_connections: a dictionary, similar to connections; provided in case a graph with different connections is desired during the predict phase. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.</span>
+<span class="sd">            - The keys of the nested dictionary represents the input variable as named at the current step.</span>
+<span class="sd">            - The values associated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:</span>
+
+<span class="sd">                - A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.</span>
+<span class="sd">                - A string representing a variable from an external source to the PipeGraphRegressor object, such as those provided by the user while invoking the fit, predict or fit_predict methods.</span>
+
+<span class="sd">    alternative_connections: dictionary</span>
+<span class="sd">        A dictionary as described for ``connections``. This parameters provides the possibility of specifying a PipeGraph</span>
+<span class="sd">        that uses a different connection dictionary during fit than during predict. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="n">alternative_connections</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span> <span class="o">=</span> <span class="n">PipeGraph</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="n">alternative_connections</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PipeGraphRegressor.get_params"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get parameters for this estimator.</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get parameters for this estimator.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        deep : boolean, optional</span>
 <span class="sd">            If True, will return the parameters for this estimator and its nested estimators.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        params : mapping of string to any</span>
@@ -211,7 +220,8 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">get_params</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="n">deep</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PipeGraphRegressor.set_params"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.set_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set the parameters of this estimator.</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the parameters of this estimator.</span>
 <span class="sd">        Valid parameter keys can be listed with ``get_params()``.</span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -227,6 +237,7 @@
 <div class="viewcode-block" id="PipeGraphRegressor.fit"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: iterable object</span>
@@ -249,7 +260,8 @@
         <span class="k">return</span> <span class="bp">self</span>
 
 <div class="viewcode-block" id="PipeGraphRegressor.predict"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Predict the PipeGraph steps one after the other and following the topological</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict the PipeGraph steps one after the other and following the topological</span>
 <span class="sd">        order defined by the alternative_connections attribute, in case it is not None, or the connections attribute otherwise.</span>
 
 <span class="sd">        Parameters</span>
@@ -264,7 +276,8 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)[</span><span class="s1">&#39;predict&#39;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="PipeGraphRegressor.fit_predict"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.fit_predict">[docs]</a>    <span class="k">def</span> <span class="nf">fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;This is equivalent to applying the fit method and then predict method.</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is equivalent to applying the fit method and then predict method.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -286,11 +299,14 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PipeGraphRegressor.predict_proba"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.predict_proba">[docs]</a>    <span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Applies PipeGraphRegressor&#39;s predict method and returns the predict_proba output of the final estimator</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies PipeGraphRegressor&#39;s predict method and returns the predict_proba output of the final estimator</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: iterable object</span>
 <span class="sd">            Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y_proba : array-like, shape = [n_samples, n_classes]</span>
@@ -298,11 +314,14 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)[</span><span class="s1">&#39;predict_proba&#39;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="PipeGraphRegressor.decision_function"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.decision_function">[docs]</a>    <span class="k">def</span> <span class="nf">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Applies PipeGraphRegressor&#39;s predict method and returns the decision_function output of the final estimator</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies PipeGraphRegressor&#39;s predict method and returns the decision_function output of the final estimator</span>
+
 <span class="sd">         Parameters</span>
 <span class="sd">         ----------</span>
 <span class="sd">         X: iterable object</span>
 <span class="sd">            Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y_score : array-like, shape = [n_samples, n_classes]</span>
@@ -311,11 +330,14 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PipeGraphRegressor.predict_log_proba"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.predict_log_proba">[docs]</a>    <span class="k">def</span> <span class="nf">predict_log_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Applies PipeGraphRegressor&#39;s predict method and returns the predict_log_proba output of the final estimator</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies PipeGraphRegressor&#39;s predict method and returns the predict_log_proba output of the final estimator</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: iterable object</span>
 <span class="sd">            Data to predict on. Must fulfill input requirements of first step of the PipeGraph</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y_proba : array-like, shape = [n_samples, n_classes]</span>
@@ -323,16 +345,18 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)[</span><span class="s1">&#39;predict_log_proba&#39;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="PipeGraphRegressor.score"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.score">[docs]</a>    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Applies PipeGraphRegressor&#39;s predict method and returns the score output of the final estimator</span>
-<span class="sd">         Parameters</span>
-<span class="sd">         ----------</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies PipeGraphRegressor&#39;s predict method and returns the score output of the final estimator</span>
 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">         X : iterable</span>
 <span class="sd">             Data to predict on. Must fulfill input requirements of first step of the pipeGrpaph.</span>
 <span class="sd">         y : iterable, default=None</span>
 <span class="sd">            Targets used for scoring. Must fulfill label requirements for all steps of the pipeGrpaph.</span>
 <span class="sd">         sample_weight : array-like, default=None</span>
 <span class="sd">            If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.</span>
+
 <span class="sd">         Returns</span>
 <span class="sd">         -------</span>
 <span class="sd">         y_proba : array-like, shape = [n_samples, n_classes]</span>
@@ -347,7 +371,8 @@
 
 
 <div class="viewcode-block" id="PipeGraphClassifier"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier">[docs]</a><span class="k">class</span> <span class="nc">PipeGraphClassifier</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;This class implements an interface to the PipeGraph base class which is compatible with GridSearchCV.</span>
+    <span class="sd">&quot;&quot;&quot;PipeGraph with a classifier default score.</span>
+<span class="sd">    This class implements an interface to the PipeGraph base class which is compatible with GridSearchCV.</span>
 <span class="sd">    This documentation is heavily based on Scikit-Learn&#39;s Pipeline on purpose as it is the aim of this class</span>
 <span class="sd">    to provide an interface as similar to Pipeline as possible.</span>
 
@@ -356,23 +381,29 @@
 <span class="sd">    steps : list</span>
 <span class="sd">        List of (name, action) tuples that are chained. The last one is considered to be the output step.</span>
 
-<span class="sd">    connections: dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</span>
-<span class="sd">        - The keys of the nested dictionary represents the input variable as named at the current step.</span>
-<span class="sd">        - The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:</span>
-<span class="sd">            - A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.</span>
-<span class="sd">            - A string representing a variable from an external source to the PipeGraphRegressor object, such as those provided by the user while invoking the fit, predict or fit_predict methods.</span>
+<span class="sd">    connections: dictionary</span>
+<span class="sd">        A dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</span>
+<span class="sd">            - The keys of the nested dictionary represents the input variable as named at the current step.</span>
+<span class="sd">            - The values associated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:</span>
+<span class="sd">                - A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.</span>
+<span class="sd">                - A string representing a variable from an external source to the PipeGraphClassifier object, such as those provided by the user while invoking the fit, predict or fit_predict methods.</span>
 
-<span class="sd">    alternative_connections: a dictionary, similar to connections; provided in case a graph with different connections is desired during the predict phase. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    alternative_connections: dictionary</span>
+<span class="sd">        A dictionary as described for ``connections``. This parameters provides the possibility of specifying a PipeGraph</span>
+<span class="sd">        that uses different connection dictionaries during fit than during predict. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="n">alternative_connections</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span> <span class="o">=</span> <span class="n">PipeGraph</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="n">alternative_connections</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PipeGraphClassifier.get_params"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get parameters for this estimator.</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get parameters for this estimator.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        deep : boolean, optional</span>
 <span class="sd">            If True, will return the parameters for this estimator and its nested estimators.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        params : mapping of string to any</span>
@@ -381,8 +412,10 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">get_params</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="n">deep</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PipeGraphClassifier.set_params"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.set_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set the parameters of this estimator.</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the parameters of this estimator.</span>
 <span class="sd">        Valid parameter keys can be listed with ``get_params()``.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        self</span>
@@ -397,6 +430,7 @@
 <div class="viewcode-block" id="PipeGraphClassifier.fit"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: iterable object</span>
@@ -419,7 +453,8 @@
         <span class="k">return</span> <span class="bp">self</span>
 
 <div class="viewcode-block" id="PipeGraphClassifier.predict"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Predict the PipeGraph steps one after the other and following the topological</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Predict the PipeGraph steps one after the other and following the topological</span>
 <span class="sd">        order defined by the alternative_connections attribute, in case it is not None, or the connections attribute otherwise.</span>
 
 <span class="sd">        Parameters</span>
@@ -434,7 +469,8 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)[</span><span class="s1">&#39;predict&#39;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="PipeGraphClassifier.fit_predict"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.fit_predict">[docs]</a>    <span class="k">def</span> <span class="nf">fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Applies fit_predict of last step in PipeGraph after it predicts the PipeGraph steps one after</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies fit_predict of last step in PipeGraph after it predicts the PipeGraph steps one after</span>
 <span class="sd">        the other and following the topological order of the graph.</span>
 
 <span class="sd">        Applies predict of a PipeGraph to the data following the topological order of the graph, followed by the</span>
@@ -461,11 +497,14 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PipeGraphClassifier.predict_proba"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.predict_proba">[docs]</a>    <span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Applies PipeGraphClassifier&#39;s predict method and returns the predict_proba output of the final estimator</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies PipeGraphClassifier&#39;s predict method and returns the predict_proba output of the final estimator</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: iterable object</span>
 <span class="sd">            Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y_proba : array-like, shape = [n_samples, n_classes]</span>
@@ -473,11 +512,14 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)[</span><span class="s1">&#39;predict_proba&#39;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="PipeGraphClassifier.decision_function"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.decision_function">[docs]</a>    <span class="k">def</span> <span class="nf">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Applies PipeGraphClasifier&#39;s predict method and returns the decision_function output of the final estimator</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies PipeGraphClasifier&#39;s predict method and returns the decision_function output of the final estimator</span>
+
 <span class="sd">         Parameters</span>
 <span class="sd">         ----------</span>
 <span class="sd">         X: iterable object</span>
 <span class="sd">            Data to predict on. Must fulfill input requirements of first step of the PipeGraph.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y_score : array-like, shape = [n_samples, n_classes]</span>
@@ -487,11 +529,14 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PipeGraphClassifier.predict_log_proba"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.predict_log_proba">[docs]</a>    <span class="k">def</span> <span class="nf">predict_log_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Applies PipeGraphRegressor&#39;s predict method and returns the predict_log_proba output of the final estimator</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies PipeGraphRegressor&#39;s predict method and returns the predict_log_proba output of the final estimator</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        X: iterable object</span>
 <span class="sd">            Data to predict on. Must fulfill input requirements of first step of the PipeGraph</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y_proba : array-like, shape = [n_samples, n_classes]</span>
@@ -499,16 +544,18 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)[</span><span class="s1">&#39;predict_log_proba&#39;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="PipeGraphClassifier.score"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.score">[docs]</a>    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Applies PipeGraphRegressor&#39;s predict method and returns the score output of the final estimator</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies PipeGraphRegressor&#39;s predict method and returns the score output of the final estimator</span>
+
 <span class="sd">         Parameters</span>
 <span class="sd">         ----------</span>
-
 <span class="sd">         X : iterable</span>
 <span class="sd">             Data to predict on. Must fulfill input requirements of first step of the pipeGrpaph.</span>
 <span class="sd">         y : iterable, default=None</span>
 <span class="sd">            Targets used for scoring. Must fulfill label requirements for all steps of the pipeGrpaph.</span>
 <span class="sd">         sample_weight : array-like, default=None</span>
 <span class="sd">            If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.</span>
+
 <span class="sd">         Returns</span>
 <span class="sd">         -------</span>
 <span class="sd">         y_proba : array-like, shape = [n_samples, n_classes]</span>
@@ -522,18 +569,30 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xt</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">score_params</span><span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">PipeGraph</span><span class="p">(</span><span class="n">_BaseComposition</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Base class of the module in charge of holding the steps, connections and graphs needed to perform graph like</span>
+    <span class="sd">&quot;&quot;&quot;Class in charge of holding the steps, connections and graphs needed to perform graph like</span>
 <span class="sd">    fits and predicts.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    steps : list</span>
+<span class="sd">        List of (name, action) tuples that are chained. The last one is considered to be the output step.</span>
+
+<span class="sd">    connections: dictionary</span>
+<span class="sd">        A dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</span>
+
+<span class="sd">        - The keys of the nested dictionary represents the input variable as named at the current step.</span>
+<span class="sd">        - The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:</span>
+
+<span class="sd">            - A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.</span>
+<span class="sd">            - A string representing a variable from an external source to the PipeGraphRegressor object, such as those provided by the user while invoking the fit, predict or fit_predict methods.</span>
+
+<span class="sd">    alternative_connections: dictionary</span>
+<span class="sd">        A dictionary as described for ``connections``. This parameters provides the possibility of specifying a PipeGraph</span>
+<span class="sd">        that uses a different connections dictionary during fit than during predict. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="n">alternative_connections</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            steps:</span>
-<span class="sd">            connections:</span>
-<span class="sd">            alternative_connections:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="n">steps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="o">=</span> <span class="n">connections</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alternative_connections</span> <span class="o">=</span> <span class="n">alternative_connections</span> <span class="k">if</span> <span class="n">alternative_connections</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">connections</span>
@@ -761,7 +820,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_strategy</span> <span class="o">=</span> <span class="n">strategy</span>
 
     <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get parameters for this estimator or pipeGraph CustomBlock.</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get parameters for this estimator or pipeGraph CustomBlock.</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        -------</span>
 <span class="sd">        params : mapping of string to any</span>
@@ -784,7 +844,8 @@
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Fit the model included in the step</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit the model included in the step</span>
 <span class="sd">        ----------</span>
 <span class="sd">        *pargs : iterable</span>
 <span class="sd">            Training data. Must fulfill input requirements of first step of the</span>

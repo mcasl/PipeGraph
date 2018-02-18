@@ -204,24 +204,16 @@
 </pre></div>
 </div>
 <p>Then, we need to provide the connections amongst steps as a dictionary. Please, refer to <a class="reference internal" href="#fig2"><span class="std std-ref">Figure 2</span></a> for a faster understanding.</p>
-<ul>
-<li><p class="first">The keys of the top level entries of the dictionary must be the same as those of the previously defined steps.</p>
-</li>
-<li><p class="first">The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</p>
-<blockquote>
-<div><ul>
-<li><p class="first">The keys of the nested dictionary represent the input variables as named at the current step.</p>
-</li>
-<li><p class="first">The values assocciated to these keys define the steps that hold the desired information and the variables as named at that step. This information can be written as:</p>
-<blockquote>
-<div><ul class="simple">
+<ul class="simple">
+<li>The keys of the top level entries of the dictionary must be the same as those of the previously defined steps.</li>
+<li>The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:<ul>
+<li>The keys of the nested dictionary represent the input variables as named at the current step.</li>
+<li>The values assocciated to these keys define the steps that hold the desired information and the variables as named at that step. This information can be written as:<ul>
 <li>A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.</li>
 <li>A string representing a variable from an external source to the <code class="xref py py-class docutils literal notranslate"><span class="pre">PipeGraphRegressor</span></code> object, such as those provided by the user while invoking the <code class="docutils literal notranslate"><span class="pre">fit</span></code>, <code class="docutils literal notranslate"><span class="pre">predict</span></code> or <code class="docutils literal notranslate"><span class="pre">fit_predict</span></code> methods.</li>
 </ul>
-</div></blockquote>
 </li>
 </ul>
-</div></blockquote>
 </li>
 </ul>
 <p>For instance, the linear model accepts as input <code class="docutils literal notranslate"><span class="pre">X</span></code> the output named <code class="docutils literal notranslate"><span class="pre">predict</span></code> at the <code class="docutils literal notranslate"><span class="pre">scaler</span></code> step, and as input <code class="docutils literal notranslate"><span class="pre">y</span></code> the value of <code class="docutils literal notranslate"><span class="pre">y</span></code> passed to <code class="docutils literal notranslate"><span class="pre">fit</span></code>, <code class="docutils literal notranslate"><span class="pre">predict</span></code> or <code class="docutils literal notranslate"><span class="pre">fit_predict</span></code> methods.</p>
@@ -247,7 +239,7 @@
 </div>
 <img alt="../_images/sphx_glr_plot_1_example_two_nodes_in_linear_sequence_001.png" class="align-center" src="../_images/sphx_glr_plot_1_example_two_nodes_in_linear_sequence_001.png" />
 <p>This example described the basic configuration of a <code class="xref py py-class docutils literal notranslate"><span class="pre">PipeGraphRegressor</span></code>. The <a class="reference internal" href="plot_2_example_added_gridsearchcv.html#example2"><span class="std std-ref">following examples</span></a> show more elaborated cases in order of increasing complexity.</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.688 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.754 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_1_example_two_nodes_in_linear_sequence.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_1_example_two_nodes_in_linear_sequence.py</span></code></a></div>
