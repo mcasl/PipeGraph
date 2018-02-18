@@ -38,13 +38,13 @@ except:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-#    'sphinx.ext.napoleon',
+    'sphinx.ext.napoleon',
     'sphinx.ext.autosummary',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
-    'numpydoc',
+#    'numpydoc',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx_gallery.gen_gallery'
@@ -66,7 +66,7 @@ sphinx_gallery_conf = {
     # path where to save gallery generated examples
     'gallery_dirs': 'auto_examples',
     #'within_subsection_order': FileNameSortKey,
-    'backreferences_dir': 'modules\generated',
+    'backreferences_dir': 'modules/generated',
 }
 
 # Add any paths that contain templates here, relative to this directory.
