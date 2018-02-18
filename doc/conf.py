@@ -64,6 +64,7 @@ sphinx_gallery_conf = {
     # path where to save gallery generated examples
     'gallery_dirs'  : 'auto_examples',
     #'within_subsection_order': FileNameSortKey,
+    'backreferences_dir' : 'modules\generated',
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -312,3 +313,4 @@ def setup(app):
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
+
