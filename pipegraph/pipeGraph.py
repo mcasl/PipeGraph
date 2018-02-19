@@ -1012,7 +1012,8 @@ class Concatenator(BaseEstimator):
         Pandas series or Pandas DataFrame with the data input concatenated
         """
         df_list = []
-        for item in kwargs.values():
+        for name in sorted(kwargs.keys()):
+            item = kwargs[name]
             if isinstance(item, pd.Series) or isinstance(item, pd.DataFrame):
                 df_list.append(item)
             else:

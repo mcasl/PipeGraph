@@ -26,7 +26,7 @@ from pipegraph.pipeGraph import (PipeGraphRegressor,
                                  ColumnSelector,
                                  )
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.NOTSET)
 logger = logging.getLogger(__name__)
 
 
