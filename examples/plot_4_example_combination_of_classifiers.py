@@ -90,4 +90,4 @@ plt.show()
 
 ###############################################################################
 # This example displayed complex data injections that are successfully managed by **PipeGraph**.
-# :ref:`Next example on <example5>`
+# Next example :ref:`on <example5>`.
