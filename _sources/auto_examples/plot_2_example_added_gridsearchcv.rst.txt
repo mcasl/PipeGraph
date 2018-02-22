@@ -112,15 +112,15 @@ Now, we use ``PipeGraphRegressor`` as estimator for :class:`GridSearchCV` and pe
 
     Information about the parameters of the best estimator: 
      degree: 5 
-     coefficients: [[    0.           410.75586702 -1570.21230573  3130.24041481
-      -3123.68676925  1247.8858747 ]]
+     coefficients: [[  -44.85784776   376.07061207 -1396.01391109  2722.16056895
+      -2679.28995344  1067.89339677]]
 
 
 This example showed how to use :class:`GridSearchCV` with :class:`PipeGraphRegressor` in a simple linear workflow.
 :ref:`Next example <example3>` provides detail on how to proceed with a non linear case.
 
 
-**Total running time of the script:** ( 0 minutes  0.539 seconds)
+**Total running time of the script:** ( 0 minutes  0.535 seconds)
 
 
 

@@ -116,9 +116,10 @@ In this example we use a :class:`PipeGraphClassifier` because the result is a cl
 
 
 This example displayed complex data injections that are successfully managed by **PipeGraph**.
+:ref:`Next example on <example5>`
 
 
-**Total running time of the script:** ( 0 minutes  49.896 seconds)
+**Total running time of the script:** ( 0 minutes  51.588 seconds)
 
 
 

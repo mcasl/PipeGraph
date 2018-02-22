@@ -128,7 +128,7 @@ Once the steps and the connections are defined, we instantiate a :class:`PipeGra
 This example described the basic configuration of a :class:`PipeGraphRegressor`. The :ref:`following examples <example2>` show more elaborated cases in order of increasing complexity.
 
 
-**Total running time of the script:** ( 0 minutes  0.743 seconds)
+**Total running time of the script:** ( 0 minutes  0.718 seconds)
 
 
 
