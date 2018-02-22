@@ -79,7 +79,7 @@ connections = { 'scaler': {'X': 'X'},
                         'selection': ('classifier', 'predict')}}
 
 ###############################################################################
-# Use **PipeGraph** when predict needs (``X``,``y``)
+# Use **PipeGraph** when predict needs ( ``X``, ``y`` )
 
 pgraph = PipeGraph(steps=steps, connections=connections)
 pgraph.fit(X, y)
