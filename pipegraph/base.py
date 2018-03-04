@@ -500,8 +500,8 @@ class PipeGraph(_BaseComposition):
         self._fit_data = external_data
 
         if self._fit_graph is None:
-            connections = make_connections_when_not_provided_to_init(steps=self.steps)
-            self._fit_graph = build_graph(connections)
+            self.fit_connections = make_connections_when_not_provided_to_init(steps=self.steps)
+            self._fit_graph = build_graph(self.fit_connections)
 
         fit_nodes = self._filter_fit_nodes()
         for step_name in fit_nodes:
@@ -551,8 +551,8 @@ class PipeGraph(_BaseComposition):
         self._predict_data = external_data
 
         if self._predict_graph is None:
-            connections = make_connections_when_not_provided_to_init(steps=self.steps)
-            self._predict_graph = build_graph(connections)
+            self.predict_connections = make_connections_when_not_provided_to_init(steps=self.steps)
+            self._predict_graph = build_graph(self.predict_connections)
 
         predict_nodes = self._filter_predict_nodes()
 
