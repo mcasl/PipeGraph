@@ -28,7 +28,8 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GridSearchCV
-from pipegraph.pipeGraph import PipeGraphRegressor, CustomPower, ColumnSelector, Reshape
+from pipegraph.base import PipeGraphRegressor
+from pipegraph.standard_blocks import ColumnSelector, CustomPower, Reshape
 import matplotlib.pyplot as plt
 
 ###############################################################################
@@ -71,7 +72,7 @@ param_grid = {'polynomial_features__degree': range(1, 3),
 ###############################################################################
 # Then, we use :class:`PipeGraphRegressor` as estimator for :class:`GridSearchCV` and perform the ``fit`` and ``predict`` operations.
 
-pgraph = PipeGraphRegressor(steps=steps, connections=connections)
+pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
 grid_search_regressor = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
 grid_search_regressor.fit(X, y)
 y_pred = grid_search_regressor.predict(X)

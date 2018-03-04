@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
-import inspect
 import logging
-from abc import abstractmethod
 
 import networkx as nx
-import numpy as np
-import pandas as pd
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
-from sklearn.model_selection import train_test_split
 from sklearn.utils import Bunch
 from sklearn.utils.metaestimators import _BaseComposition
+
+from pipegraph.adapters import (AdapterForFitTransformAdaptee,
+                                AdapterForFitPredictAdaptee,
+                                AdapterForAtomicFitPredictAdaptee
+                                )
+from pipegraph.standard_blocks import strategies_for_custom_adaptees as std_blocks_strategies
 
 logging.basicConfig(level=logging.NOTSET)
 logger = logging.getLogger(__name__)
@@ -39,9 +40,12 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
     alternative_connections: dictionary
         A dictionary as described for ``connections``. This parameters provides the possibility of specifying a PipeGraph
         that uses a different connection dictionary during fit than during predict. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.
+
+    log_level: int
+        Log level for traceability purposes. This is yet a unimplemented feature.
     """
-    def __init__(self, steps, connections, alternative_connections=None):
-        self.pipegraph = PipeGraph(steps, connections, alternative_connections)
+    def __init__(self, steps, fit_connections=None, predict_connections=None, log_level=None):
+        self.pipegraph = PipeGraph(steps, fit_connections, predict_connections, log_level)
 
     def get_params(self, deep=True):
         """
@@ -206,7 +210,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         if sample_weight is not None:
             score_params['sample_weight'] = sample_weight
         final_step_name = self.pipegraph.steps[-1][0]
-        Xt = self.pipegraph._predict_data[self.pipegraph.connections[final_step_name]['X']]
+        Xt = self.pipegraph._predict_data[self.pipegraph.fit_connections[final_step_name]['X']]
         return self.pipegraph.steps[-1][-1].score(Xt, y, **score_params)
 
 
@@ -231,9 +235,14 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
     alternative_connections: dictionary
         A dictionary as described for ``connections``. This parameters provides the possibility of specifying a PipeGraph
         that uses different connection dictionaries during fit than during predict. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.
+
+
+    log_level: int
+        Log level for traceability purposes. This is yet a unimplemented feature.
+
         """
-    def __init__(self, steps, connections, alternative_connections=None):
-        self.pipegraph = PipeGraph(steps, connections, alternative_connections)
+    def __init__(self, steps, fit_connections=None, predict_connections=None, log_level=None):
+        self.pipegraph = PipeGraph(steps, fit_connections, predict_connections, log_level)
 
     def get_params(self, deep=True):
         """
@@ -405,7 +414,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         if sample_weight is not None:
             score_params['sample_weight'] = sample_weight
         final_step_name = self.pipegraph.steps[-1][0]
-        Xt = self.pipegraph._predict_data[self.pipegraph.connections[final_step_name]['X']]
+        Xt = self.pipegraph._predict_data[self.pipegraph.fit_connections[final_step_name]['X']]
         return self.pipegraph.steps[-1][-1].score(Xt, y, **score_params)
 
 class PipeGraph(_BaseComposition):
@@ -430,20 +439,24 @@ class PipeGraph(_BaseComposition):
         A dictionary as described for ``connections``. This parameters provides the possibility of specifying a PipeGraph
         that uses a different connections dictionary during fit than during predict. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.
 
+    log_level: int
+        Log level for traceability purposes. This is yet a unimplemented feature.
+
     """
 
-    def __init__(self, steps, connections, alternative_connections=None):
+    def __init__(self, steps, fit_connections=None, predict_connections=None, log_level=None):
         self.steps = steps
-        self.connections = connections
-        self.alternative_connections = alternative_connections if alternative_connections is not None else connections
+        self.fit_connections = fit_connections
+        self.predict_connections = predict_connections if predict_connections is not None else fit_connections
+        self.log_level = log_level
 
         node_names = [name for name, model in steps]
         if '_External' in node_names:
             raise ValueError("Please use another name for the _External node. _External is used internally.")
 
-        self._fit_graph = build_graph(self.connections)
-        self._predict_graph = build_graph(self.alternative_connections)
-        self._step = {name: make_step(adaptee=step_model) for name, step_model in steps}
+        self._fit_graph = build_graph(self.fit_connections)
+        self._predict_graph = build_graph(self.predict_connections)
+        self._processes = {name: wrap_adaptee_in_process(adaptee=step_model) for name, step_model in steps}
         self._fit_data = {}
         self._predict_data = {}
 
@@ -485,9 +498,13 @@ class PipeGraph(_BaseComposition):
         external_data.update({('_External', key): item
                               for key, item in kwargs.items()})
         self._fit_data = external_data
+
+        if self._fit_graph is None:
+            connections = make_connections_when_not_provided_to_init(steps=self.steps)
+            self._fit_graph = build_graph(connections)
+
         fit_nodes = self._filter_fit_nodes()
         for step_name in fit_nodes:
-            logger.debug('Fitting: %s', step_name)
             self._fit(step_name)
 
     def _fit(self, step_name):
@@ -496,14 +513,13 @@ class PipeGraph(_BaseComposition):
         Args:
             step_name:
         """
-        logger.debug("under_Fitting: %s", step_name)
         fit_inputs = self._read_fit_signature_variables_from_graph_data(graph_data=self._fit_data,
                                                                         step_name=step_name)
-        self._step[step_name].fit(**fit_inputs)
+        self._processes[step_name].fit(**fit_inputs)
 
         predict_inputs = self._read_predict_signature_variables_from_graph_data(graph_data=self._fit_data,
                                                                                 step_name=step_name)
-        results = self._step[step_name].predict(**predict_inputs)
+        results = self._processes[step_name].predict(**predict_inputs)
 
         self._write_step_outputs(graph_data=self._fit_data,
                                  step_name=step_name,
@@ -533,10 +549,14 @@ class PipeGraph(_BaseComposition):
 
         external_data.update({('_External', key): item for key, item in kwargs.items()})
         self._predict_data = external_data
+
+        if self._predict_graph is None:
+            connections = make_connections_when_not_provided_to_init(steps=self.steps)
+            self._predict_graph = build_graph(connections)
+
         predict_nodes = self._filter_predict_nodes()
 
         for name in predict_nodes:
-            logger.debug("Predicting: %s", name)
             self._predict(name)
 
         desired_output_step = self.steps[-1][0]
@@ -551,10 +571,9 @@ class PipeGraph(_BaseComposition):
             step_name:
         """
 
-        logger.debug("under_Predicting: %s", step_name)
         predict_inputs = self._read_predict_signature_variables_from_graph_data(graph_data=self._predict_data,
                                                                                 step_name=step_name)
-        results = self._step[step_name].predict(**predict_inputs)
+        results = self._processes[step_name].predict(**predict_inputs)
         self._write_step_outputs(graph_data=self._predict_data, step_name=step_name, output_data=results)
 
     @property
@@ -591,9 +610,9 @@ class PipeGraph(_BaseComposition):
         Returns:
 
         """
-        connections = self.connections if graph_data is self._fit_data else self.alternative_connections
+        connections = self.fit_connections if graph_data is self._fit_data else self.predict_connections
 
-        variable_list = self._step[step_name]._get_fit_signature()
+        variable_list = self._processes[step_name]._get_fit_signature()
 
         connection_tuples = {key: ('_External', value) if isinstance(value, str) else value
                              for key, value in connections[step_name].items()}
@@ -617,9 +636,9 @@ class PipeGraph(_BaseComposition):
         Returns:
 
         """
-        connections = self.connections if graph_data is self._fit_data else self.alternative_connections
+        connections = self.fit_connections if graph_data is self._fit_data else self.predict_connections
 
-        variable_list = self._step[step_name]._get_predict_signature()
+        variable_list = self._processes[step_name]._get_predict_signature()
 
         connection_tuples = {key: ('_External', value) if isinstance(value, str) else value
                              for key, value in connections[step_name].items()}
@@ -646,17 +665,18 @@ class PipeGraph(_BaseComposition):
         )
 
 
-class Step(BaseEstimator):
+class Process(BaseEstimator):
     """
-    Wrapper of a StepStrategy object. This strategy generally is a wrapper itself of a Scikit-Learn model or pipeGraph CustomBlock.
+    This class holds an strategy which is in charge of fitting and predicting the PipeGraph steps.
+
+    Parameters
+    ----------
+    strategy : pipegraph.adapters.AdapterForSkLearnLikeAdaptee
+    A wrapper for a sklearn like object
+
     """
 
     def __init__(self, strategy):
-        """
-
-        Args:
-            strategy:
-        """
         self._strategy = strategy
 
     def get_params(self):
@@ -741,503 +761,20 @@ class Step(BaseEstimator):
         return self._strategy.__repr__()
 
 
-class StepStrategy(BaseEstimator):
-    """
-    This class is an adapter for Scikit-Learn objects in order to provide a common interface based on fit and predict
-    methods irrespectively of whether the adapted object provided a transform, fit_predict, or predict interface.
-    It is also used by the Step class as strategy.
-    """
-
-    def __init__(self, adaptee):
-        """
-
-        Args:
-            adaptee:
-        """
-        self._adaptee = adaptee
-
-    def fit(self, *pargs, **kwargs):
-        """
-
-        Args:
-            pargs:
-            kwargs:
-
-        Returns:
-
-        """
-        self._adaptee.fit(*pargs, **kwargs)
-        return self
-
-    @abstractmethod
-    def predict(self, *pargs, **kwargs):
-        """ document """
-
-    def _get_fit_signature(self):
-        """
-
-        Returns:
-
-        """
-        return list(inspect.signature(self._adaptee.fit).parameters)
-
-    @abstractmethod
-    def _get_predict_signature(self):
-        """ For easier predict params passing"""
-
-    # These two methods work by introspection, do not remove because the __getattr__ trick does not work with them
-    def get_params(self, deep=True):
-        """
-
-        Args:
-            deep:
-
-        Returns:
-
-        """
-        return self._adaptee.get_params(deep=deep)
-
-    def set_params(self, **params):
-        """
-
-        Args:
-            params:
-
-        Returns:
-
-        """
-        self._adaptee.set_params(**params)
-        return self
-
-    def __getattr__(self, name):
-        """
-
-        Args:
-            name:
-
-        Returns:
-
-        """
-        return getattr(self.__dict__['_adaptee'], name)
-
-    def __setattr__(self, name, value):
-        """
-
-        Args:
-            name:
-            value:
-        """
-        if name in ('_adaptee',):
-            self.__dict__[name] = value
-        else:
-            setattr(self.__dict__['_adaptee'], name, value)
-
-    def __delattr__(self, name):
-        """
-
-        Args:
-            name:
-        """
-        delattr(self.__dict__['_adaptee'], name)
-
-    def __repr__(self):
-        """
-
-        Returns:
-
-        """
-        return self._adaptee.__repr__()
-
-
-class FitTransform(StepStrategy):
-    """
-    """
-
-    def predict(self, *pargs, **kwargs):
-        """
-
-        Args:
-            pargs:
-            kwargs:
-
-        Returns:
-
-        """
-        result = {'predict': self._adaptee.transform(*pargs, **kwargs)}
-        return result
-
-    def _get_predict_signature(self):
-        """
-
-        Returns:
-
-        """
-        return list(inspect.signature(self._adaptee.transform).parameters)
-
-
-class FitPredict(StepStrategy):
-    """
-
-    """
-
-    def predict(self, *pargs, **kwargs):
-        """
-
-        Args:
-            pargs:
-            kwargs:
-
-        Returns:
-
-        """
-        result = {'predict': self._adaptee.predict(*pargs, **kwargs)}
-        if hasattr(self._adaptee, 'predict_proba'):
-            result['predict_proba'] = self._adaptee.predict_proba(**kwargs)
-        if hasattr(self._adaptee, 'predict_log_proba'):
-            result['predict_log_proba'] = self._adaptee.predict_log_proba(**kwargs)
-        return result
-
-    def _get_predict_signature(self):
-        """
-
-        Returns:
-
-        """
-        return list(inspect.signature(self._adaptee.predict).parameters)
-
-
-class AtomicFitPredict(StepStrategy):
-    """
-
-    Handler of estimator that implements only fit & predict
-
-    """
-
-    def fit(self, *pargs, **kwargs):
-        """
-
-        Args:
-            pargs:
-            kwargs:
-
-        Returns:
-
-        """
-        return self
-
-    # Relies on the pipegraph iteration loop to run predict after fit in order to propagate the signals
-
-    def predict(self, *pargs, **kwargs):
-        """
-
-        Args:
-            pargs:
-            kwargs:
-
-        Returns:
-
-        """
-        return {'predict': self._adaptee.fit_predict(**kwargs)}
-
-    def _get_predict_signature(self):
-        """
-
-        Returns:
-
-        """
-        return self._get_fit_signature()
-
-
-class CustomStrategyWithDictionaryOutputAdaptee(StepStrategy):
-    """
-    """
-
-    def fit(self, *pargs, **kwargs):
-        """
-
-        Args:
-            pargs:
-            kwargs:
-
-        Returns:
-
-        """
-        self._adaptee.fit(*pargs, **kwargs)
-        return self
-
-    def predict(self, *pargs, **kwargs):
-        """
-
-        Args:
-            pargs:
-            kwargs:
-
-        Returns:
-
-        """
-        return self._adaptee.predict(*pargs, **kwargs)
-
-    def _get_predict_signature(self):
-        """
-
-        Returns:
-
-        """
-        return list(inspect.signature(self._adaptee.predict).parameters)
-
-
-class Concatenator(BaseEstimator):
-    """
-    Concatenate a set of data
-    """
-    def fit(self):
-        """Fit method that does, in this case, nothing but returning self.
-        Returns
-        -------
-            self : returns an instance of _Concatenator.
-        """
-        return self
-
-    def predict(self, **kwargs):
-        """Check the input data type for correct concatenating.
-
-        Parameters
-        ----------
-        **kwargs :  sequence of indexables with same length / shape[0]
-            Allowed inputs are lists, numpy arrays, scipy-sparse
-            matrices or pandas dataframes.
-            Data to concatenate.
-        Returns
-        -------
-        Pandas series or Pandas DataFrame with the data input concatenated
-        """
-        df_list = []
-        for name in sorted(kwargs.keys()):
-            item = kwargs[name]
-            if isinstance(item, pd.Series) or isinstance(item, pd.DataFrame):
-                df_list.append(item)
-            else:
-                df_list.append(pd.DataFrame(data=item))
-        return pd.concat(df_list, axis=1)
-
-
-class CustomCombination(BaseEstimator):
-    """
-    Only For PAELLA purposes
-    """
-
-    def fit(self, dominant, other):
-        """
-
-        Args:
-            dominant:
-            other:
-
-        Returns:
-
-        """
-        return self
-
-    def predict(self, dominant, other):
-        """
-
-        Args:
-            dominant:
-            other:
-
-        Returns:
-
-        """
-        return np.where(dominant < 0, dominant, other)
-
-
-class TrainTestSplit(BaseEstimator):
-    """Split arrays or matrices into random train and test subsets
-        Quick utility that wraps input validation and
-        ``next(ShuffleSplit().split(X, y))`` and application to input data
-        into a single call for splitting (and optionally subsampling) data in a
-        oneliner.
-        Read more in the :ref:`User Guide <cross_validation>`.
-        Parameters
-        ----------
-        test_size : float, int, None, optional
-            If float, should be between 0.0 and 1.0 and represent the proportion
-            of the dataset to include in the test split. If int, represents the
-            absolute number of test samples. If None, the value is set to the
-            complement of the train size. By default, the value is set to 0.25.
-            The default will change in version 0.21. It will remain 0.25 only
-            if ``train_size`` is unspecified, otherwise it will complement
-            the specified ``train_size``.
-        train_size : float, int, or None, default None
-            If float, should be between 0.0 and 1.0 and represent the
-            proportion of the dataset to include in the train split. If
-            int, represents the absolute number of train samples. If None,
-            the value is automatically set to the complement of the test size.
-        random_state : int, RandomState instance or None, optional (default=None)
-            If int, random_state is the seed used by the random number generator;
-            If RandomState instance, random_state is the random number generator;
-            If None, the random number generator is the RandomState instance used
-            by `np.random`.
-    """
-    def __init__(self, test_size=0.25, train_size=None, random_state=None):
-        self.test_size = test_size
-        self.train_size = train_size
-        self.random_state = random_state
-
-    def fit(self, *pargs, **kwargs):
-        """Fit the model included in the step
-        Returns
-        -------
-            self : returns an instance of _TrainTestSplit.
-        """
-        return self
-
-    def predict(self, *pargs, **kwargs):
-        """Fit the model included in the step
-        Parameters
-        ----------
-        **kwargs: sequence of indexables with same length / shape[0]
-            Allowed inputs are lists, numpy arrays, scipy-sparse
-            matrices or pandas dataframes.
-        Returns
-        -------
-        splitting : list, length=2 * len(arrays)
-            List containing train-test split of inputs.
-        """
-        if len(pargs) > 0:
-            raise ValueError("The developers assume you will use keyword parameters on the TrainTestSplit class.")
-        array_names = list(kwargs.keys())
-        train_test_array_names = sum([[item + "_train", item + "_test"] for item in array_names], [])
-
-        result = dict(zip(train_test_array_names,
-                          train_test_split(*kwargs.values())))
-        return result
-
-
-class ColumnSelector(BaseEstimator):
-    """ Slice data-input data in columns
-    Parameters
-    ----------
-    mapping : list. Each element contains data-column and the new name assigned
-    """
-    def __init__(self, mapping=None):
-        self.mapping = mapping
-
-    def fit(self):
-        """"
-
-        Returns
-        -------
-        self : returns an instance of _CustomPower.
-        """
-        return self
-
-    def predict(self, X):
-        """"
-        X: iterable object
-                Data to slice.
-        Returns
-        -------
-        returns a list with data-column and the new name assigned for each column selected
-        """
-
-        if self.mapping is None:
-            return {'predict': X}
-        result = {name: X.iloc[:, column_slice]
-            for name, column_slice in self.mapping.items()}
-        return result
-
-
-class CustomPower(BaseEstimator):
-    """ Raises X data to power defined such as range as parameter
-    Parameters
-    ----------
-    power : range of integers for the powering operation
-    """
-
-    def __init__(self, power=1):
-        
-        self.power = power
-
-    def fit(self):
-        """"
-        Returns
-        -------
-            self : returns an instance of _CustomPower.
-        """
-        return self
-
-    def predict(self, X):
-        """"
-        Parameters
-        ----------
-        X: iterable
-            Data to power.
-        Returns
-        -------
-        result of raising power operation
-        """
-        return X.values.reshape(-1, ) ** self.power
-
-
-class Reshape(BaseEstimator):
-    def __init__(self, dimension):
-        self.dimension = dimension
-
-    def fit(self):
-        return self
-
-    def predict(self, X):
-        if isinstance(X, pd.DataFrame) or isinstance(X, pd.Series):
-            X = X.values
-        return X.reshape(self.dimension)
-
-
-class Demultiplexer(BaseEstimator):
-    """ Slice data-input data in columns
-    Parameters
-    ----------
-    mapping : list. Each element contains data-column and the new name assigned
-    """
-    def fit(self):
-        return self
-
-    def predict(self, **kwargs):
-        selection = kwargs.pop('selection')
-        result = dict()
-        for variable, value in kwargs.items():
-            for class_number in set(selection):
-                if value is None:
-                    result[variable + "_" + str(class_number)] = None
-                else:
-                    result[variable + "_" + str(class_number)] = pd.DataFrame(value).loc[selection == class_number, :]
-        return result
-
-
-class Multiplexer(BaseEstimator):
-    def fit(self):
-        return self
-
-    def predict(self, **kwargs):
-        #list of arrays with the samen dimension
-        selection = kwargs['selection']
-        array_list = [pd.DataFrame(data=kwargs[str(class_number)],
-                                   index=np.flatnonzero(selection == class_number))
-                      for class_number in set(selection)]
-        result = pd.concat(array_list, axis=0).sort_index()
-        return result
-
-
 def build_graph(connections):
     """
 
     Args:
-        connections:
+        connections: dict
+        A dictionary as described in PipeGraphRegressor and PipeGraphClassifier
 
     Returns:
-
+        A graph ready to be fitted
     """
-    if '_External' in connections:
+
+    if connections is None:
+        return None
+    elif '_External' in connections:
         raise ValueError("Please use another name for the _External node. _External name is used internally.")
 
     graph = nx.DiGraph()
@@ -1250,11 +787,10 @@ def build_graph(connections):
                              if isinstance(value, tuple))
         for ascendant in ascendants_set:
             graph.add_edge(ascendant, name)
-    #            logger.debug("Build graph %s", (ascendant, name))
     return graph
 
 
-def make_step(adaptee, strategy_class=None):
+def wrap_adaptee_in_process(adaptee, strategy_class=None):
     """
 
     Args:
@@ -1268,21 +804,35 @@ def make_step(adaptee, strategy_class=None):
     elif adaptee.__class__ in strategies_for_custom_adaptees:
         strategy = strategies_for_custom_adaptees[adaptee.__class__](adaptee)
     elif hasattr(adaptee, 'transform'):
-        strategy = FitTransform(adaptee)
+        strategy = AdapterForFitTransformAdaptee(adaptee)
     elif hasattr(adaptee, 'predict'):
-        strategy = FitPredict(adaptee)
+        strategy = AdapterForFitPredictAdaptee(adaptee)
     elif hasattr(adaptee, 'fit_predict'):
-        strategy = AtomicFitPredict(adaptee)
+        strategy = AdapterForAtomicFitPredictAdaptee(adaptee)
     else:
-        raise ValueError('Error: adaptee of unknown behaviour')
+        raise ValueError('Error: Unknown adaptee!')
 
-    step = Step(strategy)
-    return step
+    process = Process(strategy)
+    return process
 
 
-strategies_for_custom_adaptees = {
-    TrainTestSplit: CustomStrategyWithDictionaryOutputAdaptee,
-    ColumnSelector: CustomStrategyWithDictionaryOutputAdaptee,
-    Multiplexer: FitPredict,
-    Demultiplexer: CustomStrategyWithDictionaryOutputAdaptee,
-}
+def make_connections_when_not_provided_to_init(steps):
+    names = [name for name, _ in steps]
+    connections = dict()
+    if len(names) == 0:
+        ValueError("Error: No steps to chain. Please provide a list of steps to PipeGraph")
+
+    for index, name in enumerate(names):
+        if index == 0:
+            connections[name] = {'X': 'X'}
+        else:
+            connections[name] = {'X': (names[index-1], 'predict')}
+
+    connections[names[-1]].update({'y': 'y'})
+    return connections
+
+
+strategies_for_custom_adaptees = dict()
+strategies_for_custom_adaptees.update(std_blocks_strategies,
+                                      )
+

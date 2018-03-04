@@ -1,9 +1,9 @@
-from .pipeGraph import (PipeGraphRegressor,
-                        PipeGraphClassifier,
-                        )
-from . import pipeGraph
+from .base import (PipeGraphRegressor,
+                   PipeGraphClassifier,
+                   )
+from . import base
 
 __all__ = ['PipeGraphClassifier',
            'PipeGraphRegressor',
-           'pipeGraph',
+           'base.py',
            ]

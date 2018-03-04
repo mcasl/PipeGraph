@@ -25,7 +25,8 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GridSearchCV
-from pipegraph.pipeGraph import PipeGraphClassifier, Concatenator
+from pipegraph.base import PipeGraphClassifier
+from pipegraph.standard_blocks import Concatenator
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_iris
 from sklearn.naive_bayes import GaussianNB
@@ -67,7 +68,7 @@ param_grid = {'svc__C': [0.1, 0.5, 1.0],
 ###############################################################################
 # In this example we use a :class:`PipeGraphClassifier` because the result is a classification and we want to take advantage of Scikit-Learn default scoring method for classifiers.
 
-pgraph = PipeGraphClassifier(steps=steps, connections=connections)
+pgraph = PipeGraphClassifier(steps=steps, fit_connections=connections)
 grid_search_classifier  = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
 grid_search_classifier.fit(X, y)
 y_pred = grid_search_classifier.predict(X)

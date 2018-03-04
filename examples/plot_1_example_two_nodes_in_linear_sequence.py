@@ -65,7 +65,7 @@ connections = { 'scaler': { 'X': 'X'},
 ###############################################################################
 # Once the steps and the connections are defined, we instantiate a :class:`PipeGraphRegressor` and show the results from applying ``fit`` and ``predict`` and predict data. Use PipeGraphRegressor when the result is a regression.
 
-pgraph = PipeGraphRegressor(steps=steps, connections=connections)
+pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
 pgraph.fit(X, y)
 y_pred = pgraph.predict(X)
 
