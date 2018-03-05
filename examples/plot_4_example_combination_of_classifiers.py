@@ -49,26 +49,27 @@ steps = [('scaler', scaler),
          ('concat', concatenator),
          ('mlp', mlp)]
 
-connections = { 'scaler': {'X': 'X'},
-                'gaussian_nb': {'X': ('scaler', 'predict'),
-                                'y': 'y'},
-                'svc':  {'X': ('scaler', 'predict'),
-                         'y': 'y'},
-                'concat': {'X1': ('scaler', 'predict'),
-                           'X2': ('gaussian_nb', 'predict'),
-                           'X3': ('svc', 'predict')},
-                'mlp': {'X': ('concat', 'predict'),
-                        'y': 'y'}
-            }
+
+###############################################################################
+# In this example we use a :class:`PipeGraphClassifier` because the result is a classification and we want to take advantage of Scikit-Learn default scoring method for classifiers.
+
+pgraph = PipeGraphClassifier(steps=steps)
+(pgraph.inject(sink='scaler', sink_var='X', source='_External', source_var='X')
+       .inject('gaussian_nb', 'X', 'scaler')
+       .inject('gaussian_nb', 'y', source_var='y')
+       .inject('svc', 'X', 'scaler')
+       .inject('svc', 'y', source_var='y')
+       .inject('concat', 'X1', 'scaler')
+       .inject('concat', 'X2', 'gaussian_nb')
+       .inject('concat', 'X3', 'svc')
+       .inject('mlp', 'X', 'concat')
+       .inject('mlp', 'y', source_var='y')
+)
 
 param_grid = {'svc__C': [0.1, 0.5, 1.0],
               'mlp__hidden_layer_sizes': [(3,), (6,), (9,),],
               'mlp__max_iter': [5000, 10000]}
 
-###############################################################################
-# In this example we use a :class:`PipeGraphClassifier` because the result is a classification and we want to take advantage of Scikit-Learn default scoring method for classifiers.
-
-pgraph = PipeGraphClassifier(steps=steps, fit_connections=connections)
 grid_search_classifier  = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
 grid_search_classifier.fit(X, y)
 y_pred = grid_search_classifier.predict(X)

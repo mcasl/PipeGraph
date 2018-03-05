@@ -47,6 +47,10 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
     def __init__(self, steps, fit_connections=None, predict_connections=None, log_level=None):
         self.pipegraph = PipeGraph(steps, fit_connections, predict_connections, log_level)
 
+    def inject(self, sink, sink_var, source='_External', source_var='predict', into='fit'):
+        self.pipegraph.inject(sink=sink, sink_var=sink_var, source=source, source_var=source_var, into=into)
+        return self
+
     def get_params(self, deep=True):
         """
         Get parameters for this estimator.
@@ -243,6 +247,10 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         """
     def __init__(self, steps, fit_connections=None, predict_connections=None, log_level=None):
         self.pipegraph = PipeGraph(steps, fit_connections, predict_connections, log_level)
+
+    def inject(self, sink, sink_var, source='_External', source_var='predict', into='fit'):
+        self.pipegraph.inject(sink=sink, sink_var=sink_var, source=source, source_var=source_var, into=into)
+        return self
 
     def get_params(self, deep=True):
         """
@@ -454,11 +462,31 @@ class PipeGraph(_BaseComposition):
         if '_External' in node_names:
             raise ValueError("Please use another name for the _External node. _External is used internally.")
 
-        self._fit_graph = build_graph(self.fit_connections)
-        self._predict_graph = build_graph(self.predict_connections)
+        self._fit_graph = None
+        self._predict_graph = None
         self._processes = {name: wrap_adaptee_in_process(adaptee=step_model) for name, step_model in steps}
         self._fit_data = {}
         self._predict_data = {}
+
+    def inject(self, sink, sink_var, source, source_var='predict', into='fit'):
+        if self.fit_connections is None:
+            self.fit_connections = dict()
+
+        if self.predict_connections is None:
+            self.predict_connections = dict()
+
+        if into == 'fit':
+            connections = self.fit_connections
+        elif into == 'predict':
+            connections = self.predict_connections
+        else:
+            raise ValueError('Error: into parameter must be either fit or predict.')
+
+        if sink in connections:
+            connections[sink].update({sink_var: (source, source_var)})
+        else:
+            connections[sink] = {sink_var: (source, source_var)}
+        return self
 
     # copied from sklearn
     def get_params(self, deep=True):
@@ -499,13 +527,23 @@ class PipeGraph(_BaseComposition):
                               for key, item in kwargs.items()})
         self._fit_data = external_data
 
-        if self._fit_graph is None:
+        if self.fit_connections is None:
             self.fit_connections = make_connections_when_not_provided_to_init(steps=self.steps)
+            self.predict_connections = self.fit_connections
             self._fit_graph = build_graph(self.fit_connections)
+            self._predict_graph = self._fit_graph
+
+        if self.predict_connections == {}:
+            self.predict_connections = self.fit_connections
+
+        if self._fit_graph is None:
+            self._fit_graph = build_graph(self.fit_connections)
+            self._predict_graph = build_graph(self.predict_connections)
 
         fit_nodes = self._filter_fit_nodes()
         for step_name in fit_nodes:
             self._fit(step_name)
+        return self
 
     def _fit(self, step_name):
         """
@@ -549,10 +587,6 @@ class PipeGraph(_BaseComposition):
 
         external_data.update({('_External', key): item for key, item in kwargs.items()})
         self._predict_data = external_data
-
-        if self._predict_graph is None:
-            self.predict_connections = make_connections_when_not_provided_to_init(steps=self.steps)
-            self._predict_graph = build_graph(self.predict_connections)
 
         predict_nodes = self._filter_predict_nodes()
 
@@ -614,8 +648,15 @@ class PipeGraph(_BaseComposition):
 
         variable_list = self._processes[step_name]._get_fit_signature()
 
-        connection_tuples = {key: ('_External', value) if isinstance(value, str) else value
-                             for key, value in connections[step_name].items()}
+        connection_tuples = {}
+        for key, value in connections[step_name].items():
+            if not isinstance(value, str):
+                connection_tuples.update({key: value})
+            elif value in connections:
+                connection_tuples.update({key: (value, 'predict')})
+            else:
+                connection_tuples.update({key: ('_External', value)})
+
 
         if 'kwargs' in variable_list:
             input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
@@ -640,8 +681,14 @@ class PipeGraph(_BaseComposition):
 
         variable_list = self._processes[step_name]._get_predict_signature()
 
-        connection_tuples = {key: ('_External', value) if isinstance(value, str) else value
-                             for key, value in connections[step_name].items()}
+        connection_tuples = {}
+        for key, value in connections[step_name].items():
+            if not isinstance(value, str):
+                connection_tuples.update({key: value})
+            elif value in connections:
+                connection_tuples.update({key: (value, 'predict')})
+            else:
+                connection_tuples.update({key: ('_External', value)})
 
         if variable_list == ['kwargs']:
             input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
@@ -771,7 +818,6 @@ def build_graph(connections):
     Returns:
         A graph ready to be fitted
     """
-
     if connections is None:
         return None
     elif '_External' in connections:
@@ -782,9 +828,14 @@ def build_graph(connections):
     for name in connections:
         current_node = graph.node[name]
         current_node['name'] = name
-        ascendants_set = set(value[0]
-                             for inner_variable, value in connections[name].items()
-                             if isinstance(value, tuple))
+        ascendants_set = set()
+        for inner_variable, value in connections[name].items():
+            if isinstance(value, tuple):
+                ascendants_set.add(value[0])
+            elif value in connections:
+                ascendants_set.add(value)
+
+        ascendants_set.discard('_External')
         for ascendant in ascendants_set:
             graph.add_edge(ascendant, name)
     return graph

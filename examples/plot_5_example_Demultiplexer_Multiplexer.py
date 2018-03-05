@@ -57,27 +57,25 @@ steps = [('scaler', scaler),
          ('lm_2', lm_2),
          ('mux', mux), ]
 
+###############################################################################
+# Instead of using ``inject`` as in previous example, in this one we are going to pass a dictionary
+# describing the connections to PipeGraph constructor
+
 connections = { 'scaler': {'X': 'X'},
-
-                'classifier': {'X': ('scaler', 'predict')},
-
-                'demux': {'X': ('scaler', 'predict'),
+                'classifier': {'X': 'scaler'},
+                'demux': {'X': 'scaler',
                           'y': 'y',
-                          'selection': ('classifier', 'predict')},
-
+                          'selection': 'classifier'},
                 'lm_0': {'X': ('demux', 'X_0'),
                          'y': ('demux', 'y_0')},
-
                 'lm_1': {'X': ('demux', 'X_1'),
                          'y': ('demux', 'y_1')},
-
                 'lm_2': {'X': ('demux', 'X_2'),
                          'y': ('demux', 'y_2')},
-
-                'mux': {'0': ('lm_0', 'predict'),
-                        '1': ('lm_1', 'predict'),
-                        '2': ('lm_2', 'predict'),
-                        'selection': ('classifier', 'predict')}}
+                'mux': {'0': 'lm_0',
+                        '1': 'lm_1',
+                        '2': 'lm_2',
+                        'selection': 'classifier'}}
 
 ###############################################################################
 # Use **PipeGraph** when predict needs ( ``X``, ``y`` )

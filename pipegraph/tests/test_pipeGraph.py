@@ -508,7 +508,7 @@ class TestPipegraph(unittest.TestCase):
 
     def test_Pipegraph__use_for_fit_all(self):
         pgraph = PipeGraph(self.steps, self.connections)
-
+        pgraph.fit(self.X, self.y)
         fit_nodes_list = list(pgraph._filter_fit_nodes())
         self.assertEqual(sorted(fit_nodes_list), sorted(['Concatenate_Xy',
                                                          'Gaussian_Mixture',
@@ -527,6 +527,7 @@ class TestPipegraph(unittest.TestCase):
         }
 
         pgraph = PipeGraph(steps=self.steps, fit_connections=some_connections, predict_connections=self.connections)
+        pgraph.fit(self.X, self.y)
 
         fit_nodes_list = list(pgraph._filter_fit_nodes())
         self.assertEqual(sorted(fit_nodes_list), sorted(['Concatenate_Xy',
@@ -536,7 +537,7 @@ class TestPipegraph(unittest.TestCase):
 
     def test_Pipegraph__use_for_predict_all(self):
         pgraph = PipeGraph(self.steps, self.connections)
-
+        pgraph.fit(self.X, self.y)
         predict_nodes_list = list(pgraph._filter_predict_nodes())
         self.assertEqual(sorted(predict_nodes_list), sorted(['Concatenate_Xy',
                                                              'Gaussian_Mixture',
@@ -557,7 +558,7 @@ class TestPipegraph(unittest.TestCase):
         }
 
         pgraph = PipeGraph(steps=self.steps, fit_connections=self.connections, predict_connections=some_connections)
-
+        pgraph.fit(self.X, self.y)
         predict_nodes_list = list(pgraph._filter_predict_nodes())
         self.assertEqual(sorted(predict_nodes_list), sorted(['Concatenate_Xy',
                                                              'Gaussian_Mixture',
@@ -724,7 +725,7 @@ class TestPipegraph(unittest.TestCase):
         self.assertEqual(pgraph._predict_data, {})
 
     def test_Pipegraph__fit_node_names(self):
-        pgraph = self.pgraph
+        pgraph = self.pgraph.fit(self.X, self.y)
         node_list = list(pgraph._fit_graph.nodes)
         self.assertEqual(sorted(node_list), sorted(['Concatenate_Xy',
                                                     'Gaussian_Mixture',
@@ -735,7 +736,7 @@ class TestPipegraph(unittest.TestCase):
                                                     ]))
 
     def test_Pipegraph__predict_node_names(self):
-        pgraph = self.pgraph
+        pgraph = self.pgraph.fit(self.X, self.y)
         node_list = list(pgraph._predict_graph.nodes)
         self.assertEqual(sorted(node_list), sorted(['Concatenate_Xy',
                                                     'Gaussian_Mixture',
@@ -746,7 +747,7 @@ class TestPipegraph(unittest.TestCase):
                                                     ]))
 
     def test_Pipegraph__filter_nodes_fit(self):
-        pgraph = self.pgraph
+        pgraph = self.pgraph.fit(self.X, self.y)
         fit_nodes = list(pgraph._filter_fit_nodes())
         self.assertEqual(sorted(fit_nodes), sorted(['Concatenate_Xy',
                                                     'Dbscan',
@@ -763,6 +764,7 @@ class TestPipegraph(unittest.TestCase):
 
         pgraph = PipeGraph(steps=self.steps, fit_connections=self.connections,
                            predict_connections=alternative_connections)
+        pgraph.fit(self.X, self.y)
         predict_nodes = list(pgraph._filter_predict_nodes())
         self.assertEqual(predict_nodes, ['Regressor'])
 
