@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>pipegraph.pipeGraph &mdash; PipeGraph 0.1.0 documentation</title>
+  <title>pipegraph.base &mdash; PipeGraph 0.1.0 documentation</title>
   
 
   
@@ -140,7 +140,7 @@
         
           <li><a href="../index.html">Module code</a> &raquo;</li>
         
-      <li>pipegraph.pipeGraph</li>
+      <li>pipegraph.base</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -157,19 +157,20 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for pipegraph.pipeGraph</h1><div class="highlight"><pre>
+  <h1>Source code for pipegraph.base</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="k">import</span> <span class="n">abstractmethod</span>
 
 <span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">RegressorMixin</span><span class="p">,</span> <span class="n">ClassifierMixin</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">train_test_split</span>
 <span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="k">import</span> <span class="n">Bunch</span>
 <span class="kn">from</span> <span class="nn">sklearn.utils.metaestimators</span> <span class="k">import</span> <span class="n">_BaseComposition</span>
+
+<span class="kn">from</span> <span class="nn">pipegraph.adapters</span> <span class="k">import</span> <span class="p">(</span><span class="n">AdapterForFitTransformAdaptee</span><span class="p">,</span>
+                                <span class="n">AdapterForFitPredictAdaptee</span><span class="p">,</span>
+                                <span class="n">AdapterForAtomicFitPredictAdaptee</span>
+                                <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pipegraph.standard_blocks</span> <span class="k">import</span> <span class="n">strategies_for_custom_adaptees</span> <span class="k">as</span> <span class="n">std_blocks_strategies</span>
 
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">NOTSET</span><span class="p">)</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -199,9 +200,33 @@
 <span class="sd">    alternative_connections: dictionary</span>
 <span class="sd">        A dictionary as described for ``connections``. This parameters provides the possibility of specifying a PipeGraph</span>
 <span class="sd">        that uses a different connection dictionary during fit than during predict. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.</span>
+
+<span class="sd">    log_level: int</span>
+<span class="sd">        Log level for traceability purposes. This is yet a unimplemented feature.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="n">alternative_connections</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span> <span class="o">=</span> <span class="n">PipeGraph</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="n">alternative_connections</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">predict_connections</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span> <span class="o">=</span> <span class="n">PipeGraph</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="p">,</span> <span class="n">predict_connections</span><span class="p">,</span> <span class="n">log_level</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PipeGraphRegressor.inject"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.inject">[docs]</a>    <span class="k">def</span> <span class="nf">inject</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sink</span><span class="p">,</span> <span class="n">sink_var</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;_External&#39;</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="s1">&#39;predict&#39;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s1">&#39;fit&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a connection to the graph.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        sink: Destination</span>
+<span class="sd">        sink_var: Name of the variable at destination that is going to hold the information</span>
+<span class="sd">        source: Origin</span>
+<span class="sd">        source_var: Name of the variable at origin holding the information</span>
+<span class="sd">        into: This can be either &#39;fit&#39; or &#39;predict&#39;, indicating which connections are described: those belonging</span>
+<span class="sd">              to &#39;fit_connections&#39; or those belonging to &#39;predict_connections&#39;. Default is &#39;fit&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        self:  PipeGraphRegressor</span>
+<span class="sd">            Returning self allows chaining operations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="n">sink</span><span class="o">=</span><span class="n">sink</span><span class="p">,</span> <span class="n">sink_var</span><span class="o">=</span><span class="n">sink_var</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="n">source_var</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="n">into</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span>
 
 <div class="viewcode-block" id="PipeGraphRegressor.get_params"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -366,7 +391,7 @@
         <span class="k">if</span> <span class="n">sample_weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">score_params</span><span class="p">[</span><span class="s1">&#39;sample_weight&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_weight</span>
         <span class="n">final_step_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">Xt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">_predict_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">final_step_name</span><span class="p">][</span><span class="s1">&#39;X&#39;</span><span class="p">]]</span></div></div>
+        <span class="n">Xt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">_predict_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">fit_connections</span><span class="p">[</span><span class="n">final_step_name</span><span class="p">][</span><span class="s1">&#39;X&#39;</span><span class="p">]]</span></div></div>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xt</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">score_params</span><span class="p">)</span>
 
 
@@ -391,9 +416,35 @@
 <span class="sd">    alternative_connections: dictionary</span>
 <span class="sd">        A dictionary as described for ``connections``. This parameters provides the possibility of specifying a PipeGraph</span>
 <span class="sd">        that uses different connection dictionaries during fit than during predict. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.</span>
+
+
+<span class="sd">    log_level: int</span>
+<span class="sd">        Log level for traceability purposes. This is yet a unimplemented feature.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="n">alternative_connections</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span> <span class="o">=</span> <span class="n">PipeGraph</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="n">alternative_connections</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">predict_connections</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span> <span class="o">=</span> <span class="n">PipeGraph</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="p">,</span> <span class="n">predict_connections</span><span class="p">,</span> <span class="n">log_level</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PipeGraphClassifier.inject"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.inject">[docs]</a>    <span class="k">def</span> <span class="nf">inject</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sink</span><span class="p">,</span> <span class="n">sink_var</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;_External&#39;</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="s1">&#39;predict&#39;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s1">&#39;fit&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Adds a connection to the graph.</span>
+
+<span class="sd">                Parameters:</span>
+<span class="sd">                -----------</span>
+<span class="sd">                sink: Destination</span>
+<span class="sd">                sink_var: Name of the variable at destination that is going to hold the information</span>
+<span class="sd">                source: Origin</span>
+<span class="sd">                source_var: Name of the variable at origin holding the information</span>
+<span class="sd">                into: This can be either &#39;fit&#39; or &#39;predict&#39;, indicating which connections are described: those belonging</span>
+<span class="sd">                      to &#39;fit_connections&#39; or those belonging to &#39;predict_connections&#39;. Default is &#39;fit&#39;.</span>
+
+<span class="sd">                Returns:</span>
+<span class="sd">                --------</span>
+<span class="sd">                self:  PipeGraphClassifier</span>
+<span class="sd">                    Returning self allows chaining operations</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="n">sink</span><span class="o">=</span><span class="n">sink</span><span class="p">,</span> <span class="n">sink_var</span><span class="o">=</span><span class="n">sink_var</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="n">source_var</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="n">into</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span>
 
 <div class="viewcode-block" id="PipeGraphClassifier.get_params"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -565,7 +616,7 @@
         <span class="k">if</span> <span class="n">sample_weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">score_params</span><span class="p">[</span><span class="s1">&#39;sample_weight&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_weight</span>
         <span class="n">final_step_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">Xt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">_predict_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="n">final_step_name</span><span class="p">][</span><span class="s1">&#39;X&#39;</span><span class="p">]]</span></div></div>
+        <span class="n">Xt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">_predict_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">fit_connections</span><span class="p">[</span><span class="n">final_step_name</span><span class="p">][</span><span class="s1">&#39;X&#39;</span><span class="p">]]</span></div></div>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xt</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">score_params</span><span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">PipeGraph</span><span class="p">(</span><span class="n">_BaseComposition</span><span class="p">):</span>
@@ -590,22 +641,63 @@
 <span class="sd">        A dictionary as described for ``connections``. This parameters provides the possibility of specifying a PipeGraph</span>
 <span class="sd">        that uses a different connections dictionary during fit than during predict. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.</span>
 
+<span class="sd">    log_level: int</span>
+<span class="sd">        Log level for traceability purposes. This is yet a unimplemented feature.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">connections</span><span class="p">,</span> <span class="n">alternative_connections</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">predict_connections</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="n">steps</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="o">=</span> <span class="n">connections</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">alternative_connections</span> <span class="o">=</span> <span class="n">alternative_connections</span> <span class="k">if</span> <span class="n">alternative_connections</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">connections</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span> <span class="o">=</span> <span class="n">fit_connections</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span> <span class="o">=</span> <span class="n">predict_connections</span> <span class="k">if</span> <span class="n">predict_connections</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">fit_connections</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_level</span> <span class="o">=</span> <span class="n">log_level</span>
 
         <span class="n">node_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">]</span>
         <span class="k">if</span> <span class="s1">&#39;_External&#39;</span> <span class="ow">in</span> <span class="n">node_names</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please use another name for the _External node. _External is used internally.&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_graph</span> <span class="o">=</span> <span class="n">build_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_predict_graph</span> <span class="o">=</span> <span class="n">build_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alternative_connections</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_step</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">make_step</span><span class="p">(</span><span class="n">adaptee</span><span class="o">=</span><span class="n">step_model</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">step_model</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_graph</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_predict_graph</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">wrap_adaptee_in_process</span><span class="p">(</span><span class="n">adaptee</span><span class="o">=</span><span class="n">step_model</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">step_model</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_predict_data</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">inject</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sink</span><span class="p">,</span> <span class="n">sink_var</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="s1">&#39;predict&#39;</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="s1">&#39;fit&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Adds a connection to the graph.</span>
+
+<span class="sd">                Parameters:</span>
+<span class="sd">                -----------</span>
+<span class="sd">                sink: Destination</span>
+<span class="sd">                sink_var: Name of the variable at destination that is going to hold the information</span>
+<span class="sd">                source: Origin</span>
+<span class="sd">                source_var: Name of the variable at origin holding the information</span>
+<span class="sd">                into: This can be either &#39;fit&#39; or &#39;predict&#39;, indicating which connections are described: those belonging</span>
+<span class="sd">                      to &#39;fit_connections&#39; or those belonging to &#39;predict_connections&#39;. Default is &#39;fit&#39;.</span>
+
+<span class="sd">                Returns:</span>
+<span class="sd">                --------</span>
+<span class="sd">                self:  PipeGraph</span>
+<span class="sd">                    Returning self allows chaining operations</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">into</span> <span class="o">==</span> <span class="s1">&#39;fit&#39;</span><span class="p">:</span>
+            <span class="n">connections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span>
+        <span class="k">elif</span> <span class="n">into</span> <span class="o">==</span> <span class="s1">&#39;predict&#39;</span><span class="p">:</span>
+            <span class="n">connections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Error: into parameter must be either fit or predict.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">sink</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">:</span>
+            <span class="n">connections</span><span class="p">[</span><span class="n">sink</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">sink_var</span><span class="p">:</span> <span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">source_var</span><span class="p">)})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">connections</span><span class="p">[</span><span class="n">sink</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">sink_var</span><span class="p">:</span> <span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">source_var</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="bp">self</span>
 
     <span class="c1"># copied from sklearn</span>
     <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -645,10 +737,24 @@
         <span class="n">external_data</span><span class="o">.</span><span class="n">update</span><span class="p">({(</span><span class="s1">&#39;_External&#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span> <span class="n">item</span>
                               <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span> <span class="o">=</span> <span class="n">external_data</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span> <span class="o">=</span> <span class="n">make_connections_when_not_provided_to_init</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fit_graph</span> <span class="o">=</span> <span class="n">build_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_predict_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_graph</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span> <span class="o">==</span> <span class="p">{}:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_graph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fit_graph</span> <span class="o">=</span> <span class="n">build_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_predict_graph</span> <span class="o">=</span> <span class="n">build_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span><span class="p">)</span>
+
         <span class="n">fit_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_fit_nodes</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">fit_nodes</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Fitting: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">step_name</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span><span class="n">step_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -656,14 +762,13 @@
 <span class="sd">        Args:</span>
 <span class="sd">            step_name:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;under_Fitting: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">step_name</span><span class="p">)</span>
         <span class="n">fit_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_fit_signature_variables_from_graph_data</span><span class="p">(</span><span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span><span class="p">,</span>
                                                                         <span class="n">step_name</span><span class="o">=</span><span class="n">step_name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">**</span><span class="n">fit_inputs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">**</span><span class="n">fit_inputs</span><span class="p">)</span>
 
         <span class="n">predict_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_predict_signature_variables_from_graph_data</span><span class="p">(</span><span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span><span class="p">,</span>
                                                                                 <span class="n">step_name</span><span class="o">=</span><span class="n">step_name</span><span class="p">)</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">**</span><span class="n">predict_inputs</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">**</span><span class="n">predict_inputs</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_step_outputs</span><span class="p">(</span><span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span><span class="p">,</span>
                                  <span class="n">step_name</span><span class="o">=</span><span class="n">step_name</span><span class="p">,</span>
@@ -693,10 +798,10 @@
 
         <span class="n">external_data</span><span class="o">.</span><span class="n">update</span><span class="p">({(</span><span class="s1">&#39;_External&#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span> <span class="n">item</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_predict_data</span> <span class="o">=</span> <span class="n">external_data</span>
+
         <span class="n">predict_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_predict_nodes</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">predict_nodes</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Predicting: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_predict</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
         <span class="n">desired_output_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
@@ -711,10 +816,9 @@
 <span class="sd">            step_name:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;under_Predicting: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">step_name</span><span class="p">)</span>
         <span class="n">predict_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_predict_signature_variables_from_graph_data</span><span class="p">(</span><span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_predict_data</span><span class="p">,</span>
                                                                                 <span class="n">step_name</span><span class="o">=</span><span class="n">step_name</span><span class="p">)</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">**</span><span class="n">predict_inputs</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">**</span><span class="n">predict_inputs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_step_outputs</span><span class="p">(</span><span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_predict_data</span><span class="p">,</span> <span class="n">step_name</span><span class="o">=</span><span class="n">step_name</span><span class="p">,</span> <span class="n">output_data</span><span class="o">=</span><span class="n">results</span><span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -751,12 +855,19 @@
 <span class="sd">        Returns:</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">connections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="k">if</span> <span class="n">graph_data</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">alternative_connections</span>
+        <span class="n">connections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span> <span class="k">if</span> <span class="n">graph_data</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span>
 
-        <span class="n">variable_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">_get_fit_signature</span><span class="p">()</span>
+        <span class="n">variable_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">_get_fit_signature</span><span class="p">()</span>
 
-        <span class="n">connection_tuples</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;_External&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span>
-                             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">connection_tuples</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">connection_tuples</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+            <span class="k">elif</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">:</span>
+                <span class="n">connection_tuples</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;predict&#39;</span><span class="p">)})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">connection_tuples</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;_External&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)})</span>
+
 
         <span class="k">if</span> <span class="s1">&#39;kwargs&#39;</span> <span class="ow">in</span> <span class="n">variable_list</span><span class="p">:</span>
             <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="p">[</span><span class="n">node_and_outer_variable_tuple</span><span class="p">]</span>
@@ -777,12 +888,18 @@
 <span class="sd">        Returns:</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">connections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="k">if</span> <span class="n">graph_data</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">alternative_connections</span>
+        <span class="n">connections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span> <span class="k">if</span> <span class="n">graph_data</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span>
 
-        <span class="n">variable_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">_get_predict_signature</span><span class="p">()</span>
+        <span class="n">variable_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">_get_predict_signature</span><span class="p">()</span>
 
-        <span class="n">connection_tuples</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;_External&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span>
-                             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">connection_tuples</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">connection_tuples</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span>
+            <span class="k">elif</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">:</span>
+                <span class="n">connection_tuples</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;predict&#39;</span><span class="p">)})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">connection_tuples</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;_External&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)})</span>
 
         <span class="k">if</span> <span class="n">variable_list</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;kwargs&#39;</span><span class="p">]:</span>
             <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="p">[</span><span class="n">node_and_outer_variable_tuple</span><span class="p">]</span>
@@ -806,17 +923,18 @@
         <span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">Step</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Process</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Wrapper of a StepStrategy object. This strategy generally is a wrapper itself of a Scikit-Learn model or pipeGraph CustomBlock.</span>
+<span class="sd">    This class holds an strategy which is in charge of fitting and predicting the PipeGraph steps.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    strategy : pipegraph.adapters.AdapterForSkLearnLikeAdaptee</span>
+<span class="sd">    A wrapper for a sklearn like object</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strategy</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            strategy:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_strategy</span> <span class="o">=</span> <span class="n">strategy</span>
 
     <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -901,503 +1019,19 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_strategy</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
 
 
-<span class="k">class</span> <span class="nc">StepStrategy</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This class is an adapter for Scikit-Learn objects in order to provide a common interface based on fit and predict</span>
-<span class="sd">    methods irrespectively of whether the adapted object provided a transform, fit_predict, or predict interface.</span>
-<span class="sd">    It is also used by the Step class as strategy.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">adaptee</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            adaptee:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span> <span class="o">=</span> <span class="n">adaptee</span>
-
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            pargs:</span>
-<span class="sd">            kwargs:</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; document &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">_get_fit_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">fit</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
-
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">_get_predict_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; For easier predict params passing&quot;&quot;&quot;</span>
-
-    <span class="c1"># These two methods work by introspection, do not remove because the __getattr__ trick does not work with them</span>
-    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            deep:</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">get_params</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="n">deep</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            params:</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            name:</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s1">&#39;_adaptee&#39;</span><span class="p">],</span> <span class="n">name</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            name:</span>
-<span class="sd">            value:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;_adaptee&#39;</span><span class="p">,):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s1">&#39;_adaptee&#39;</span><span class="p">],</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">__delattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            name:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s1">&#39;_adaptee&#39;</span><span class="p">],</span> <span class="n">name</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
-
-
-<span class="k">class</span> <span class="nc">FitTransform</span><span class="p">(</span><span class="n">StepStrategy</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            pargs:</span>
-<span class="sd">            kwargs:</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;predict&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)}</span>
-        <span class="k">return</span> <span class="n">result</span>
-
-    <span class="k">def</span> <span class="nf">_get_predict_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">transform</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">FitPredict</span><span class="p">(</span><span class="n">StepStrategy</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            pargs:</span>
-<span class="sd">            kwargs:</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;predict&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)}</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="p">,</span> <span class="s1">&#39;predict_proba&#39;</span><span class="p">):</span>
-            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;predict_proba&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="p">,</span> <span class="s1">&#39;predict_log_proba&#39;</span><span class="p">):</span>
-            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;predict_log_proba&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">predict_log_proba</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">result</span>
-
-    <span class="k">def</span> <span class="nf">_get_predict_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">predict</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">AtomicFitPredict</span><span class="p">(</span><span class="n">StepStrategy</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">    Handler of estimator that implements only fit &amp; predict</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            pargs:</span>
-<span class="sd">            kwargs:</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="c1"># Relies on the pipegraph iteration loop to run predict after fit in order to propagate the signals</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            pargs:</span>
-<span class="sd">            kwargs:</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;predict&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)}</span>
-
-    <span class="k">def</span> <span class="nf">_get_predict_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_fit_signature</span><span class="p">()</span>
-
-
-<span class="k">class</span> <span class="nc">CustomStrategyWithDictionaryOutputAdaptee</span><span class="p">(</span><span class="n">StepStrategy</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            pargs:</span>
-<span class="sd">            kwargs:</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            pargs:</span>
-<span class="sd">            kwargs:</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_get_predict_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">predict</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">Concatenator</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Concatenate a set of data</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Fit method that does, in this case, nothing but returning self.</span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">            self : returns an instance of _Concatenator.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check the input data type for correct concatenating.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        **kwargs :  sequence of indexables with same length / shape[0]</span>
-<span class="sd">            Allowed inputs are lists, numpy arrays, scipy-sparse</span>
-<span class="sd">            matrices or pandas dataframes.</span>
-<span class="sd">            Data to concatenate.</span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        Pandas series or Pandas DataFrame with the data input concatenated</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">df_list</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-            <span class="n">item</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
-                <span class="n">df_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">df_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">item</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">df_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">CustomCombination</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Only For PAELLA purposes</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dominant</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            dominant:</span>
-<span class="sd">            other:</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dominant</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            dominant:</span>
-<span class="sd">            other:</span>
-
-<span class="sd">        Returns:</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dominant</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dominant</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">TrainTestSplit</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Split arrays or matrices into random train and test subsets</span>
-<span class="sd">        Quick utility that wraps input validation and</span>
-<span class="sd">        ``next(ShuffleSplit().split(X, y))`` and application to input data</span>
-<span class="sd">        into a single call for splitting (and optionally subsampling) data in a</span>
-<span class="sd">        oneliner.</span>
-<span class="sd">        Read more in the :ref:`User Guide &lt;cross_validation&gt;`.</span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        test_size : float, int, None, optional</span>
-<span class="sd">            If float, should be between 0.0 and 1.0 and represent the proportion</span>
-<span class="sd">            of the dataset to include in the test split. If int, represents the</span>
-<span class="sd">            absolute number of test samples. If None, the value is set to the</span>
-<span class="sd">            complement of the train size. By default, the value is set to 0.25.</span>
-<span class="sd">            The default will change in version 0.21. It will remain 0.25 only</span>
-<span class="sd">            if ``train_size`` is unspecified, otherwise it will complement</span>
-<span class="sd">            the specified ``train_size``.</span>
-<span class="sd">        train_size : float, int, or None, default None</span>
-<span class="sd">            If float, should be between 0.0 and 1.0 and represent the</span>
-<span class="sd">            proportion of the dataset to include in the train split. If</span>
-<span class="sd">            int, represents the absolute number of train samples. If None,</span>
-<span class="sd">            the value is automatically set to the complement of the test size.</span>
-<span class="sd">        random_state : int, RandomState instance or None, optional (default=None)</span>
-<span class="sd">            If int, random_state is the seed used by the random number generator;</span>
-<span class="sd">            If RandomState instance, random_state is the random number generator;</span>
-<span class="sd">            If None, the random number generator is the RandomState instance used</span>
-<span class="sd">            by `np.random`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">test_size</span> <span class="o">=</span> <span class="n">test_size</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">train_size</span> <span class="o">=</span> <span class="n">train_size</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
-
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Fit the model included in the step</span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">            self : returns an instance of _TrainTestSplit.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Fit the model included in the step</span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        **kwargs: sequence of indexables with same length / shape[0]</span>
-<span class="sd">            Allowed inputs are lists, numpy arrays, scipy-sparse</span>
-<span class="sd">            matrices or pandas dataframes.</span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        splitting : list, length=2 * len(arrays)</span>
-<span class="sd">            List containing train-test split of inputs.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pargs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The developers assume you will use keyword parameters on the TrainTestSplit class.&quot;</span><span class="p">)</span>
-        <span class="n">array_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="n">train_test_array_names</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([[</span><span class="n">item</span> <span class="o">+</span> <span class="s2">&quot;_train&quot;</span><span class="p">,</span> <span class="n">item</span> <span class="o">+</span> <span class="s2">&quot;_test&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">array_names</span><span class="p">],</span> <span class="p">[])</span>
-
-        <span class="n">result</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">train_test_array_names</span><span class="p">,</span>
-                          <span class="n">train_test_split</span><span class="p">(</span><span class="o">*</span><span class="n">kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
-        <span class="k">return</span> <span class="n">result</span>
-
-
-<span class="k">class</span> <span class="nc">ColumnSelector</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Slice data-input data in columns</span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    mapping : list. Each element contains data-column and the new name assigned</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span> <span class="o">=</span> <span class="n">mapping</span>
-
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;&quot;</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        self : returns an instance of _CustomPower.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;&quot;</span>
-<span class="sd">        X: iterable object</span>
-<span class="sd">                Data to slice.</span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        returns a list with data-column and the new name assigned for each column selected</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;predict&#39;</span><span class="p">:</span> <span class="n">X</span><span class="p">}</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">X</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">column_slice</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">column_slice</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-        <span class="k">return</span> <span class="n">result</span>
-
-
-<span class="k">class</span> <span class="nc">CustomPower</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Raises X data to power defined such as range as parameter</span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    power : range of integers for the powering operation</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">power</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">power</span> <span class="o">=</span> <span class="n">power</span>
-
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;&quot;</span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">            self : returns an instance of _CustomPower.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;&quot;</span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        X: iterable</span>
-<span class="sd">            Data to power.</span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        result of raising power operation</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">)</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">power</span>
-
-
-<span class="k">class</span> <span class="nc">Reshape</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span> <span class="o">=</span> <span class="n">dimension</span>
-
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">values</span>
-        <span class="k">return</span> <span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dimension</span><span class="p">)</span>
-
-
-<span class="k">class</span> <span class="nc">Demultiplexer</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Slice data-input data in columns</span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    mapping : list. Each element contains data-column and the new name assigned</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">selection</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;selection&#39;</span><span class="p">)</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">variable</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">class_number</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">selection</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">result</span><span class="p">[</span><span class="n">variable</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">class_number</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">result</span><span class="p">[</span><span class="n">variable</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">class_number</span><span class="p">)]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">selection</span> <span class="o">==</span> <span class="n">class_number</span><span class="p">,</span> <span class="p">:]</span>
-        <span class="k">return</span> <span class="n">result</span>
-
-
-<span class="k">class</span> <span class="nc">Multiplexer</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="c1">#list of arrays with the samen dimension</span>
-        <span class="n">selection</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;selection&#39;</span><span class="p">]</span>
-        <span class="n">array_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">class_number</span><span class="p">)],</span>
-                                   <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">selection</span> <span class="o">==</span> <span class="n">class_number</span><span class="p">))</span>
-                      <span class="k">for</span> <span class="n">class_number</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">selection</span><span class="p">)]</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">array_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">result</span>
-
-
 <span class="k">def</span> <span class="nf">build_graph</span><span class="p">(</span><span class="n">connections</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        connections:</span>
+<span class="sd">        connections: dict</span>
+<span class="sd">        A dictionary as described in PipeGraphRegressor and PipeGraphClassifier</span>
 
 <span class="sd">    Returns:</span>
-
+<span class="sd">        A graph ready to be fitted</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="s1">&#39;_External&#39;</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">connections</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="s1">&#39;_External&#39;</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please use another name for the _External node. _External name is used internally.&quot;</span><span class="p">)</span>
 
     <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
@@ -1405,16 +1039,20 @@
     <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">:</span>
         <span class="n">current_node</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="n">current_node</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
-        <span class="n">ascendants_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                             <span class="k">for</span> <span class="n">inner_variable</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span>
+        <span class="n">ascendants_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">inner_variable</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">ascendants_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">:</span>
+                <span class="n">ascendants_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="n">ascendants_set</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="s1">&#39;_External&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">ascendant</span> <span class="ow">in</span> <span class="n">ascendants_set</span><span class="p">:</span>
             <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">ascendant</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-    <span class="c1">#            logger.debug(&quot;Build graph %s&quot;, (ascendant, name))</span>
     <span class="k">return</span> <span class="n">graph</span>
 
 
-<span class="k">def</span> <span class="nf">make_step</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="n">strategy_class</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">wrap_adaptee_in_process</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="n">strategy_class</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">    Args:</span>
@@ -1428,24 +1066,38 @@
     <span class="k">elif</span> <span class="n">adaptee</span><span class="o">.</span><span class="vm">__class__</span> <span class="ow">in</span> <span class="n">strategies_for_custom_adaptees</span><span class="p">:</span>
         <span class="n">strategy</span> <span class="o">=</span> <span class="n">strategies_for_custom_adaptees</span><span class="p">[</span><span class="n">adaptee</span><span class="o">.</span><span class="vm">__class__</span><span class="p">](</span><span class="n">adaptee</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="s1">&#39;transform&#39;</span><span class="p">):</span>
-        <span class="n">strategy</span> <span class="o">=</span> <span class="n">FitTransform</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
+        <span class="n">strategy</span> <span class="o">=</span> <span class="n">AdapterForFitTransformAdaptee</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="s1">&#39;predict&#39;</span><span class="p">):</span>
-        <span class="n">strategy</span> <span class="o">=</span> <span class="n">FitPredict</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
+        <span class="n">strategy</span> <span class="o">=</span> <span class="n">AdapterForFitPredictAdaptee</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="s1">&#39;fit_predict&#39;</span><span class="p">):</span>
-        <span class="n">strategy</span> <span class="o">=</span> <span class="n">AtomicFitPredict</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
+        <span class="n">strategy</span> <span class="o">=</span> <span class="n">AdapterForAtomicFitPredictAdaptee</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Error: adaptee of unknown behaviour&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Error: Unknown adaptee!&#39;</span><span class="p">)</span>
 
-    <span class="n">step</span> <span class="o">=</span> <span class="n">Step</span><span class="p">(</span><span class="n">strategy</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">step</span>
+    <span class="n">process</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">strategy</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">process</span>
 
 
-<span class="n">strategies_for_custom_adaptees</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">TrainTestSplit</span><span class="p">:</span> <span class="n">CustomStrategyWithDictionaryOutputAdaptee</span><span class="p">,</span>
-    <span class="n">ColumnSelector</span><span class="p">:</span> <span class="n">CustomStrategyWithDictionaryOutputAdaptee</span><span class="p">,</span>
-    <span class="n">Multiplexer</span><span class="p">:</span> <span class="n">FitPredict</span><span class="p">,</span>
-    <span class="n">Demultiplexer</span><span class="p">:</span> <span class="n">CustomStrategyWithDictionaryOutputAdaptee</span><span class="p">,</span>
-<span class="p">}</span>
+<span class="k">def</span> <span class="nf">make_connections_when_not_provided_to_init</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">]</span>
+    <span class="n">connections</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error: No steps to chain. Please provide a list of steps to PipeGraph&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">names</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">connections</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="s1">&#39;X&#39;</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">connections</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">index</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;predict&#39;</span><span class="p">)}</span>
+
+    <span class="n">connections</span><span class="p">[</span><span class="n">names</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;y&#39;</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">connections</span>
+
+
+<span class="n">strategies_for_custom_adaptees</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="n">strategies_for_custom_adaptees</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">std_blocks_strategies</span><span class="p">,</span>
+                                      <span class="p">)</span>
+
 </pre></div>
 
            </div>

@@ -33,7 +33,8 @@ Steps of the **PipeGraph**:
     from sklearn.preprocessing import PolynomialFeatures
     from sklearn.linear_model import LinearRegression
     from sklearn.model_selection import GridSearchCV
-    from pipegraph.pipeGraph import PipeGraphClassifier, Concatenator
+    from pipegraph.base import PipeGraphClassifier
+    from pipegraph.standard_blocks import Concatenator
     import matplotlib.pyplot as plt
     from sklearn.datasets import load_iris
     from sklearn.naive_bayes import GaussianNB
@@ -56,21 +57,6 @@ Steps of the **PipeGraph**:
              ('concat', concatenator),
              ('mlp', mlp)]
 
-    connections = { 'scaler': {'X': 'X'},
-                    'gaussian_nb': {'X': ('scaler', 'predict'),
-                                    'y': 'y'},
-                    'svc':  {'X': ('scaler', 'predict'),
-                             'y': 'y'},
-                    'concat': {'X1': ('scaler', 'predict'),
-                               'X2': ('gaussian_nb', 'predict'),
-                               'X3': ('svc', 'predict')},
-                    'mlp': {'X': ('concat', 'predict'),
-                            'y': 'y'}
-                }
-
-    param_grid = {'svc__C': [0.1, 0.5, 1.0],
-                  'mlp__hidden_layer_sizes': [(3,), (6,), (9,),],
-                  'mlp__max_iter': [5000, 10000]}
 
 
 
@@ -85,7 +71,23 @@ In this example we use a :class:`PipeGraphClassifier` because the result is a cl
 .. code-block:: python
 
 
-    pgraph = PipeGraphClassifier(steps=steps, connections=connections)
+    pgraph = PipeGraphClassifier(steps=steps)
+    (pgraph.inject(sink='scaler', sink_var='X', source='_External', source_var='X')
+           .inject('gaussian_nb', 'X', 'scaler')
+           .inject('gaussian_nb', 'y', source_var='y')
+           .inject('svc', 'X', 'scaler')
+           .inject('svc', 'y', source_var='y')
+           .inject('concat', 'X1', 'scaler')
+           .inject('concat', 'X2', 'gaussian_nb')
+           .inject('concat', 'X3', 'svc')
+           .inject('mlp', 'X', 'concat')
+           .inject('mlp', 'y', source_var='y')
+    )
+
+    param_grid = {'svc__C': [0.1, 0.5, 1.0],
+                  'mlp__hidden_layer_sizes': [(3,), (6,), (9,),],
+                  'mlp__max_iter': [5000, 10000]}
+
     grid_search_classifier  = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
     grid_search_classifier.fit(X, y)
     y_pred = grid_search_classifier.predict(X)
@@ -119,7 +121,7 @@ This example displayed complex data injections that are successfully managed by 
 Next example :ref:`on <example5>`.
 
 
-**Total running time of the script:** ( 0 minutes  56.203 seconds)
+**Total running time of the script:** ( 0 minutes  49.430 seconds)
 
 
 

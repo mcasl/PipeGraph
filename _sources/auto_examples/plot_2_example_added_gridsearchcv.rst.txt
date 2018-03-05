@@ -34,7 +34,7 @@ Firstly, we import the necessary libraries and create some artificial data.
     from sklearn.preprocessing import PolynomialFeatures
     from sklearn.linear_model import LinearRegression
     from sklearn.model_selection import GridSearchCV
-    from pipegraph.pipeGraph import PipeGraphRegressor
+    from pipegraph.base import PipeGraphRegressor
 
     import matplotlib.pyplot as plt
 
@@ -51,7 +51,7 @@ Firstly, we import the necessary libraries and create some artificial data.
 
 
 
-Secondly, we define the steps and connections in a similar manner as we described in the :ref:`first example <example1>`. A ``param_grid`` dictionary is defined as specified by :class:`GridSearchCV`.
+Secondly, we define the steps and a ``param_grid`` dictionary as specified by :class:`GridSearchCV`.
 In this case we just want to explore a few possibilities varying the degree of the polynomials and whether to use or not an intercept at the linear model.
 
 
@@ -62,11 +62,6 @@ In this case we just want to explore a few possibilities varying the degree of t
     steps = [('scaler', scaler),
              ('polynomial_features', polynomial_features),
              ('linear_model', linear_model)]
-
-    connections = {'scaler': { 'X': 'X'},
-                   'polynomial_features': {'X': ('scaler', 'predict')},
-                   'linear_model': {'X': ('polynomial_features', 'predict'),
-                                    'y': 'y' }  }
 
     param_grid = {'polynomial_features__degree': range(1, 11),
                   'linear_model__fit_intercept': [True, False]}
@@ -84,8 +79,8 @@ Now, we use ``PipeGraphRegressor`` as estimator for :class:`GridSearchCV` and pe
 .. code-block:: python
 
 
-    pgraph = PipeGraphRegressor(steps=steps, connections=connections)
-    grid_search_regressor  = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
+    pgraph = PipeGraphRegressor(steps=steps)
+    grid_search_regressor = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
     grid_search_regressor.fit(X, y)
     y_pred = grid_search_regressor.predict(X)
 
@@ -112,15 +107,15 @@ Now, we use ``PipeGraphRegressor`` as estimator for :class:`GridSearchCV` and pe
 
     Information about the parameters of the best estimator: 
      degree: 5 
-     coefficients: [[    0.           478.45890046 -1920.14533993  3821.81599162
-      -3711.63272305  1428.87922652]]
+     coefficients: [[    0.           444.37415063 -1750.82706121  3478.24421874
+      -3398.74432597  1325.89202759]]
 
 
 This example showed how to use :class:`GridSearchCV` with :class:`PipeGraphRegressor` in a simple linear workflow.
 :ref:`Next example <example3>` provides detail on how to proceed with a non linear case.
 
 
-**Total running time of the script:** ( 0 minutes  0.544 seconds)
+**Total running time of the script:** ( 0 minutes  0.368 seconds)
 
 
 

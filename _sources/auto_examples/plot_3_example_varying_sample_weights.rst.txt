@@ -8,7 +8,7 @@
 Third Example: Injecting varying ``sample_weight`` vectors to a linear regression model for GridSearchCV
 -------------------------------------------------------------------------------------------------------------------
 This example illustrates a case in which a varying vector is injected to a linear regression model as ``sample_weight`` in order to evaluate them and obtain the sample_weight that generates the best results.
-Let's imagine we have a sample_weight vector and different powers of the vector are needed to be evaluated. To perform such experiment, the following constrains appear:
+Let's imagine we have a sample_weight vector and different powers of the vector are needed to be evaluated. To perform such experiment, the following issues appear:
 
 - The shape of the graph is not a linear sequence as those that can be implemented using Pipeline.
 - More than two variables (typically: ``X`` and ``y``) need to be accordingly split in order to perform the cross validation with GridSearchCV, in this case: ``X``, ``y`` and ``sample_weight``.
@@ -36,7 +36,8 @@ Steps of the **PipeGraph**:
     from sklearn.preprocessing import PolynomialFeatures
     from sklearn.linear_model import LinearRegression
     from sklearn.model_selection import GridSearchCV
-    from pipegraph.pipeGraph import PipeGraphRegressor, CustomPower, ColumnSelector, Reshape
+    from pipegraph.base import PipeGraphRegressor
+    from pipegraph.standard_blocks import ColumnSelector, CustomPower, Reshape
     import matplotlib.pyplot as plt
 
 
@@ -63,8 +64,7 @@ We create an augmented ``X`` in which all data but ``y`` is concatenated. In thi
 
 
 
-Next we define the steps and connections of the **PipeGraph** and define  ``param_grid`` as expected by :class:`GridSearchCV` exploring a few possibilities of varying parameters.
-Please, refer to the :ref:`first example <example1>` for a description of the connections syntax.
+Next we define the steps and we use :class:`PipeGraphRegressor` as estimator for :class:`GridSearchCV`.
 
 
 
@@ -84,13 +84,29 @@ Please, refer to the :ref:`first example <example1>` for a description of the co
              ('polynomial_features', polynomial_features),
              ('linear_model', linear_model)]
 
-    connections = { 'selector':     {'X':'X'},
-                    'custom_power': {'X': ('selector', 'sample_weight')},
-                    'scaler':       {'X': ('selector', 'X')},
-                    'polynomial_features': {'X': ('scaler', 'predict')},
-                    'linear_model': {'X': ('polynomial_features', 'predict'),
-                                     'y': 'y',
-                                     'sample_weight': ('custom_power', 'predict')}  }
+    pgraph = PipeGraphRegressor(steps=steps)
+
+    (pgraph.inject(sink='selector', sink_var='X', source='_External', source_var='X')
+           .inject('custom_power', 'X', 'selector', 'sample_weight')
+           .inject('scaler', 'X', 'selector', 'X')
+           .inject('polynomial_features', 'X', 'scaler')
+           .inject('linear_model', 'X',  'polynomial_features')
+           .inject('linear_model', 'y', source_var='y')
+           .inject('linear_model', 'sample_weight', 'custom_power'))
+
+
+
+
+
+
+
+
+Then we define ``param_grid`` as expected by :class:`GridSearchCV` exploring a few possibilities
+ of varying parameters.
+
+
+
+.. code-block:: python
 
     param_grid = {'polynomial_features__degree': range(1, 3),
                   'linear_model__fit_intercept': [True, False],
@@ -98,18 +114,6 @@ Please, refer to the :ref:`first example <example1>` for a description of the co
 
 
 
-
-
-
-
-Then, we use :class:`PipeGraphRegressor` as estimator for :class:`GridSearchCV` and perform the ``fit`` and ``predict`` operations.
-
-
-
-.. code-block:: python
-
-
-    pgraph = PipeGraphRegressor(steps=steps, connections=connections)
     grid_search_regressor = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
     grid_search_regressor.fit(X, y)
     y_pred = grid_search_regressor.predict(X)
@@ -140,7 +144,7 @@ This example displayed a non linear workflow successfully implemented by **PipeG
 :ref:`Next examples <example4>` show more elaborated examples in increasing complexity order.
 
 
-**Total running time of the script:** ( 0 minutes  0.909 seconds)
+**Total running time of the script:** ( 0 minutes  0.631 seconds)
 
 
 

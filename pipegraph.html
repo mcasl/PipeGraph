@@ -161,7 +161,7 @@
 <p>The PipeGraph module provides an extension to Scikit-Learn’s Pipeline that enables the users to express their models by using graphs of steps.</p>
 <span class="target" id="module-pipegraph"></span><dl class="class">
 <dt id="pipegraph.PipeGraphClassifier">
-<em class="property">class </em><code class="descclassname">pipegraph.</code><code class="descname">PipeGraphClassifier</code><span class="sig-paren">(</span><em>steps</em>, <em>connections</em>, <em>alternative_connections=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pipegraph.</code><code class="descname">PipeGraphClassifier</code><span class="sig-paren">(</span><em>steps</em>, <em>fit_connections=None</em>, <em>predict_connections=None</em>, <em>log_level=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphClassifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier" title="Permalink to this definition">¶</a></dt>
 <dd><p>PipeGraph with a classifier default score.
 This class implements an interface to the PipeGraph base class which is compatible with GridSearchCV.
 This documentation is heavily based on Scikit-Learn’s Pipeline on purpose as it is the aim of this class
@@ -196,9 +196,13 @@ that uses different connection dictionaries during fit than during predict. The 
 </tr>
 </tbody>
 </table>
+<dl class="docutils">
+<dt>log_level: int</dt>
+<dd>Log level for traceability purposes. This is yet a unimplemented feature.</dd>
+</dl>
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.decision_function">
-<code class="descname">decision_function</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.decision_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.decision_function" title="Permalink to this definition">¶</a></dt>
+<code class="descname">decision_function</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphClassifier.decision_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.decision_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies PipeGraphClasifier’s predict method and returns the decision_function output of the final estimator</p>
 <blockquote>
 <div><dl class="docutils">
@@ -220,7 +224,7 @@ that uses different connection dictionaries during fit than during predict. The 
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.fit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphClassifier.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -247,7 +251,7 @@ each parameter name is prefixed such that parameter <code class="docutils litera
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.fit_predict">
-<code class="descname">fit_predict</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.fit_predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.fit_predict" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit_predict</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphClassifier.fit_predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.fit_predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies fit_predict of last step in PipeGraph after it predicts the PipeGraph steps one after
 the other and following the topological order of the graph.</p>
 <p>Applies predict of a PipeGraph to the data following the topological order of the graph, followed by the
@@ -279,7 +283,7 @@ each parameter name is prefixed such that parameter <code class="docutils litera
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.get_params">
-<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.get_params" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphClassifier.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.get_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get parameters for this estimator.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -296,8 +300,25 @@ each parameter name is prefixed such that parameter <code class="docutils litera
 </dd></dl>
 
 <dl class="method">
+<dt id="pipegraph.PipeGraphClassifier.inject">
+<code class="descname">inject</code><span class="sig-paren">(</span><em>sink</em>, <em>sink_var</em>, <em>source='_External'</em>, <em>source_var='predict'</em>, <em>into='fit'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphClassifier.inject"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.inject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a connection to the graph.</p>
+<p>sink: Destination
+sink_var: Name of the variable at destination that is going to hold the information
+source: Origin
+source_var: Name of the variable at origin holding the information
+into: This can be either ‘fit’ or ‘predict’, indicating which connections are described: those belonging</p>
+<blockquote>
+<div>to ‘fit_connections’ or those belonging to ‘predict_connections’. Default is ‘fit’.</div></blockquote>
+<dl class="docutils">
+<dt>self:  PipeGraphClassifier</dt>
+<dd>Returning self allows chaining operations</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.predict">
-<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.predict" title="Permalink to this definition">¶</a></dt>
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphClassifier.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Predict the PipeGraph steps one after the other and following the topological
 order defined by the alternative_connections attribute, in case it is not None, or the connections attribute otherwise.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -316,7 +337,7 @@ order defined by the alternative_connections attribute, in case it is not None, 
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.predict_log_proba">
-<code class="descname">predict_log_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.predict_log_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.predict_log_proba" title="Permalink to this definition">¶</a></dt>
+<code class="descname">predict_log_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphClassifier.predict_log_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.predict_log_proba" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies PipeGraphRegressor’s predict method and returns the predict_log_proba output of the final estimator</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -334,7 +355,7 @@ order defined by the alternative_connections attribute, in case it is not None, 
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.predict_proba">
-<code class="descname">predict_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.predict_proba" title="Permalink to this definition">¶</a></dt>
+<code class="descname">predict_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphClassifier.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.predict_proba" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies PipeGraphClassifier’s predict method and returns the predict_proba output of the final estimator</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -352,7 +373,7 @@ order defined by the alternative_connections attribute, in case it is not None, 
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.score">
-<code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>sample_weight=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.score" title="Permalink to this definition">¶</a></dt>
+<code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>sample_weight=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphClassifier.score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.score" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies PipeGraphRegressor’s predict method and returns the score output of the final estimator</p>
 <blockquote>
 <div><dl class="docutils">
@@ -369,7 +390,7 @@ order defined by the alternative_connections attribute, in case it is not None, 
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphClassifier.set_params">
-<code class="descname">set_params</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphClassifier.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphClassifier.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphClassifier.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the parameters of this estimator.
 Valid parameter keys can be listed with <code class="docutils literal notranslate"><span class="pre">get_params()</span></code>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -388,7 +409,7 @@ Valid parameter keys can be listed with <code class="docutils literal notranslat
 
 <dl class="class">
 <dt id="pipegraph.PipeGraphRegressor">
-<em class="property">class </em><code class="descclassname">pipegraph.</code><code class="descname">PipeGraphRegressor</code><span class="sig-paren">(</span><em>steps</em>, <em>connections</em>, <em>alternative_connections=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pipegraph.</code><code class="descname">PipeGraphRegressor</code><span class="sig-paren">(</span><em>steps</em>, <em>fit_connections=None</em>, <em>predict_connections=None</em>, <em>log_level=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphRegressor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor" title="Permalink to this definition">¶</a></dt>
 <dd><p>PipeGraph with a regressor default score.
 This class implements an interface to the PipeGraph base class which is compatible with GridSearchCV.
 This documentation is heavily based on Scikit-Learn’s Pipeline on purpose as its aim is to provide an interface
@@ -415,6 +436,7 @@ as similar to Pipeline as possible.</p>
 </li>
 <li><strong>alternative_connections</strong> (<em>dictionary</em>) – A dictionary as described for <code class="docutils literal notranslate"><span class="pre">connections</span></code>. This parameters provides the possibility of specifying a PipeGraph
 that uses a different connection dictionary during fit than during predict. The default value, <code class="docutils literal notranslate"><span class="pre">None</span></code>, implies that it is equivalent to the <code class="docutils literal notranslate"><span class="pre">connections</span></code> value, and thus PipeGraph uses the same graph for both <code class="docutils literal notranslate"><span class="pre">fit</span></code> and <code class="docutils literal notranslate"><span class="pre">predict</span></code>.</li>
+<li><strong>log_level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Log level for traceability purposes. This is yet a unimplemented feature.</li>
 </ul>
 </td>
 </tr>
@@ -422,7 +444,7 @@ that uses a different connection dictionary during fit than during predict. The 
 </table>
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.decision_function">
-<code class="descname">decision_function</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.decision_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.decision_function" title="Permalink to this definition">¶</a></dt>
+<code class="descname">decision_function</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphRegressor.decision_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.decision_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies PipeGraphRegressor’s predict method and returns the decision_function output of the final estimator</p>
 <blockquote>
 <div><dl class="docutils">
@@ -444,7 +466,7 @@ that uses a different connection dictionary during fit than during predict. The 
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.fit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphRegressor.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -471,7 +493,7 @@ each parameter name is prefixed such that parameter <code class="docutils litera
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.fit_predict">
-<code class="descname">fit_predict</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.fit_predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.fit_predict" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit_predict</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphRegressor.fit_predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.fit_predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is equivalent to applying the fit method and then predict method.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -499,7 +521,7 @@ each parameter name is prefixed such that parameter <code class="docutils litera
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.get_params">
-<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.get_params" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphRegressor.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.get_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get parameters for this estimator.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -516,8 +538,25 @@ each parameter name is prefixed such that parameter <code class="docutils litera
 </dd></dl>
 
 <dl class="method">
+<dt id="pipegraph.PipeGraphRegressor.inject">
+<code class="descname">inject</code><span class="sig-paren">(</span><em>sink</em>, <em>sink_var</em>, <em>source='_External'</em>, <em>source_var='predict'</em>, <em>into='fit'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphRegressor.inject"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.inject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a connection to the graph.</p>
+<p>sink: Destination
+sink_var: Name of the variable at destination that is going to hold the information
+source: Origin
+source_var: Name of the variable at origin holding the information
+into: This can be either ‘fit’ or ‘predict’, indicating which connections are described: those belonging</p>
+<blockquote>
+<div>to ‘fit_connections’ or those belonging to ‘predict_connections’. Default is ‘fit’.</div></blockquote>
+<dl class="docutils">
+<dt>self:  PipeGraphRegressor</dt>
+<dd>Returning self allows chaining operations</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.predict">
-<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.predict" title="Permalink to this definition">¶</a></dt>
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphRegressor.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Predict the PipeGraph steps one after the other and following the topological
 order defined by the alternative_connections attribute, in case it is not None, or the connections attribute otherwise.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -536,7 +575,7 @@ order defined by the alternative_connections attribute, in case it is not None, 
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.predict_log_proba">
-<code class="descname">predict_log_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.predict_log_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.predict_log_proba" title="Permalink to this definition">¶</a></dt>
+<code class="descname">predict_log_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphRegressor.predict_log_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.predict_log_proba" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies PipeGraphRegressor’s predict method and returns the predict_log_proba output of the final estimator</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -554,7 +593,7 @@ order defined by the alternative_connections attribute, in case it is not None, 
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.predict_proba">
-<code class="descname">predict_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.predict_proba" title="Permalink to this definition">¶</a></dt>
+<code class="descname">predict_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphRegressor.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.predict_proba" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies PipeGraphRegressor’s predict method and returns the predict_proba output of the final estimator</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -572,7 +611,7 @@ order defined by the alternative_connections attribute, in case it is not None, 
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.score">
-<code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>sample_weight=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.score" title="Permalink to this definition">¶</a></dt>
+<code class="descname">score</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>sample_weight=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphRegressor.score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.score" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies PipeGraphRegressor’s predict method and returns the score output of the final estimator</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -594,7 +633,7 @@ order defined by the alternative_connections attribute, in case it is not None, 
 
 <dl class="method">
 <dt id="pipegraph.PipeGraphRegressor.set_params">
-<code class="descname">set_params</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/pipeGraph.html#PipeGraphRegressor.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.set_params" title="Permalink to this definition">¶</a></dt>
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraphRegressor.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraphRegressor.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the parameters of this estimator.
 Valid parameter keys can be listed with <code class="docutils literal notranslate"><span class="pre">get_params()</span></code>.
 :returns:
