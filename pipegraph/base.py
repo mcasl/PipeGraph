@@ -48,6 +48,23 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         self.pipegraph = PipeGraph(steps, fit_connections, predict_connections, log_level)
 
     def inject(self, sink, sink_var, source='_External', source_var='predict', into='fit'):
+        """
+        Adds a connection to the graph.
+
+        Parameters:
+        -----------
+        sink: Destination
+        sink_var: Name of the variable at destination that is going to hold the information
+        source: Origin
+        source_var: Name of the variable at origin holding the information
+        into: This can be either 'fit' or 'predict', indicating which connections are described: those belonging
+              to 'fit_connections' or those belonging to 'predict_connections'. Default is 'fit'.
+
+        Returns:
+        --------
+        self:  PipeGraphRegressor
+            Returning self allows chaining operations
+        """
         self.pipegraph.inject(sink=sink, sink_var=sink_var, source=source, source_var=source_var, into=into)
         return self
 
@@ -249,6 +266,23 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         self.pipegraph = PipeGraph(steps, fit_connections, predict_connections, log_level)
 
     def inject(self, sink, sink_var, source='_External', source_var='predict', into='fit'):
+        """
+                Adds a connection to the graph.
+
+                Parameters:
+                -----------
+                sink: Destination
+                sink_var: Name of the variable at destination that is going to hold the information
+                source: Origin
+                source_var: Name of the variable at origin holding the information
+                into: This can be either 'fit' or 'predict', indicating which connections are described: those belonging
+                      to 'fit_connections' or those belonging to 'predict_connections'. Default is 'fit'.
+
+                Returns:
+                --------
+                self:  PipeGraphClassifier
+                    Returning self allows chaining operations
+                """
         self.pipegraph.inject(sink=sink, sink_var=sink_var, source=source, source_var=source_var, into=into)
         return self
 
@@ -469,6 +503,23 @@ class PipeGraph(_BaseComposition):
         self._predict_data = {}
 
     def inject(self, sink, sink_var, source, source_var='predict', into='fit'):
+        """
+                Adds a connection to the graph.
+
+                Parameters:
+                -----------
+                sink: Destination
+                sink_var: Name of the variable at destination that is going to hold the information
+                source: Origin
+                source_var: Name of the variable at origin holding the information
+                into: This can be either 'fit' or 'predict', indicating which connections are described: those belonging
+                      to 'fit_connections' or those belonging to 'predict_connections'. Default is 'fit'.
+
+                Returns:
+                --------
+                self:  PipeGraph
+                    Returning self allows chaining operations
+                """
         if self.fit_connections is None:
             self.fit_connections = dict()
 
