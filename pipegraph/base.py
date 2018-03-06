@@ -138,7 +138,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         -------
         y_pred : array-like
         """
-        return self.pipegraph.predict(X)['predict']
+        return self.pipegraph.predict(X, y=None)['predict']
 
     def fit_predict(self, X, y=None, **fit_params):
         """
@@ -161,7 +161,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         y_pred : array-like
         """
         self.pipegraph.fit(X, y=y, **fit_params)
-        return self.pipegraph.predict(X)
+        return self.pipegraph.predict(X, y=None)
 
     def predict_proba(self, X):
         """
@@ -176,7 +176,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         -------
         y_proba : array-like, shape = [n_samples, n_classes]
         """
-        return self.pipegraph.predict(X)['predict_proba']
+        return self.pipegraph.predict(X, y=None)['predict_proba']
 
     def decision_function(self, X):
         """
@@ -207,7 +207,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         -------
         y_proba : array-like, shape = [n_samples, n_classes]
         """
-        return self.pipegraph.predict(X)['predict_log_proba']
+        return self.pipegraph.predict(X, y=None)['predict_log_proba']
 
     def score(self, X, y=None, sample_weight=None):
         """
@@ -357,7 +357,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         -------
         y_pred : array-like
         """
-        return self.pipegraph.predict(X)['predict']
+        return self.pipegraph.predict(X, y=None)['predict']
 
     def fit_predict(self, X, y=None, **fit_params):
         """
@@ -400,7 +400,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         -------
         y_proba : array-like, shape = [n_samples, n_classes]
         """
-        return self.pipegraph.predict(X)['predict_proba']
+        return self.pipegraph.predict(X, y=None)['predict_proba']
 
     def decision_function(self, X):
         """
@@ -432,7 +432,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         -------
         y_proba : array-like, shape = [n_samples, n_classes]
         """
-        return self.pipegraph.predict(X)['predict_log_proba']
+        return self.pipegraph.predict(X, y=None)['predict_log_proba']
 
     def score(self, X, y=None, sample_weight=None):
         """
