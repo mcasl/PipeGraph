@@ -25,7 +25,7 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GridSearchCV
-from pipegraph.base import PipeGraph
+from pipegraph.base import PipeGraphRegressor
 from pipegraph.standard_blocks import Demultiplexer, Multiplexer
 import matplotlib.pyplot as plt
 from sklearn.mixture import GaussianMixture
@@ -77,13 +77,10 @@ connections = { 'scaler': {'X': 'X'},
                         '2': 'lm_2',
                         'selection': 'classifier'}}
 
-###############################################################################
-# Use **PipeGraph** when predict needs ( ``X``, ``y`` )
-
-pgraph = PipeGraph(steps=steps, fit_connections=connections)
+pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
 pgraph.fit(X, y)
 #%%
-y_pred = pgraph.predict(X, y=None)['predict']
+y_pred = pgraph.predict(X)
 plt.scatter(X, y)
 plt.scatter(X, y_pred)
 
