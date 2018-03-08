@@ -1,25 +1,25 @@
 language: python
-
 cache:
   apt: true
-  # We use three different cache directory
-  # to work around a Travis bug with multi-platform cache
   directories:
-  - $HOME/.cache/pip
-  - $HOME/download
+  - "$HOME/.cache/pip"
+  - "$HOME/download"
 env:
   global:
-    # Directory where tests are run from
-    - TEST_DIR=/tmp/test_dir/
-    - MODULE=pipegraph
+  - TEST_DIR=/tmp/test_dir/
+  - MODULE=pipegraph
   matrix:
-#    - DISTRIB="conda" PYTHON_VERSION="2.7"
-#      NUMPY_VERSION="1.13.3" SCIPY_VERSION="0.19.1" CYTHON_VERSION="0.21"
-#      PANDAS_VERSION="0.22.0" NETWORKX_VERSION="2.0"
-    - DISTRIB="conda" PYTHON_VERSION="3.5" COVERAGE="true"
-      NUMPY_VERSION="1.13.3" SCIPY_VERSION="0.19.1" CYTHON_VERSION="0.23.4"
-      PANDAS_VERSION="0.22.0" NETWORKX_VERSION="2.0"
-
+  - DISTRIB="conda" PYTHON_VERSION="3.5" COVERAGE="true" NUMPY_VERSION="1.13.3" SCIPY_VERSION="0.19.1"
+    CYTHON_VERSION="0.23.4" PANDAS_VERSION="0.22.0" NETWORKX_VERSION="2.0"
 install: source ci_scripts/travis/install.sh
 script: bash ci_scripts/travis/test.sh
 after_success: source ci_scripts/travis/success.sh
+deploy:
+  provider: pypi
+  user: pinguy
+  distributions: sdist bdist_wheel
+  password:
+    secure: UVkNkYoc8MI6MXSiO4SSk0xtSfC+JdGLThQdst0ISbVU9z5BqJL8O9PYT9Ud0+gqlOM/ohfaj4pOiD2AbFJyQMVAO5BA/Id0D9KE2qX61fB5dQkGmbkjjXhlnzjN4xLQ3CUnV3t6RPNXFR7z2fWo14oeXdr/MtuZkoQldNWtRAyTf4fhh/bXPHNtNZ5cD8QZy8Nd+QJLxmpSQDcsnX96DfiJNfGXh28gfdaJujdV3zwvl3qjOCjM7hdFdmt4kKQuJscv7R4ckgogBvCoLeJnYsRTeysFolXwUqY1bSo5b7kJ81s7hR2Lspqm8NeR2mfuw76TYTt+MzFJ4PklkOtaM6t8jrA/eHTXjyH9edh+Ci4i3NhhU1KO2y/8ab9jpbl7Q9Krruup98KnTgy0nmlQUzfQx36mOne6elDhR6renY0ftFK+6CoGfbr7lRO8Uueg6sK73EuDzovR9n/cdZnVYSw08MlYFZJtFWWxq/X63vcYXInqTuY3nGnfXnVWO0tezW1lCNp3Z5bH49aefwVSINfcR7nDwDKaZM5RAwlMcQu9Fg8cuQSphNKGtTpI+XRJjpKSz8qQzwbrabL7Mt5m5FiGO3b3Ix2s/r3VIO+HRBiT3mUAy4AVK9M78o66m0IwLeVwlyl2ICdCpHNZotbRYHrQ1+PdYoYVi1/JmYoB67I=
+  on:
+    branch: develop
+  server: https://test.pypi.org/legacy/
