@@ -121,7 +121,7 @@ This example displayed complex data injections that are successfully managed by 
 Next example :ref:`on <example5>`.
 
 
-**Total running time of the script:** ( 0 minutes  47.607 seconds)
+**Total running time of the script:** ( 0 minutes  51.535 seconds)
 
 
 
