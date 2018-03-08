@@ -17,7 +17,7 @@ after_success: source ci_scripts/travis/success.sh
 deploy:
   provider: pypi
   user: pinguy
-  distributions: sdist bdist_wheel
+  distributions: sdist
   password:
     secure: Ht3x4f+CD/Nz4Gwax34qI0A7IkWmgf5mxgIHU1mMMQCPWjT8Vl1sn9YJACkEShCUs+uO13SoVKcSYNgAE1GWiQjV9TtUwo9r2kdJo86xiN+76FqdVIbzQJbTwfibo1jLis5IB+7l4wvMhK609prePlLb/T3IthpIRa1XtN2e+zQnzNnvfH8tsbVQoIn6LsBtTHEzUZs2D5AyAFJMowWr3+Kz7LuPaKsnaOzM+UJdkdbrIx0uU2Z0VjRHBJK/KPS/bIaA6yC0wazOuhF2bndDs73p+Vd6Oxvm+9eE1MDe+magQLPPaebF87onZmtwH4QVlBdDuHVY32fY29dTXGyg0gAcs2oAu0f4bgFMfiYZ4LauOX7dasR8OJNbPGmM4t6FP+tyqu/kY9zauOV2kCrBZhVIu/QJh9beofGkhlikL5Ejez0KVHYuc9uZ3W2dKboMolzY6Y2jc4uxrhVTV+/XkwAZyJPv0DNiO46K1eQQlesCgxQOfiJ/7XQnFgtrLV/WV0UjprfuzZYArksRPQRv79xzSymOST3zfW5NNC+fFKtHC2nKZTj8o9Sz1fSrYcV1kJkoSDdGGd1fQqk4SJhpfbhbI/Y6fAUmj4mw9yuo+1XlEZPrZ8+INtx7nWLKh0B5yMaePGWuYjqDEZnWPwe94Nxthkv/7/tXCCxTJonu6ro=
   on:
