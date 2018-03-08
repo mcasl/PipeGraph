@@ -1,0 +1,491 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>A primer on building PipeGraph’s custom blocks &mdash; PipeGraph 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/gallery.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="PipeGraph 0.1.0 documentation" href="index.html"/>
+        <link rel="next" title="General examples" href="auto_examples/index.html"/>
+        <link rel="prev" title="API Documentation" href="api.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> PipeGraph
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">A primer on building PipeGraph’s custom blocks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#wrappers-for-scikit-learn-standard-objects">Wrappers for Scikit-Learn standard objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#special-wrappers">Special wrappers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#wrapping-your-custom-blocks">Wrapping your custom blocks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auto_examples/index.html">General examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PipeGraph</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>A primer on building PipeGraph’s custom blocks</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/Primer_on_custom_blocks.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="a-primer-on-building-pipegraph-s-custom-blocks">
+<h1>A primer on building PipeGraph’s custom blocks<a class="headerlink" href="#a-primer-on-building-pipegraph-s-custom-blocks" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="wrappers-for-scikit-learn-standard-objects">
+<h2>Wrappers for Scikit-Learn standard objects<a class="headerlink" href="#wrappers-for-scikit-learn-standard-objects" title="Permalink to this headline">¶</a></h2>
+<p>Consider the following Scikit-Learn common objects:</p>
+<p>And let’s load some data to run the examples:</p>
+<p>Now, let’s fit each of the above defined sklearn objects and get the
+output produced afterwards by using the corresponding method (predict,
+fit_predict, transform):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DBSCAN</span><span class="p">(</span><span class="n">algorithm</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">leaf_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span>
+    <span class="n">metric_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+       <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+       <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>
+       <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>
+       <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">array</span><span class="p">([[</span>  <span class="mf">1.00000000e+000</span><span class="p">,</span>   <span class="mf">1.38496103e-018</span><span class="p">,</span>   <span class="mf">7.25489025e-026</span><span class="p">],</span>
+       <span class="p">[</span>  <span class="mf">1.00000000e+000</span><span class="p">,</span>   <span class="mf">1.48206242e-017</span><span class="p">,</span>   <span class="mf">2.29743996e-025</span><span class="p">],</span>
+       <span class="p">[</span>  <span class="mf">1.00000000e+000</span><span class="p">,</span>   <span class="mf">1.07780639e-018</span><span class="p">,</span>   <span class="mf">2.35065917e-026</span><span class="p">],</span>
+       <span class="p">[</span>  <span class="mf">1.00000000e+000</span><span class="p">,</span>   <span class="mf">1.43871443e-017</span><span class="p">,</span>   <span class="mf">2.89954283e-025</span><span class="p">],</span>
+<span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">array</span><span class="p">([[</span>  <span class="mf">0.00000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">4.11208597e+01</span><span class="p">,</span>  <span class="o">-</span><span class="mf">5.78855367e+01</span><span class="p">],</span>
+       <span class="p">[</span>  <span class="mf">0.00000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">3.87505119e+01</span><span class="p">,</span>  <span class="o">-</span><span class="mf">5.67328319e+01</span><span class="p">],</span>
+       <span class="p">[</span>  <span class="mf">0.00000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">4.13716038e+01</span><span class="p">,</span>  <span class="o">-</span><span class="mf">5.90125166e+01</span><span class="p">],</span>
+       <span class="p">[</span>  <span class="mf">0.00000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">3.87801966e+01</span><span class="p">,</span>  <span class="o">-</span><span class="mf">5.65000742e+01</span><span class="p">],</span>
+     <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.22222222</span><span class="p">,</span>  <span class="mf">0.625</span>     <span class="p">,</span>  <span class="mf">0.06779661</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+       <span class="p">[</span> <span class="mf">0.16666667</span><span class="p">,</span>  <span class="mf">0.41666667</span><span class="p">,</span>  <span class="mf">0.06779661</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+       <span class="p">[</span> <span class="mf">0.11111111</span><span class="p">,</span>  <span class="mf">0.5</span>       <span class="p">,</span>  <span class="mf">0.05084746</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+       <span class="p">[</span> <span class="mf">0.08333333</span><span class="p">,</span>  <span class="mf">0.45833333</span><span class="p">,</span>  <span class="mf">0.08474576</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+     <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">array</span><span class="p">([</span> <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>
+        <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>
+        <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>
+       <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+</pre></div>
+</div>
+<p>As it can be seen, in order to have access for each object’s output, one
+needs to call different methods. So as to offer a homogeneous interface
+a collection of adapters is available in PipeGraph. Them all derive from
+the <code class="docutils literal notranslate"><span class="pre">AdapterForSkLearnLikeAdaptee</span></code> baseclass. This class is an adapter
+for Scikit-Learn objects in order to provide a common interface based on
+fit and predict methods irrespectively of whether the adapted object
+provided a <code class="docutils literal notranslate"><span class="pre">transform</span></code>, <code class="docutils literal notranslate"><span class="pre">fit_predict</span></code>, or <code class="docutils literal notranslate"><span class="pre">predict</span> <span class="pre">interface</span></code>.</p>
+<p>As it can be seen from the following code fragment, the <code class="docutils literal notranslate"><span class="pre">fit</span></code> and
+<code class="docutils literal notranslate"><span class="pre">predict</span></code> allow for an arbitrary number of positional and keyword
+based parameters. These will have to be coherent with the adaptees
+expectations, but at least we are not imposing hard constrains to the
+adapter’s interface.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AdapterForSkLearnLikeAdaptee</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+       <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+       <span class="o">...</span>
+</pre></div>
+</div>
+<p>Those sklearn objects following the <code class="docutils literal notranslate"><span class="pre">predict</span></code> protocol can be wrapped
+into the class <code class="docutils literal notranslate"><span class="pre">AdapterForFitPredictAdaptee</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;predict&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+
+ <span class="s1">&#39;predict_log_proba&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([[</span>  <span class="mf">0.00000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">4.11208597e+01</span><span class="p">,</span>  <span class="o">-</span><span class="mf">5.78855367e+01</span><span class="p">],</span>
+        <span class="p">[</span>  <span class="mf">0.00000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">3.87505119e+01</span><span class="p">,</span>  <span class="o">-</span><span class="mf">5.67328319e+01</span><span class="p">],</span>
+        <span class="p">[</span>  <span class="mf">0.00000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">4.13716038e+01</span><span class="p">,</span>  <span class="o">-</span><span class="mf">5.90125166e+01</span><span class="p">],</span>
+        <span class="p">[</span>  <span class="mf">0.00000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">3.87801966e+01</span><span class="p">,</span>  <span class="o">-</span><span class="mf">5.65000742e+01</span><span class="p">],</span>
+        <span class="p">[</span>  <span class="mf">0.00000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">4.22118362e+01</span><span class="p">,</span>  <span class="o">-</span><span class="mf">5.87821546e+01</span><span class="p">],</span>
+        <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+
+ <span class="s1">&#39;predict_proba&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([[</span>  <span class="mf">1.00000000e+000</span><span class="p">,</span>   <span class="mf">1.38496103e-018</span><span class="p">,</span>   <span class="mf">7.25489025e-026</span><span class="p">],</span>
+        <span class="p">[</span>  <span class="mf">1.00000000e+000</span><span class="p">,</span>   <span class="mf">1.48206242e-017</span><span class="p">,</span>   <span class="mf">2.29743996e-025</span><span class="p">],</span>
+        <span class="p">[</span>  <span class="mf">1.00000000e+000</span><span class="p">,</span>   <span class="mf">1.07780639e-018</span><span class="p">,</span>   <span class="mf">2.35065917e-026</span><span class="p">],</span>
+        <span class="p">[</span>  <span class="mf">1.00000000e+000</span><span class="p">,</span>   <span class="mf">1.43871443e-017</span><span class="p">,</span>   <span class="mf">2.89954283e-025</span><span class="p">],</span>
+        <span class="p">[</span>  <span class="mf">1.00000000e+000</span><span class="p">,</span>   <span class="mf">4.65192224e-019</span><span class="p">,</span>   <span class="mf">2.95961100e-026</span><span class="p">],</span>
+         <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+</pre></div>
+</div>
+<p>As you can see the wrapper provides its output as a dictionary
+containing the outputs provided by <code class="docutils literal notranslate"><span class="pre">predict</span></code>, <code class="docutils literal notranslate"><span class="pre">predict_proba</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">predict_log_proba</span></code> where these methods are available.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;predict&#39;</span><span class="p">,</span> <span class="s1">&#39;predict_proba&#39;</span><span class="p">,</span> <span class="s1">&#39;predict_log_proba&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Those sklearn objects following the <code class="docutils literal notranslate"><span class="pre">transform</span></code> protocol can be
+wrapped into the class <code class="docutils literal notranslate"><span class="pre">AdapterForFitTransformAdaptee</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;predict&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([[</span> <span class="mf">0.22222222</span><span class="p">,</span>  <span class="mf">0.625</span>     <span class="p">,</span>  <span class="mf">0.06779661</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+        <span class="p">[</span> <span class="mf">0.16666667</span><span class="p">,</span>  <span class="mf">0.41666667</span><span class="p">,</span>  <span class="mf">0.06779661</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+        <span class="p">[</span> <span class="mf">0.11111111</span><span class="p">,</span>  <span class="mf">0.5</span>       <span class="p">,</span>  <span class="mf">0.05084746</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+        <span class="p">[</span> <span class="mf">0.08333333</span><span class="p">,</span>  <span class="mf">0.45833333</span><span class="p">,</span>  <span class="mf">0.08474576</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+        <span class="p">[</span> <span class="mf">0.19444444</span><span class="p">,</span>  <span class="mf">0.66666667</span><span class="p">,</span>  <span class="mf">0.06779661</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+    <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+</pre></div>
+</div>
+<p>The adapter for transformers doesn’t have to provide so many methods’
+output, only the value provided by calling <code class="docutils literal notranslate"><span class="pre">trasform</span></code> method on the
+adaptee, which for homogeneity is provided as a dictionary with
+‘predict’ as key:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;predict&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Those sklearn objects following the <code class="docutils literal notranslate"><span class="pre">fit_predict</span></code> protocol can be
+wrapped into the class <code class="docutils literal notranslate"><span class="pre">AdapterForAtomicFitPredictAdaptee</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;predict&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([</span> <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>
+         <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>
+         <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">0</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>
+         <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>
+        <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+</pre></div>
+</div>
+<p>Again, this adapter provides a dictionary with the values of calling
+<code class="docutils literal notranslate"><span class="pre">fit_predict</span></code> under the key ‘predict’.</p>
+</div>
+<div class="section" id="special-wrappers">
+<h2>Special wrappers<a class="headerlink" href="#special-wrappers" title="Permalink to this headline">¶</a></h2>
+<p>Besides of the three families of objects provided by Scikit-Learn, it is
+sometimes convenient to provide custom objects whose <code class="docutils literal notranslate"><span class="pre">predict</span></code> method
+returns multiple outputs. In this case, a dictionary can be used as
+well, with the name of the outputs as keys. In order to comply with this
+kind of output, the class
+<code class="docutils literal notranslate"><span class="pre">AdapterForCustomFitPredictWithDictionaryOutputAdaptee</span></code> is provided:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;X_0&#39;</span><span class="p">:</span>
+       <span class="mi">0</span>    <span class="mi">1</span>    <span class="mi">2</span>    <span class="mi">3</span>
+ <span class="mi">0</span>   <span class="mf">5.1</span>  <span class="mf">3.5</span>  <span class="mf">1.4</span>  <span class="mf">0.2</span>
+ <span class="mi">1</span>   <span class="mf">4.9</span>  <span class="mf">3.0</span>  <span class="mf">1.4</span>  <span class="mf">0.2</span>
+ <span class="mi">2</span>   <span class="mf">4.7</span>  <span class="mf">3.2</span>  <span class="mf">1.3</span>  <span class="mf">0.2</span>
+ <span class="mi">3</span>   <span class="mf">4.6</span>  <span class="mf">3.1</span>  <span class="mf">1.5</span>  <span class="mf">0.2</span>
+ <span class="mi">4</span>   <span class="mf">5.0</span>  <span class="mf">3.6</span>  <span class="mf">1.4</span>  <span class="mf">0.2</span>
+ <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+
+<span class="s1">&#39;X_1&#39;</span><span class="p">:</span>
+       <span class="mi">0</span>    <span class="mi">1</span>    <span class="mi">2</span>    <span class="mi">3</span>
+ <span class="mi">50</span>  <span class="mf">7.0</span>  <span class="mf">3.2</span>  <span class="mf">4.7</span>  <span class="mf">1.4</span>
+ <span class="mi">51</span>  <span class="mf">6.4</span>  <span class="mf">3.2</span>  <span class="mf">4.5</span>  <span class="mf">1.5</span>
+ <span class="mi">52</span>  <span class="mf">6.9</span>  <span class="mf">3.1</span>  <span class="mf">4.9</span>  <span class="mf">1.5</span>
+ <span class="mi">53</span>  <span class="mf">5.5</span>  <span class="mf">2.3</span>  <span class="mf">4.0</span>  <span class="mf">1.3</span>
+ <span class="mi">54</span>  <span class="mf">6.5</span>  <span class="mf">2.8</span>  <span class="mf">4.6</span>  <span class="mf">1.5</span>
+ <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+
+ <span class="s1">&#39;X_2&#39;</span><span class="p">:</span>
+         <span class="mi">0</span>    <span class="mi">1</span>    <span class="mi">2</span>    <span class="mi">3</span>
+ <span class="mi">100</span>  <span class="mf">6.3</span>  <span class="mf">3.3</span>  <span class="mf">6.0</span>  <span class="mf">2.5</span>
+ <span class="mi">101</span>  <span class="mf">5.8</span>  <span class="mf">2.7</span>  <span class="mf">5.1</span>  <span class="mf">1.9</span>
+ <span class="mi">102</span>  <span class="mf">7.1</span>  <span class="mf">3.0</span>  <span class="mf">5.9</span>  <span class="mf">2.1</span>
+ <span class="mi">103</span>  <span class="mf">6.3</span>  <span class="mf">2.9</span>  <span class="mf">5.6</span>  <span class="mf">1.8</span>
+ <span class="mi">104</span>  <span class="mf">6.5</span>  <span class="mf">3.0</span>  <span class="mf">5.8</span>  <span class="mf">2.2</span>
+ <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;X_0&#39;</span><span class="p">,</span> <span class="s1">&#39;X_1&#39;</span><span class="p">,</span> <span class="s1">&#39;X_2&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>As it can be seen, this adapter’s <code class="docutils literal notranslate"><span class="pre">predict</span></code> method provides the
+dictionary of outputs provided by the adaptee with its original keys.</p>
+</div>
+</div>
+<div class="section" id="wrapping-your-custom-blocks">
+<h1>Wrapping your custom blocks<a class="headerlink" href="#wrapping-your-custom-blocks" title="Permalink to this headline">¶</a></h1>
+<p>PipeGraph uses the
+<code class="docutils literal notranslate"><span class="pre">wrap_adaptee_in_process(adaptee,</span> <span class="pre">strategy_class=None)</span></code> function to
+wrap the objects passed to its constructor’s <code class="docutils literal notranslate"><span class="pre">steps</span></code> parameters
+accordingly to these rules: - If the <code class="docutils literal notranslate"><span class="pre">strategy_class</span></code> parameter is
+passed, this class is used as adapter - Else, if the adaptee’s class is
+in <code class="docutils literal notranslate"><span class="pre">pipegraph.base.strategies_for_custom_adaptees</span></code> dictionary, the
+value class there is used. - Else, if the adaptee has a <code class="docutils literal notranslate"><span class="pre">predict</span></code>
+method, the <code class="docutils literal notranslate"><span class="pre">AdapterForFitPredictAdaptee</span></code> class is used. - Else, if
+the adaptee has a <code class="docutils literal notranslate"><span class="pre">transform</span></code> method, the
+<code class="docutils literal notranslate"><span class="pre">AdapterForFitTransformAdaptee</span></code> class is used. - Else, if the adaptee
+has a <code class="docutils literal notranslate"><span class="pre">fit_predict</span></code> method, the <code class="docutils literal notranslate"><span class="pre">AdapterForAtomicFitPredictAdaptee</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;predict&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([[</span> <span class="mf">0.22222222</span><span class="p">,</span>  <span class="mf">0.625</span>     <span class="p">,</span>  <span class="mf">0.06779661</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+        <span class="p">[</span> <span class="mf">0.16666667</span><span class="p">,</span>  <span class="mf">0.41666667</span><span class="p">,</span>  <span class="mf">0.06779661</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+        <span class="p">[</span> <span class="mf">0.11111111</span><span class="p">,</span>  <span class="mf">0.5</span>       <span class="p">,</span>  <span class="mf">0.05084746</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+        <span class="p">[</span> <span class="mf">0.08333333</span><span class="p">,</span>  <span class="mf">0.45833333</span><span class="p">,</span>  <span class="mf">0.08474576</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+        <span class="p">[</span> <span class="mf">0.19444444</span><span class="p">,</span>  <span class="mf">0.66666667</span><span class="p">,</span>  <span class="mf">0.06779661</span><span class="p">,</span>  <span class="mf">0.04166667</span><span class="p">],</span>
+        <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;X_0&#39;</span><span class="p">:</span>
+       <span class="mi">0</span>    <span class="mi">1</span>    <span class="mi">2</span>    <span class="mi">3</span>
+ <span class="mi">0</span>   <span class="mf">5.1</span>  <span class="mf">3.5</span>  <span class="mf">1.4</span>  <span class="mf">0.2</span>
+ <span class="mi">1</span>   <span class="mf">4.9</span>  <span class="mf">3.0</span>  <span class="mf">1.4</span>  <span class="mf">0.2</span>
+ <span class="mi">2</span>   <span class="mf">4.7</span>  <span class="mf">3.2</span>  <span class="mf">1.3</span>  <span class="mf">0.2</span>
+ <span class="mi">3</span>   <span class="mf">4.6</span>  <span class="mf">3.1</span>  <span class="mf">1.5</span>  <span class="mf">0.2</span>
+ <span class="mi">4</span>   <span class="mf">5.0</span>  <span class="mf">3.6</span>  <span class="mf">1.4</span>  <span class="mf">0.2</span>
+ <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+
+ <span class="s1">&#39;X_1&#39;</span><span class="p">:</span>
+        <span class="mi">0</span>    <span class="mi">1</span>    <span class="mi">2</span>    <span class="mi">3</span>
+ <span class="mi">50</span>  <span class="mf">7.0</span>  <span class="mf">3.2</span>  <span class="mf">4.7</span>  <span class="mf">1.4</span>
+ <span class="mi">51</span>  <span class="mf">6.4</span>  <span class="mf">3.2</span>  <span class="mf">4.5</span>  <span class="mf">1.5</span>
+ <span class="mi">52</span>  <span class="mf">6.9</span>  <span class="mf">3.1</span>  <span class="mf">4.9</span>  <span class="mf">1.5</span>
+ <span class="mi">53</span>  <span class="mf">5.5</span>  <span class="mf">2.3</span>  <span class="mf">4.0</span>  <span class="mf">1.3</span>
+ <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+ <span class="s1">&#39;X_2&#39;</span><span class="p">:</span>
+         <span class="mi">0</span>    <span class="mi">1</span>    <span class="mi">2</span>    <span class="mi">3</span>
+ <span class="mi">100</span>  <span class="mf">6.3</span>  <span class="mf">3.3</span>  <span class="mf">6.0</span>  <span class="mf">2.5</span>
+ <span class="mi">101</span>  <span class="mf">5.8</span>  <span class="mf">2.7</span>  <span class="mf">5.1</span>  <span class="mf">1.9</span>
+ <span class="mi">102</span>  <span class="mf">7.1</span>  <span class="mf">3.0</span>  <span class="mf">5.9</span>  <span class="mf">2.1</span>
+ <span class="mi">103</span>  <span class="mf">6.3</span>  <span class="mf">2.9</span>  <span class="mf">5.6</span>  <span class="mf">1.8</span>
+ <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+</pre></div>
+</div>
+<p>Those users implementing their own custom blocks may find useful the
+option of providing their own custom class to th
+<code class="docutils literal notranslate"><span class="pre">wrap_adaptee_in_process</span></code>, as in:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;X_0&#39;</span><span class="p">:</span>
+       <span class="mi">0</span>    <span class="mi">1</span>    <span class="mi">2</span>    <span class="mi">3</span>
+ <span class="mi">0</span>   <span class="mf">5.1</span>  <span class="mf">3.5</span>  <span class="mf">1.4</span>  <span class="mf">0.2</span>
+ <span class="mi">1</span>   <span class="mf">4.9</span>  <span class="mf">3.0</span>  <span class="mf">1.4</span>  <span class="mf">0.2</span>
+ <span class="mi">2</span>   <span class="mf">4.7</span>  <span class="mf">3.2</span>  <span class="mf">1.3</span>  <span class="mf">0.2</span>
+ <span class="mi">3</span>   <span class="mf">4.6</span>  <span class="mf">3.1</span>  <span class="mf">1.5</span>  <span class="mf">0.2</span>
+ <span class="mi">4</span>   <span class="mf">5.0</span>  <span class="mf">3.6</span>  <span class="mf">1.4</span>  <span class="mf">0.2</span>
+ <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+
+ <span class="s1">&#39;X_1&#39;</span><span class="p">:</span>
+        <span class="mi">0</span>    <span class="mi">1</span>    <span class="mi">2</span>    <span class="mi">3</span>
+ <span class="mi">50</span>  <span class="mf">7.0</span>  <span class="mf">3.2</span>  <span class="mf">4.7</span>  <span class="mf">1.4</span>
+ <span class="mi">51</span>  <span class="mf">6.4</span>  <span class="mf">3.2</span>  <span class="mf">4.5</span>  <span class="mf">1.5</span>
+ <span class="mi">52</span>  <span class="mf">6.9</span>  <span class="mf">3.1</span>  <span class="mf">4.9</span>  <span class="mf">1.5</span>
+ <span class="mi">53</span>  <span class="mf">5.5</span>  <span class="mf">2.3</span>  <span class="mf">4.0</span>  <span class="mf">1.3</span>
+ <span class="mi">54</span>  <span class="mf">6.5</span>  <span class="mf">2.8</span>  <span class="mf">4.6</span>  <span class="mf">1.5</span>
+ <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+
+ <span class="s1">&#39;X_2&#39;</span><span class="p">:</span>
+         <span class="mi">0</span>    <span class="mi">1</span>    <span class="mi">2</span>    <span class="mi">3</span>
+ <span class="mi">100</span>  <span class="mf">6.3</span>  <span class="mf">3.3</span>  <span class="mf">6.0</span>  <span class="mf">2.5</span>
+ <span class="mi">101</span>  <span class="mf">5.8</span>  <span class="mf">2.7</span>  <span class="mf">5.1</span>  <span class="mf">1.9</span>
+ <span class="mi">102</span>  <span class="mf">7.1</span>  <span class="mf">3.0</span>  <span class="mf">5.9</span>  <span class="mf">2.1</span>
+ <span class="mi">103</span>  <span class="mf">6.3</span>  <span class="mf">2.9</span>  <span class="mf">5.6</span>  <span class="mf">1.8</span>
+ <span class="mi">104</span>  <span class="mf">6.5</span>  <span class="mf">3.0</span>  <span class="mf">5.8</span>  <span class="mf">2.2</span>
+ <span class="o">---</span> <span class="n">omited</span> <span class="o">---</span>
+</pre></div>
+</div>
+<p>Passing an already wrapped object to PipeGraph’s constructor <code class="docutils literal notranslate"><span class="pre">steps</span></code>
+parameter by using the <code class="docutils literal notranslate"><span class="pre">wrap_adaptee_in_process</span></code> as describe above may
+be useful for those custom blocks built by users, thus avoiding the need
+to modify the <code class="docutils literal notranslate"><span class="pre">pipegraph.base.strategies_for_custom_adaptees</span></code>
+dictionary.</p>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="auto_examples/index.html" class="btn btn-neutral float-right" title="General examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="api.html" class="btn btn-neutral" title="API Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, The authors.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
