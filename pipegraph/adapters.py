@@ -155,9 +155,9 @@ class AdapterForFitPredictAdaptee(AdapterForSkLearnLikeAdaptee):
         """
         result = {'predict': self._adaptee.predict(*pargs, **kwargs)}
         if hasattr(self._adaptee, 'predict_proba'):
-            result['predict_proba'] = self._adaptee.predict_proba(**kwargs)
+            result['predict_proba'] = self._adaptee.predict_proba(*pargs, **kwargs)
         if hasattr(self._adaptee, 'predict_log_proba'):
-            result['predict_log_proba'] = self._adaptee.predict_log_proba(**kwargs)
+            result['predict_log_proba'] = self._adaptee.predict_log_proba(*pargs, **kwargs)
         return result
 
     def _get_predict_signature(self):
