@@ -144,7 +144,7 @@ This example displayed a non linear workflow successfully implemented by **PipeG
 :ref:`Next examples <example4>` show more elaborated examples in increasing complexity order.
 
 
-**Total running time of the script:** ( 0 minutes  0.559 seconds)
+**Total running time of the script:** ( 0 minutes  0.611 seconds)
 
 
 

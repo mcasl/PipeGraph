@@ -170,7 +170,8 @@
 
 <span class="kn">from</span> <span class="nn">pipegraph.adapters</span> <span class="k">import</span> <span class="p">(</span><span class="n">AdapterForFitTransformAdaptee</span><span class="p">,</span>
                                 <span class="n">AdapterForFitPredictAdaptee</span><span class="p">,</span>
-                                <span class="n">AdapterForAtomicFitPredictAdaptee</span>
+                                <span class="n">AdapterForAtomicFitPredictAdaptee</span><span class="p">,</span>
+                                <span class="n">AdapterForCustomFitPredictWithDictionaryOutputAdaptee</span><span class="p">,</span>
                                 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pipegraph.standard_blocks</span> <span class="k">import</span> <span class="n">strategies_for_custom_adaptees</span> <span class="k">as</span> <span class="n">std_blocks_strategies</span>
 
@@ -1078,6 +1079,8 @@
         <span class="n">strategy</span> <span class="o">=</span> <span class="n">adapter_class</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="n">Process</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">adaptee</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="n">PipeGraph</span><span class="p">):</span>
+        <span class="n">strategy</span> <span class="o">=</span> <span class="n">AdapterForCustomFitPredictWithDictionaryOutputAdaptee</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">adaptee</span><span class="o">.</span><span class="vm">__class__</span> <span class="ow">in</span> <span class="n">strategies_for_custom_adaptees</span><span class="p">:</span>
         <span class="n">strategy</span> <span class="o">=</span> <span class="n">strategies_for_custom_adaptees</span><span class="p">[</span><span class="n">adaptee</span><span class="o">.</span><span class="vm">__class__</span><span class="p">](</span><span class="n">adaptee</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="s1">&#39;transform&#39;</span><span class="p">):</span>
