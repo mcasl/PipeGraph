@@ -717,7 +717,7 @@ class TestPipegraph(unittest.TestCase):
         self.assertEqual(len(pgraph.named_steps), 6)
 
 
-class TestSingleNodeLinearModel(unittest.TestCase):
+class TestPipeGraphSingleNodeLinearModel(unittest.TestCase):
     def setUp(self):
         self.size = 100
         self.X = np.random.rand(self.size, 1)
@@ -882,19 +882,19 @@ class TestPipeGraphClassifier(unittest.TestCase):
         self.assertEqual(result.shape[0], X.shape[0])
 
 
-class TestStep(unittest.TestCase):
+class TestProcess(unittest.TestCase):
     def setUp(self):
         self.size = 100
         self.X = np.random.rand(self.size, 1)
         self.y = self.X + np.random.randn(self.size, 1)
 
-    def test_step__init(self):
+    def test_process__init(self):
         lm = LinearRegression()
         stepstrategy = AdapterForFitPredictAdaptee(lm)
         step = Process(stepstrategy)
         self.assertEqual(step._strategy, stepstrategy)
 
-    def test_step__fit_lm(self):
+    def test_process__fit_lm(self):
         X = self.X
         y = self.y
         lm = LinearRegression()
@@ -905,7 +905,7 @@ class TestStep(unittest.TestCase):
         self.assertEqual(hasattr(step, 'coef_'), True)
         self.assertEqual(step, result)
 
-    def test_step__fit_dbscan(self):
+    def test_process__fit_dbscan(self):
         X = self.X
         y = self.y
         db = DBSCAN()
@@ -919,7 +919,7 @@ class TestStep(unittest.TestCase):
         self.assertEqual(hasattr(step, 'core_sample_indices_'), True)
         self.assertEqual(result_predict.shape, (self.size,))
 
-    def test_step__predict(self):
+    def test_process__predict(self):
         X = self.X
         y = self.y
         lm = LinearRegression()
@@ -938,7 +938,7 @@ class TestStep(unittest.TestCase):
         self.assertEqual(list(result_lm.keys()), ['predict'])
         self.assertEqual(sorted(list(result_gm.keys())), sorted(['predict', 'predict_proba']))
 
-    def test_step__get_params(self):
+    def test_process__get_params(self):
         lm = LinearRegression()
         lm_strategy = AdapterForFitPredictAdaptee(lm)
         step = Process(lm_strategy)
@@ -948,7 +948,7 @@ class TestStep(unittest.TestCase):
                                      'n_jobs': 1,
                                      'normalize': False})
 
-    def test_step__set_params(self):
+    def test_process__set_params(self):
         lm = LinearRegression()
         lm_strategy = AdapterForFitPredictAdaptee(lm)
         step = Process(lm_strategy)
@@ -964,7 +964,7 @@ class TestStep(unittest.TestCase):
                                           'n_jobs': 1,
                                           'normalize': False})
 
-    def test_step__get_fit_signature(self):
+    def test_process__get_fit_signature(self):
         lm = LinearRegression()
         gm = GaussianMixture()
         lm_strategy = AdapterForFitPredictAdaptee(lm)
@@ -977,20 +977,20 @@ class TestStep(unittest.TestCase):
         self.assertEqual(result_lm, ['X', 'y', 'sample_weight'])
         self.assertEqual(result_gm, ['X', 'y'])
 
-    def test_step__get_predict_signature_lm(self):
+    def test_process__get_predict_signature_lm(self):
         lm = LinearRegression()
         lm_strategy = AdapterForFitPredictAdaptee(lm)
         step_lm = Process(lm_strategy)
         result_lm = step_lm._get_predict_signature()
         self.assertEqual(result_lm, ['X'])
 
-    def test_step__getattr__(self):
+    def test_process__getattr__(self):
         lm = LinearRegression()
         lm_strategy = AdapterForFitPredictAdaptee(lm)
         step = Process(lm_strategy)
         self.assertEqual(step.copy_X, True)
 
-    def test_step__setattr__(self):
+    def test_process__setattr__(self):
         lm = LinearRegression()
         lm_strategy = AdapterForFitPredictAdaptee(lm)
         step = Process(lm_strategy)
@@ -999,7 +999,7 @@ class TestStep(unittest.TestCase):
         self.assertEqual(step.copy_X, False)
         self.assertEqual('copy_X' in dir(step), False)
 
-    def test_step__delattr__(self):
+    def test_process__delattr__(self):
         lm = LinearRegression()
         lm_strategy = AdapterForFitPredictAdaptee(lm)
         step = Process(lm_strategy)
@@ -1009,14 +1009,34 @@ class TestStep(unittest.TestCase):
         del step.copy_X
         self.assertEqual('copy_X' in dir(lm), False)
 
-    def test_step__repr__(self):
+    def test_process__repr__(self):
         lm = LinearRegression()
         lm_strategy = AdapterForFitPredictAdaptee(lm)
         step = Process(lm_strategy)
         result = step.__repr__()
         self.assertEqual(result, lm.__repr__())
 
+class TestPipeGraphCompositable(unittest.TestCase):
+    def setUp(self):
+        self.size = 100
+        self.X = np.random.rand(self.size, 1)
+        self.y = 2*self.X
+        lm = LinearRegression()
+        steps = [('linear_model', lm)]
+        self.lm = lm
+        self.steps = steps
+        self.pgraph = PipeGraph(steps=steps)
 
+    def test_compositable__isinstance(self):
+        X = self.X
+        y = self.y
+        new_graph = PipeGraph(steps=[('pgraph', self.pgraph)])
+        self.assertEqual(new_graph.named_steps,  {'pgraph': self.pgraph})
+
+        new_graph.fit(X, y)
+        result = new_graph.predict(X)['predict']
+        expected = self.pgraph.predict(X)['predict']
+        self.assertEqual(result.shape[0], expected.shape[0])
 
 
 if __name__ == '__main__':

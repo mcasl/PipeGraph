@@ -711,7 +711,7 @@ class PipeGraph(_BaseComposition):
 
 
         if 'kwargs' in variable_list:
-            input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
+            input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
                           for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()}
         else:
             input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
@@ -742,8 +742,8 @@ class PipeGraph(_BaseComposition):
             else:
                 connection_tuples.update({key: ('_External', value)})
 
-        if variable_list == ['kwargs']:
-            input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
+        if 'kwargs' in variable_list:
+            input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
                           for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()}
         else:
             input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
