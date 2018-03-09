@@ -1054,17 +1054,30 @@
     <span class="k">return</span> <span class="n">graph</span>
 
 
-<span class="k">def</span> <span class="nf">wrap_adaptee_in_process</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="n">strategy_class</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">wrap_adaptee_in_process</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="n">adapter_class</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function wraps the objects defined in Pipegraph&#39;s steps parameters in order to provide a common interface for them all.</span>
+<span class="sd">    This interface declares two main methods: fit and predict. So, no matter whether the adaptee is capable of doing</span>
+<span class="sd">    predict, transform or fit_predict, once wrapped the adapter uses predict as method for producing output.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        adaptee:</span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">        adaptee: a Scikit-Learn object, for instance; or a user made custom estimator may be.</span>
+<span class="sd">            The object to be wrapped.</span>
+<span class="sd">        adapter_class: A user made class; or one already defined in pipegraph.adapters</span>
+<span class="sd">            The wrapper.</span>
 
 <span class="sd">    Returns:</span>
-
+<span class="sd">    -------</span>
+<span class="sd">        An object wrapped into a first adapter layer that provides a common fit and predict interface and then wrapped</span>
+<span class="sd">        again in a second external layer using the Process class. Besides of being used by PipeGraph itself,</span>
+<span class="sd">        the user can find this function useful for inserting a user made block as one of the steps</span>
+<span class="sd">        in PipeGraph step&#39;s parameter.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">strategy_class</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">strategy</span> <span class="o">=</span> <span class="n">strategy_class</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">adapter_class</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">strategy</span> <span class="o">=</span> <span class="n">adapter_class</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="n">Process</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">adaptee</span>
     <span class="k">elif</span> <span class="n">adaptee</span><span class="o">.</span><span class="vm">__class__</span> <span class="ow">in</span> <span class="n">strategies_for_custom_adaptees</span><span class="p">:</span>
         <span class="n">strategy</span> <span class="o">=</span> <span class="n">strategies_for_custom_adaptees</span><span class="p">[</span><span class="n">adaptee</span><span class="o">.</span><span class="vm">__class__</span><span class="p">](</span><span class="n">adaptee</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="s1">&#39;transform&#39;</span><span class="p">):</span>
