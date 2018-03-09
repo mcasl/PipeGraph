@@ -873,7 +873,7 @@
 
 
         <span class="k">if</span> <span class="s1">&#39;kwargs&#39;</span> <span class="ow">in</span> <span class="n">variable_list</span><span class="p">:</span>
-            <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="p">[</span><span class="n">node_and_outer_variable_tuple</span><span class="p">]</span>
+            <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node_and_outer_variable_tuple</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                           <span class="k">for</span> <span class="n">inner_variable</span><span class="p">,</span> <span class="n">node_and_outer_variable_tuple</span> <span class="ow">in</span> <span class="n">connection_tuples</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="p">[</span><span class="n">node_and_outer_variable_tuple</span><span class="p">]</span>
@@ -904,8 +904,8 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">connection_tuples</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;_External&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)})</span>
 
-        <span class="k">if</span> <span class="n">variable_list</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;kwargs&#39;</span><span class="p">]:</span>
-            <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="p">[</span><span class="n">node_and_outer_variable_tuple</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;kwargs&#39;</span> <span class="ow">in</span> <span class="n">variable_list</span><span class="p">:</span>
+            <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node_and_outer_variable_tuple</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                           <span class="k">for</span> <span class="n">inner_variable</span><span class="p">,</span> <span class="n">node_and_outer_variable_tuple</span> <span class="ow">in</span> <span class="n">connection_tuples</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="p">[</span><span class="n">node_and_outer_variable_tuple</span><span class="p">]</span>
