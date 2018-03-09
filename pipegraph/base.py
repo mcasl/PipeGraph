@@ -8,7 +8,8 @@ from sklearn.utils.metaestimators import _BaseComposition
 
 from pipegraph.adapters import (AdapterForFitTransformAdaptee,
                                 AdapterForFitPredictAdaptee,
-                                AdapterForAtomicFitPredictAdaptee
+                                AdapterForAtomicFitPredictAdaptee,
+                                AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
                                 )
 from pipegraph.standard_blocks import strategies_for_custom_adaptees as std_blocks_strategies
 
@@ -916,6 +917,8 @@ def wrap_adaptee_in_process(adaptee, adapter_class=None):
         strategy = adapter_class(adaptee)
     elif isinstance(adaptee, Process):
         return adaptee
+    elif isinstance(adaptee, PipeGraph):
+        strategy = AdapterForCustomFitPredictWithDictionaryOutputAdaptee(adaptee)
     elif adaptee.__class__ in strategies_for_custom_adaptees:
         strategy = strategies_for_custom_adaptees[adaptee.__class__](adaptee)
     elif hasattr(adaptee, 'transform'):
