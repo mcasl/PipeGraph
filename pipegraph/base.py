@@ -892,17 +892,30 @@ def build_graph(connections):
     return graph
 
 
-def wrap_adaptee_in_process(adaptee, strategy_class=None):
+def wrap_adaptee_in_process(adaptee, adapter_class=None):
     """
+    This function wraps the objects defined in Pipegraph's steps parameters in order to provide a common interface for them all.
+    This interface declares two main methods: fit and predict. So, no matter whether the adaptee is capable of doing
+    predict, transform or fit_predict, once wrapped the adapter uses predict as method for producing output.
 
-    Args:
-        adaptee:
+    Parameters:
+    -----------
+        adaptee: a Scikit-Learn object, for instance; or a user made custom estimator may be.
+            The object to be wrapped.
+        adapter_class: A user made class; or one already defined in pipegraph.adapters
+            The wrapper.
 
     Returns:
-
+    -------
+        An object wrapped into a first adapter layer that provides a common fit and predict interface and then wrapped
+        again in a second external layer using the Process class. Besides of being used by PipeGraph itself,
+        the user can find this function useful for inserting a user made block as one of the steps
+        in PipeGraph step's parameter.
     """
-    if strategy_class is not None:
-        strategy = strategy_class(adaptee)
+    if adapter_class is not None:
+        strategy = adapter_class(adaptee)
+    elif isinstance(adaptee, Process):
+        return adaptee
     elif adaptee.__class__ in strategies_for_custom_adaptees:
         strategy = strategies_for_custom_adaptees[adaptee.__class__](adaptee)
     elif hasattr(adaptee, 'transform'):

@@ -19,310 +19,17 @@ from pipegraph.base import (PipeGraphRegressor,
                             build_graph,
                             make_connections_when_not_provided_to_init,
                             )
-from pipegraph.adapters import AdapterForFitTransformAdaptee, AdapterForFitPredictAdaptee, \
-    AdapterForAtomicFitPredictAdaptee
-from pipegraph.standard_blocks import Concatenator, CustomCombination, TrainTestSplit, ColumnSelector
+
+from pipegraph.adapters import  (AdapterForFitTransformAdaptee,
+                                 AdapterForFitPredictAdaptee,
+                                 AdapterForAtomicFitPredictAdaptee,
+                                 AdapterForCustomFitPredictWithDictionaryOutputAdaptee)
+
+from pipegraph.standard_blocks import Concatenator, CustomCombination, Demultiplexer
 
 logging.basicConfig(level=logging.NOTSET)
 logger = logging.getLogger(__name__)
 
-
-class TestStepStrategy(unittest.TestCase):
-    def setUp(self):
-        self.size = 100
-        self.X = np.random.rand(self.size, 1)
-        self.y = self.X + np.random.randn(self.size, 1)
-
-
-    def test_stepstrategy__init(self):
-        lm = LinearRegression()
-        stepstrategy = AdapterForFitPredictAdaptee(lm)
-        self.assertEqual(stepstrategy._adaptee, lm)
-
-    def test_stepstrategy__fit_FitPredict(self):
-        X = self.X
-        y = self.y
-        lm = LinearRegression()
-        stepstrategy = AdapterForFitPredictAdaptee(lm)
-        self.assertEqual(hasattr(stepstrategy._adaptee, 'coef_'), False)
-        result = stepstrategy.fit(X=X, y=y)
-        self.assertEqual(hasattr(stepstrategy._adaptee, 'coef_'), True)
-        self.assertEqual(stepstrategy, result)
-
-    def test_stepstrategy__fit_FitTransform(self):
-        X = self.X
-        sc = MinMaxScaler()
-        stepstrategy = AdapterForFitTransformAdaptee(sc)
-        self.assertEqual(hasattr(stepstrategy._adaptee, 'n_samples_seen_'), False)
-        result = stepstrategy.fit(X=X)
-        self.assertEqual(hasattr(stepstrategy._adaptee, 'n_samples_seen_'), True)
-        self.assertEqual(stepstrategy, result)
-
-    def test_stepstrategy__fit_AtomicFitPredict(self):
-        X = self.X
-        db = DBSCAN()
-        stepstrategy = AdapterForAtomicFitPredictAdaptee(db)
-        self.assertEqual(hasattr(stepstrategy._adaptee, 'core_sample_indices_'), False)
-        result_fit = stepstrategy.fit(X=X)
-        self.assertEqual(hasattr(stepstrategy._adaptee, 'core_sample_indices_'), False)
-        self.assertEqual(stepstrategy, result_fit)
-        result_predict = stepstrategy.predict(X=X)['predict']
-        self.assertEqual(hasattr(stepstrategy._adaptee, 'core_sample_indices_'), True)
-        self.assertEqual(result_predict.shape, (self.size,))
-
-    def test_stepstrategy__predict_FitPredict(self):
-        X = self.X
-        y = self.y
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        lm_strategy.fit(X=X, y=y)
-        result_lm = lm_strategy.predict(X=X)
-        self.assertEqual(list(result_lm.keys()), ['predict'])
-        self.assertEqual(result_lm['predict'].shape, (self.size, 1))
-
-        gm = GaussianMixture()
-        gm_strategy = AdapterForFitPredictAdaptee(gm)
-        gm_strategy.fit(X=X)
-        result_gm = gm_strategy.predict(X=X)
-        self.assertEqual(sorted(list(result_gm.keys())),
-                         sorted(['predict', 'predict_proba']))
-        self.assertEqual(result_gm['predict'].shape, (self.size,))
-
-    def test_stepstrategy__predict_FitTransform(self):
-        X = self.X
-        sc = MinMaxScaler()
-        sc_strategy = AdapterForFitTransformAdaptee(sc)
-        sc_strategy.fit(X=X)
-        result_sc = sc_strategy.predict(X=X)
-        self.assertEqual(list(result_sc.keys()), ['predict'])
-        self.assertEqual(result_sc['predict'].shape, (self.size, 1))
-
-    def test_stepstrategy__predict_AtomicFitPredict(self):
-        X = self.X
-        y = self.y
-        db = DBSCAN()
-        db_strategy = AdapterForAtomicFitPredictAdaptee(db)
-        db_strategy.fit(X=X, y=y)
-        result_db = db_strategy.predict(X=X)
-        self.assertEqual(list(result_db.keys()), ['predict'])
-        self.assertEqual(result_db['predict'].shape, (self.size,))
-
-    def test_stepstrategy__get_fit_signature(self):
-        lm = LinearRegression()
-        gm = GaussianMixture()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        gm_strategy = AdapterForFitPredictAdaptee(gm)
-
-        result_lm = lm_strategy._get_fit_signature()
-        result_gm = gm_strategy._get_fit_signature()
-
-        self.assertEqual(sorted(result_lm), sorted(['X', 'y', 'sample_weight']))
-        self.assertEqual(sorted(result_gm), sorted(['X', 'y']))
-
-    def test_stepstrategy__get_predict_signature_FitPredict(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        result_lm = lm_strategy._get_predict_signature()
-        self.assertEqual(result_lm, ['X'])
-
-    def test_stepstrategy__get_predict_signature_FitTransform(self):
-        sc = MinMaxScaler()
-        sc_strategy = AdapterForFitTransformAdaptee(sc)
-        result_sc = sc_strategy._get_predict_signature()
-        self.assertEqual(result_sc, ['X'])
-
-    def test_stepstrategy__get_predict_signature_AtomicFitPredict(self):
-        db = DBSCAN()
-        db_strategy = AdapterForAtomicFitPredictAdaptee(db)
-        result_db = db_strategy._get_predict_signature()
-        self.assertEqual(sorted(result_db), sorted(['X', 'y', 'sample_weight']))
-
-    def test_stepstrategy__get_params(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        result_lm = lm_strategy.get_params()
-        self.assertEqual(result_lm, {'copy_X': True,
-                                     'fit_intercept': True,
-                                     'n_jobs': 1,
-                                     'normalize': False})
-
-    def test_stepstrategy__set_params(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        result_lm_pre = lm_strategy.get_params()
-        self.assertEqual(result_lm_pre, {'copy_X': True,
-                                         'fit_intercept': True,
-                                         'n_jobs': 1,
-                                         'normalize': False})
-        lm_strategy.set_params(fit_intercept=False)
-        result_lm_post = lm_strategy.get_params()
-        self.assertEqual(result_lm_post, {'copy_X': True,
-                                          'fit_intercept': False,
-                                          'n_jobs': 1,
-                                          'normalize': False})
-
-    def test_stepstrategy__getattr__(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        self.assertEqual(lm_strategy.copy_X, True)
-
-    def test_stepstrategy__setattr__(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        self.assertEqual(lm_strategy.copy_X, True)
-        lm_strategy.copy_X = False
-        self.assertEqual(lm_strategy.copy_X, False)
-        self.assertEqual('copy_X' in dir(lm_strategy), False)
-
-    def test_stepstrategy__delattr__(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        self.assertEqual(lm_strategy.copy_X, True)
-        self.assertEqual('copy_X' in dir(lm_strategy), False)
-        self.assertEqual('copy_X' in dir(lm), True)
-        del lm_strategy.copy_X
-        self.assertEqual('copy_X' in dir(lm), False)
-
-    def test_stepstrategy__repr__(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        result = lm_strategy.__repr__()
-        self.assertEqual(result, lm.__repr__())
-
-
-class TestStep(unittest.TestCase):
-    def setUp(self):
-        self.size = 100
-        self.X = np.random.rand(self.size, 1)
-        self.y = self.X + np.random.randn(self.size, 1)
-
-    def test_step__init(self):
-        lm = LinearRegression()
-        stepstrategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(stepstrategy)
-        self.assertEqual(step._strategy, stepstrategy)
-
-    def test_step__fit_lm(self):
-        X = self.X
-        y = self.y
-        lm = LinearRegression()
-        stepstrategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(stepstrategy)
-        self.assertEqual(hasattr(step, 'coef_'), False)
-        result = step.fit(X=X, y=y)
-        self.assertEqual(hasattr(step, 'coef_'), True)
-        self.assertEqual(step, result)
-
-    def test_step__fit_dbscan(self):
-        X = self.X
-        y = self.y
-        db = DBSCAN()
-        stepstrategy = AdapterForAtomicFitPredictAdaptee(db)
-        step = Process(stepstrategy)
-        self.assertEqual(hasattr(step, 'core_sample_indices_'), False)
-        result_fit = step.fit(X=X)
-        self.assertEqual(hasattr(step, 'core_sample_indices_'), False)
-        self.assertEqual(step, result_fit)
-        result_predict = step.predict(X=X)['predict']
-        self.assertEqual(hasattr(step, 'core_sample_indices_'), True)
-        self.assertEqual(result_predict.shape, (self.size,))
-
-    def test_step__predict(self):
-        X = self.X
-        y = self.y
-        lm = LinearRegression()
-        gm = GaussianMixture()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        gm_strategy = AdapterForFitPredictAdaptee(gm)
-        step_lm = Process(lm_strategy)
-        step_gm = Process(gm_strategy)
-
-        step_lm.fit(X=X, y=y)
-        step_gm.fit(X=X)
-
-        result_lm = step_lm.predict(X=X)
-        result_gm = step_gm.predict(X=X)
-
-        self.assertEqual(list(result_lm.keys()), ['predict'])
-        self.assertEqual(sorted(list(result_gm.keys())), sorted(['predict', 'predict_proba']))
-
-    def test_step__get_params(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(lm_strategy)
-        result_lm = step.get_params()
-        self.assertEqual(result_lm, {'copy_X': True,
-                                     'fit_intercept': True,
-                                     'n_jobs': 1,
-                                     'normalize': False})
-
-    def test_step__set_params(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(lm_strategy)
-        result_lm_pre = step.get_params()
-        self.assertEqual(result_lm_pre, {'copy_X': True,
-                                         'fit_intercept': True,
-                                         'n_jobs': 1,
-                                         'normalize': False})
-        step.set_params(fit_intercept=False)
-        result_lm_post = step.get_params()
-        self.assertEqual(result_lm_post, {'copy_X': True,
-                                          'fit_intercept': False,
-                                          'n_jobs': 1,
-                                          'normalize': False})
-
-    def test_step__get_fit_signature(self):
-        lm = LinearRegression()
-        gm = GaussianMixture()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        gm_strategy = AdapterForFitPredictAdaptee(gm)
-        step_lm = Process(lm_strategy)
-        step_gm = Process(gm_strategy)
-        result_lm = step_lm._get_fit_signature()
-        result_gm = step_gm._get_fit_signature()
-
-        self.assertEqual(result_lm, ['X', 'y', 'sample_weight'])
-        self.assertEqual(result_gm, ['X', 'y'])
-
-    def test_step__get_predict_signature_lm(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step_lm = Process(lm_strategy)
-        result_lm = step_lm._get_predict_signature()
-        self.assertEqual(result_lm, ['X'])
-
-    def test_step__getattr__(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(lm_strategy)
-        self.assertEqual(step.copy_X, True)
-
-    def test_step__setattr__(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(lm_strategy)
-        self.assertEqual(step.copy_X, True)
-        step.copy_X = False
-        self.assertEqual(step.copy_X, False)
-        self.assertEqual('copy_X' in dir(step), False)
-
-    def test_step__delattr__(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(lm_strategy)
-        self.assertEqual(step.copy_X, True)
-        self.assertEqual('copy_X' in dir(step), False)
-        self.assertEqual('copy_X' in dir(lm), True)
-        del step.copy_X
-        self.assertEqual('copy_X' in dir(lm), False)
-
-    def test_step__repr__(self):
-        lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(lm_strategy)
-        result = step.__repr__()
-        self.assertEqual(result, lm.__repr__())
 
 
 class TestRootFunctions(unittest.TestCase):
@@ -368,7 +75,7 @@ class TestRootFunctions(unittest.TestCase):
             'Regressor': dict(X='X', y='y', sample_weight=('Paella', 'predict'))
         }
 
-    def test_make_step(self):
+    def test_wrap_adaptee_in_process__right_classes(self):
         tests_table = [
             {'model': LinearRegression(),
              'expected_class': AdapterForFitPredictAdaptee},
@@ -378,6 +85,9 @@ class TestRootFunctions(unittest.TestCase):
 
             {'model': DBSCAN(),
              'expected_class': AdapterForAtomicFitPredictAdaptee},
+
+            {'model': Demultiplexer(),
+             'expected_class': AdapterForCustomFitPredictWithDictionaryOutputAdaptee}
         ]
 
         for test_dict in tests_table:
@@ -385,15 +95,21 @@ class TestRootFunctions(unittest.TestCase):
             step = wrap_adaptee_in_process(model)
             self.assertEqual(isinstance(step._strategy, test_dict['expected_class']), True)
 
-    def test_make_step_raise_exception(self):
+    def test_wrap_adaptee_in_process__wrap_process_does_nothing(self):
+            lm = LinearRegression()
+            wrapped_lm = wrap_adaptee_in_process(lm)
+            double_wrap = wrap_adaptee_in_process(wrapped_lm)
+            self.assertEqual(double_wrap._strategy._adaptee , lm)
+
+    def test_wrap_adaptee_in_process__raise_exception(self):
         model = object()
         self.assertRaises(ValueError, wrap_adaptee_in_process, model)
 
-    def test_build_graph_connections_None(self):
+    def test_build_graph__connections_None(self):
         graph = build_graph(None)
         self.assertTrue( graph is None)
 
-    def test_build_graph_node_names(self):
+    def test_build_graph__node_names(self):
         graph = build_graph(self.connections)
 
         node_list = list(graph.nodes)
@@ -405,7 +121,7 @@ class TestRootFunctions(unittest.TestCase):
                                                     'Regressor',
                                                     ]))
 
-    def test_build_graph_node_edges(self):
+    def test_build_graph__node_edges(self):
         graph = build_graph(self.connections)
 
         in_edges = {name: [origin for origin, destination in list(graph.in_edges(name))]
@@ -418,7 +134,7 @@ class TestRootFunctions(unittest.TestCase):
         self.assertEqual(in_edges['Regressor'], ['Paella'])
 
 
-    def test_make_connections_when_not_provided_to_init_Many_steps(self):
+    def test_make_connections_when_not_provided_to_init__Many_steps(self):
         steps = self.steps
         connections = make_connections_when_not_provided_to_init(steps=steps)
         expected = dict(Concatenate_Xy={'X': 'X'},
@@ -506,7 +222,99 @@ class TestPipegraph(unittest.TestCase):
     def test_Pipegraph__External_step_name(self):
         self.assertRaises(ValueError, PipeGraph, self.steps_external, self.connections_external)
 
-    def test_Pipegraph__use_for_fit_all(self):
+    def test_Pipegraph__example_1_no_connections(self):
+        import numpy as np
+        from sklearn.preprocessing import MinMaxScaler
+        from sklearn.linear_model import LinearRegression
+        from pipegraph import PipeGraphRegressor
+
+        X = np.random.rand(100, 1)
+        y = 4 * X + 0.5 * np.random.randn(100, 1)
+
+        scaler = MinMaxScaler()
+        linear_model = LinearRegression()
+        steps = [('scaler', scaler),
+                 ('linear_model', linear_model)]
+
+        pgraph = PipeGraphRegressor(steps=steps)
+        self.assertTrue(pgraph.pipegraph.fit_connections is None)
+        self.assertTrue(pgraph.pipegraph.predict_connections is None)
+        pgraph.fit(X, y)
+        y_pred = pgraph.predict(X)
+        self.assertEqual(y_pred.shape[0], y.shape[0])
+        self.assertEqual(pgraph.pipegraph.fit_connections, dict(scaler={'X': 'X'},
+                                                                linear_model={'X':('scaler', 'predict'),
+                                                                              'y': 'y'}))
+        self.assertEqual(pgraph.pipegraph.predict_connections, dict(scaler={'X': 'X'},
+                                                                linear_model={'X':('scaler', 'predict'),
+                                                                              'y': 'y'}))
+
+
+    def test_Pipegraph__ex_3_inject(self):
+        import numpy as np
+        import pandas as pd
+        from sklearn.preprocessing import MinMaxScaler
+        from sklearn.preprocessing import PolynomialFeatures
+        from sklearn.linear_model import LinearRegression
+        from sklearn.model_selection import GridSearchCV
+        from pipegraph.base import PipeGraphRegressor
+        from pipegraph.standard_blocks import ColumnSelector, CustomPower, Reshape
+
+        X = pd.DataFrame(dict(X=np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
+                              sample_weight=np.array(
+                                  [0.01, 0.95, 0.10, 0.95, 0.95, 0.10, 0.10, 0.95, 0.95, 0.95, 0.01])))
+        y = np.array([10, 4, 20, 16, 25, -60, 85, 64, 81, 100, 150])
+
+        scaler = MinMaxScaler()
+        polynomial_features = PolynomialFeatures()
+        linear_model = LinearRegression()
+        custom_power = CustomPower()
+        selector = ColumnSelector(mapping={'X': slice(0, 1),
+                                           'sample_weight': slice(1, 2)})
+
+        steps = [('selector', selector),
+                 ('custom_power', custom_power),
+                 ('scaler', scaler),
+                 ('polynomial_features', polynomial_features),
+                 ('linear_model', linear_model)]
+
+        pgraph = PipeGraphRegressor(steps=steps)
+
+        self.assertTrue(pgraph.pipegraph.fit_connections is None)
+        self.assertTrue(pgraph.pipegraph.predict_connections is None)
+
+        (pgraph.inject(sink='selector', sink_var='X', source='_External', source_var='X')
+         .inject('custom_power', 'X', 'selector', 'sample_weight')
+         .inject('scaler', 'X', 'selector', 'X')
+         .inject('polynomial_features', 'X', 'scaler')
+         .inject('linear_model', 'X', 'polynomial_features')
+         .inject('linear_model', 'y', source_var='y')
+         .inject('linear_model', 'sample_weight', 'custom_power'))
+
+        self.assertTrue(pgraph.pipegraph.fit_connections is not None)
+        self.assertTrue(pgraph.pipegraph.predict_connections is not None)
+        pgraph.fit(X, y)
+        self.assertEqual(pgraph.pipegraph.fit_connections,
+                        {'selector': {'X': ('_External', 'X')},
+                        'custom_power': {'X': ('selector', 'sample_weight')},
+                        'scaler': {'X': ('selector', 'X')},
+                        'polynomial_features': {'X': ('scaler', 'predict')},
+                        'linear_model': {'X': ('polynomial_features', 'predict'),
+                                       'y': ('_External', 'y'),
+                                       'sample_weight': ('custom_power', 'predict')}})
+
+        self.assertEqual(pgraph.pipegraph.predict_connections,
+                         {'selector': {'X': ('_External', 'X')},
+                          'custom_power': {'X': ('selector', 'sample_weight')},
+                          'scaler': {'X': ('selector', 'X')},
+                          'polynomial_features': {'X': ('scaler', 'predict')},
+                          'linear_model': {'X': ('polynomial_features', 'predict'),
+                                           'y': ('_External', 'y'),
+                                           'sample_weight': ('custom_power', 'predict')}})
+
+
+
+    def test_Pipegraph__fit_connections(self):
         pgraph = PipeGraph(self.steps, self.connections)
         pgraph.fit(self.X, self.y)
         fit_nodes_list = list(pgraph._filter_fit_nodes())
@@ -518,7 +326,7 @@ class TestPipegraph(unittest.TestCase):
                                                          'Regressor',
                                                          ]))
 
-    def test_Pipegraph__use_for_fit_some(self):
+    def test_Pipegraph__some_fit_connections(self):
         some_connections = {
             'Concatenate_Xy': dict(df1='X',
                                    df2='y'),
@@ -535,7 +343,7 @@ class TestPipegraph(unittest.TestCase):
                                                          'Dbscan',
                                                          ]))
 
-    def test_Pipegraph__use_for_predict_all(self):
+    def test_Pipegraph__predict_connections(self):
         pgraph = PipeGraph(self.steps, self.connections)
         pgraph.fit(self.X, self.y)
         predict_nodes_list = list(pgraph._filter_predict_nodes())
@@ -547,7 +355,7 @@ class TestPipegraph(unittest.TestCase):
                                                              'Regressor',
                                                              ]))
 
-    def test_Pipegraph__use_for_predict_some(self):
+    def test_Pipegraph__some_predict_connections(self):
         some_connections = {
             'Concatenate_Xy': dict(df1='X',
                                    df2='y'),
@@ -909,103 +717,6 @@ class TestPipegraph(unittest.TestCase):
         self.assertEqual(len(pgraph.named_steps), 6)
 
 
-class TestPaella(unittest.TestCase):
-    def setUp(self):
-        self.size = 100
-        self.X = pd.DataFrame(dict(X=np.random.rand(self.size, )))
-        self.y = pd.DataFrame(dict(y=np.random.rand(self.size, )))
-        concatenator = Concatenator()
-        gaussian_clustering = GaussianMixture(n_components=3)
-        dbscan = DBSCAN(eps=0.5)
-        mixer = CustomCombination()
-        paellaModel = Paella(regressor=LinearRegression,
-                             noise_label=None,
-                             max_it=10,
-                             regular_size=100,
-                             minimum_size=30,
-                             width_r=0.95,
-                             power=10,
-                             random_state=42)
-        linear_model = LinearRegression()
-        steps = [('Concatenate_Xy', concatenator),
-                 ('Gaussian_Mixture', gaussian_clustering),
-                 ('Dbscan', dbscan),
-                 ('Combine_Clustering', mixer),
-                 ('Paella', paellaModel),
-                 ('Regressor', linear_model),
-                 ]
-
-        connections = {
-            'Concatenate_Xy': dict(df1='X',
-                                   df2='y'),
-
-            'Gaussian_Mixture': dict(X=('Concatenate_Xy', 'predict')),
-
-            'Dbscan': dict(X=('Concatenate_Xy', 'predict')),
-
-            'Combine_Clustering': dict(
-                dominant=('Dbscan', 'predict'),
-                other=('Gaussian_Mixture', 'predict')),
-
-            'Paella': dict(X='X', y='y', classification=('Combine_Clustering', 'predict')),
-
-            'Regressor': dict(X='X', y='y', sample_weight=('Paella', 'predict'))
-        }
-        self.steps = steps
-        self.connections = connections
-        self.pgraph = PipeGraph(steps=steps, fit_connections=connections)
-
-    def test_Paella__init(self):
-        self.assertTrue(isinstance(self.pgraph._processes['Paella']._strategy._adaptee, Paella))
-
-    def test_Paella__under_fit__Paella__fit(self):
-        pgraph = self.pgraph
-        pgraph._fit_data = {('_External', 'X'): self.X,
-                            ('_External', 'y'): self.y,
-                            }
-        pgraph._fit('Concatenate_Xy')
-        pgraph._fit('Gaussian_Mixture')
-        pgraph._fit('Dbscan')
-        pgraph._fit('Combine_Clustering')
-
-        paellador = pgraph._processes['Paella']._strategy._adaptee
-
-        X = pgraph._fit_data[('_External', 'X')]
-        y = pgraph._fit_data[('_External', 'y')]
-        classification = pgraph._fit_data[('Combine_Clustering', 'predict')]
-        paellador.fit(X, y, classification)
-
-    def test_Paella__under_predict__Paella__fit(self):
-        pgraph = self.pgraph
-        pgraph._fit_data = {('_External', 'X'): self.X,
-                            ('_External', 'y'): self.y, }
-        pgraph._fit('Concatenate_Xy')
-        pgraph._fit('Gaussian_Mixture')
-        pgraph._fit('Dbscan')
-        pgraph._fit('Combine_Clustering')
-        pgraph._fit('Paella')
-
-        X = pgraph._fit_data[('_External', 'X')]
-        y = pgraph._fit_data[('_External', 'y')]
-        paellador = pgraph._processes['Paella']._strategy._adaptee
-        result = paellador.transform(X=X, y=y)
-        self.assertEqual(result.shape[0], self.size)
-
-    def test_Paella__get_params(self):
-        pgraph = self.pgraph
-        paellador = pgraph._processes['Paella']
-        result = paellador.get_params()['minimum_size']
-        self.assertEqual(result, 30)
-
-    def test_Paella__set_params(self):
-        pgraph = self.pgraph
-        paellador = pgraph._processes['Paella']
-        result_pre = paellador.get_params()['max_it']
-        self.assertEqual(result_pre, 10)
-        result_post = paellador.set_params(max_it=1000).get_params()['max_it']
-        self.assertEqual(result_post, 1000)
-
-
 class TestSingleNodeLinearModel(unittest.TestCase):
     def setUp(self):
         self.size = 100
@@ -1112,62 +823,6 @@ class TestTwoNodes(unittest.TestCase):
         self.assertEqual(result.shape[0], self.size)
 
 
-class TestTrainTestSplit(unittest.TestCase):
-    def setUp(self):
-        self.X = [1, 2, 3, 4, 5, 6, 7, 8]
-        self.y = [101, 200, 300, 400, 500, 600, 700, 800]
-
-    def test_train_test_predict(self):
-        tts = TrainTestSplit()
-        step = wrap_adaptee_in_process(tts)
-        result = step.predict(X=self.X, y=self.y)
-        self.assertEqual(len(result), 4)
-        self.assertEqual(sorted(list(result.keys())),
-                         sorted(['X_train', 'X_test', 'y_train', 'y_test']))
-        self.assertEqual(len(result['X_train']), 6)
-        self.assertEqual(len(result['X_test']), 2)
-        self.assertEqual(len(result['y_train']), 6)
-        self.assertEqual(len(result['y_test']), 2)
-
-
-class TestColumnSelector(unittest.TestCase):
-    def setUp(self):
-        self.X = pd.DataFrame.from_dict({'V1':[1, 2, 3, 4, 5, 6, 7, 8],
-                               'V2':[10, 20, 30, 40, 50, 60, 70, 80],
-                               'V3':[100, 200, 300, 400, 500, 600, 700, 800]})
-
-    def test_ColumnSelector__mapping_is_None(self):
-        X = self.X
-        selector = ColumnSelector()
-        self.assertTrue(selector.fit() is selector)
-        assert_frame_equal(selector.predict(X)['predict'], X)
-
-    def test_ColumnSelector__pick_one_column_first(self):
-        X = self.X
-        selector = ColumnSelector(mapping={'X': slice(0,1)})
-        self.assertTrue(selector.fit() is selector)
-        assert_frame_equal(selector.predict(X)['X'], X.loc[:, ["V1"]])
-
-
-    def test_ColumnSelector__pick_one_column_last(self):
-        X = self.X
-        selector = ColumnSelector(mapping={'y': slice(2, 3)})
-        self.assertTrue(selector.fit() is selector)
-        assert_frame_equal(selector.predict(X)['y'], X.loc[:, ["V3"]])
-
-    def test_ColumnSelector__pick_two_columns(self):
-        X = self.X
-        selector = ColumnSelector(mapping={'X': slice(0, 2)})
-        self.assertTrue(selector.fit() is selector)
-        assert_frame_equal(selector.predict(X)['X'], X.loc[:, ["V1", "V2"]])
-
-
-    def test_ColumnSelector__pick_three_columns(self):
-        X = self.X
-        selector = ColumnSelector(mapping={'X': slice(0, 3)})
-        self.assertTrue(selector.fit() is selector)
-        assert_frame_equal(selector.predict(X)['X'], X)
-
 
 class TestPipeGraphRegressor(unittest.TestCase):
     def setUp(self):
@@ -1225,6 +880,143 @@ class TestPipeGraphClassifier(unittest.TestCase):
         gs.fit(X, y)
         result = gs.best_estimator_.predict(X)
         self.assertEqual(result.shape[0], X.shape[0])
+
+
+class TestStep(unittest.TestCase):
+    def setUp(self):
+        self.size = 100
+        self.X = np.random.rand(self.size, 1)
+        self.y = self.X + np.random.randn(self.size, 1)
+
+    def test_step__init(self):
+        lm = LinearRegression()
+        stepstrategy = AdapterForFitPredictAdaptee(lm)
+        step = Process(stepstrategy)
+        self.assertEqual(step._strategy, stepstrategy)
+
+    def test_step__fit_lm(self):
+        X = self.X
+        y = self.y
+        lm = LinearRegression()
+        stepstrategy = AdapterForFitPredictAdaptee(lm)
+        step = Process(stepstrategy)
+        self.assertEqual(hasattr(step, 'coef_'), False)
+        result = step.fit(X=X, y=y)
+        self.assertEqual(hasattr(step, 'coef_'), True)
+        self.assertEqual(step, result)
+
+    def test_step__fit_dbscan(self):
+        X = self.X
+        y = self.y
+        db = DBSCAN()
+        stepstrategy = AdapterForAtomicFitPredictAdaptee(db)
+        step = Process(stepstrategy)
+        self.assertEqual(hasattr(step, 'core_sample_indices_'), False)
+        result_fit = step.fit(X=X)
+        self.assertEqual(hasattr(step, 'core_sample_indices_'), False)
+        self.assertEqual(step, result_fit)
+        result_predict = step.predict(X=X)['predict']
+        self.assertEqual(hasattr(step, 'core_sample_indices_'), True)
+        self.assertEqual(result_predict.shape, (self.size,))
+
+    def test_step__predict(self):
+        X = self.X
+        y = self.y
+        lm = LinearRegression()
+        gm = GaussianMixture()
+        lm_strategy = AdapterForFitPredictAdaptee(lm)
+        gm_strategy = AdapterForFitPredictAdaptee(gm)
+        step_lm = Process(lm_strategy)
+        step_gm = Process(gm_strategy)
+
+        step_lm.fit(X=X, y=y)
+        step_gm.fit(X=X)
+
+        result_lm = step_lm.predict(X=X)
+        result_gm = step_gm.predict(X=X)
+
+        self.assertEqual(list(result_lm.keys()), ['predict'])
+        self.assertEqual(sorted(list(result_gm.keys())), sorted(['predict', 'predict_proba']))
+
+    def test_step__get_params(self):
+        lm = LinearRegression()
+        lm_strategy = AdapterForFitPredictAdaptee(lm)
+        step = Process(lm_strategy)
+        result_lm = step.get_params()
+        self.assertEqual(result_lm, {'copy_X': True,
+                                     'fit_intercept': True,
+                                     'n_jobs': 1,
+                                     'normalize': False})
+
+    def test_step__set_params(self):
+        lm = LinearRegression()
+        lm_strategy = AdapterForFitPredictAdaptee(lm)
+        step = Process(lm_strategy)
+        result_lm_pre = step.get_params()
+        self.assertEqual(result_lm_pre, {'copy_X': True,
+                                         'fit_intercept': True,
+                                         'n_jobs': 1,
+                                         'normalize': False})
+        step.set_params(fit_intercept=False)
+        result_lm_post = step.get_params()
+        self.assertEqual(result_lm_post, {'copy_X': True,
+                                          'fit_intercept': False,
+                                          'n_jobs': 1,
+                                          'normalize': False})
+
+    def test_step__get_fit_signature(self):
+        lm = LinearRegression()
+        gm = GaussianMixture()
+        lm_strategy = AdapterForFitPredictAdaptee(lm)
+        gm_strategy = AdapterForFitPredictAdaptee(gm)
+        step_lm = Process(lm_strategy)
+        step_gm = Process(gm_strategy)
+        result_lm = step_lm._get_fit_signature()
+        result_gm = step_gm._get_fit_signature()
+
+        self.assertEqual(result_lm, ['X', 'y', 'sample_weight'])
+        self.assertEqual(result_gm, ['X', 'y'])
+
+    def test_step__get_predict_signature_lm(self):
+        lm = LinearRegression()
+        lm_strategy = AdapterForFitPredictAdaptee(lm)
+        step_lm = Process(lm_strategy)
+        result_lm = step_lm._get_predict_signature()
+        self.assertEqual(result_lm, ['X'])
+
+    def test_step__getattr__(self):
+        lm = LinearRegression()
+        lm_strategy = AdapterForFitPredictAdaptee(lm)
+        step = Process(lm_strategy)
+        self.assertEqual(step.copy_X, True)
+
+    def test_step__setattr__(self):
+        lm = LinearRegression()
+        lm_strategy = AdapterForFitPredictAdaptee(lm)
+        step = Process(lm_strategy)
+        self.assertEqual(step.copy_X, True)
+        step.copy_X = False
+        self.assertEqual(step.copy_X, False)
+        self.assertEqual('copy_X' in dir(step), False)
+
+    def test_step__delattr__(self):
+        lm = LinearRegression()
+        lm_strategy = AdapterForFitPredictAdaptee(lm)
+        step = Process(lm_strategy)
+        self.assertEqual(step.copy_X, True)
+        self.assertEqual('copy_X' in dir(step), False)
+        self.assertEqual('copy_X' in dir(lm), True)
+        del step.copy_X
+        self.assertEqual('copy_X' in dir(lm), False)
+
+    def test_step__repr__(self):
+        lm = LinearRegression()
+        lm_strategy = AdapterForFitPredictAdaptee(lm)
+        step = Process(lm_strategy)
+        result = step.__repr__()
+        self.assertEqual(result, lm.__repr__())
+
+
 
 
 if __name__ == '__main__':

@@ -34,7 +34,7 @@ class AdapterForSkLearnLikeAdaptee(BaseEstimator):
 
     @abstractmethod
     def predict(self, *pargs, **kwargs):
-        """ document """
+        """ To be implemented by subclasses """
 
     def _get_fit_signature(self):
         """
@@ -42,7 +42,10 @@ class AdapterForSkLearnLikeAdaptee(BaseEstimator):
         Returns:
 
         """
-        return list(inspect.signature(self._adaptee.fit).parameters)
+        if hasattr(self._adaptee, '_get_fit_signature'):
+            return self._adaptee._get_fit_signature()
+        else:
+            return list(inspect.signature(self._adaptee.fit).parameters)
 
     @abstractmethod
     def _get_predict_signature(self):
@@ -135,7 +138,10 @@ class AdapterForFitTransformAdaptee(AdapterForSkLearnLikeAdaptee):
         Returns:
 
         """
-        return list(inspect.signature(self._adaptee.transform).parameters)
+        if hasattr(self._adaptee, '_get_predict_signature'):
+            return self._adaptee._get_predict_signature()
+        else:
+            return list(inspect.signature(self._adaptee.transform).parameters)
 
 
 class AdapterForFitPredictAdaptee(AdapterForSkLearnLikeAdaptee):
@@ -166,7 +172,10 @@ class AdapterForFitPredictAdaptee(AdapterForSkLearnLikeAdaptee):
         Returns:
 
         """
-        return list(inspect.signature(self._adaptee.predict).parameters)
+        if hasattr(self._adaptee, '_get_predict_signature'):
+            return self._adaptee._get_predict_signature()
+        else:
+            return list(inspect.signature(self._adaptee.predict).parameters)
 
 
 class AdapterForAtomicFitPredictAdaptee(AdapterForSkLearnLikeAdaptee):
@@ -208,26 +217,13 @@ class AdapterForAtomicFitPredictAdaptee(AdapterForSkLearnLikeAdaptee):
         Returns:
 
         """
-        return self._get_fit_signature()
+        if hasattr(self._adaptee, '_get_predict_signature'):
+            return self._adaptee._get_predict_signature()
+        else:
+            return self._get_fit_signature()
 
 
 class AdapterForCustomFitPredictWithDictionaryOutputAdaptee(AdapterForSkLearnLikeAdaptee):
-    """
-    """
-
-    def fit(self, *pargs, **kwargs):
-        """
-
-        Args:
-            pargs:
-            kwargs:
-
-        Returns:
-
-        """
-        self._adaptee.fit(*pargs, **kwargs)
-        return self
-
     def predict(self, *pargs, **kwargs):
         """
 
@@ -246,4 +242,7 @@ class AdapterForCustomFitPredictWithDictionaryOutputAdaptee(AdapterForSkLearnLik
         Returns:
 
         """
-        return list(inspect.signature(self._adaptee.predict).parameters)
+        if hasattr(self._adaptee, '_get_predict_signature'):
+            return self._adaptee._get_predict_signature()
+        else:
+            return list(inspect.signature(self._adaptee.predict).parameters)
