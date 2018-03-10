@@ -1,29 +1,23 @@
 import logging
 import unittest
+
 import numpy as np
 import pandas as pd
-from sklearn.naive_bayes import GaussianNB
-from numpy.testing import assert_array_equal
 from pandas.util.testing import assert_frame_equal
 from sklearn.cluster import DBSCAN
 from sklearn.linear_model import LinearRegression
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import GridSearchCV
-from pipegraph.paella import Paella
+
 from pipegraph.base import (PipeGraphRegressor,
-                            PipeGraphClassifier,
                             PipeGraph,
                             wrap_adaptee_in_process,
                             )
-
-
+from pipegraph.paella import Paella
 from pipegraph.standard_blocks import (Concatenator,
                                        CustomCombination,
                                        TrainTestSplit,
                                        ColumnSelector,
-                                       Demultiplexer,
-                                       Multiplexer,
                                        DemuxModelsMux,
                                        )
 
@@ -46,8 +40,8 @@ class TestDemuxModelsMux(unittest.TestCase):
         self.y = pd.concat([y_first, y_second, y_third], axis=0).to_frame()
 
     def test_DemuxModelsMux__connections(self):
-        X=self.X
-        y=self.y
+        X = self.X
+        y = self.y
         scaler = MinMaxScaler()
         gaussian_mixture = GaussianMixture(n_components=3)
         models = DemuxModelsMux(number_of_replicas=3, model_class=LinearRegression, model_parameters={})
@@ -80,6 +74,7 @@ class TestDemuxModelsMux(unittest.TestCase):
         result_steps = sorted(list(pgraph.named_steps.keys()))
         expected_steps = sorted(['scaler', 'classifier', 'models'])
         self.assertEqual(result_steps, expected_steps)
+
 
 class TestPaella(unittest.TestCase):
     def setUp(self):
@@ -198,9 +193,9 @@ class TestTrainTestSplit(unittest.TestCase):
 
 class TestColumnSelector(unittest.TestCase):
     def setUp(self):
-        self.X = pd.DataFrame.from_dict({'V1':[1, 2, 3, 4, 5, 6, 7, 8],
-                               'V2':[10, 20, 30, 40, 50, 60, 70, 80],
-                               'V3':[100, 200, 300, 400, 500, 600, 700, 800]})
+        self.X = pd.DataFrame.from_dict({'V1': [1, 2, 3, 4, 5, 6, 7, 8],
+                                         'V2': [10, 20, 30, 40, 50, 60, 70, 80],
+                                         'V3': [100, 200, 300, 400, 500, 600, 700, 800]})
 
     def test_ColumnSelector__mapping_is_None(self):
         X = self.X
@@ -210,10 +205,9 @@ class TestColumnSelector(unittest.TestCase):
 
     def test_ColumnSelector__pick_one_column_first(self):
         X = self.X
-        selector = ColumnSelector(mapping={'X': slice(0,1)})
+        selector = ColumnSelector(mapping={'X': slice(0, 1)})
         self.assertTrue(selector.fit() is selector)
         assert_frame_equal(selector.predict(X)['X'], X.loc[:, ["V1"]])
-
 
     def test_ColumnSelector__pick_one_column_last(self):
         X = self.X
@@ -227,12 +221,12 @@ class TestColumnSelector(unittest.TestCase):
         self.assertTrue(selector.fit() is selector)
         assert_frame_equal(selector.predict(X)['X'], X.loc[:, ["V1", "V2"]])
 
-
     def test_ColumnSelector__pick_three_columns(self):
         X = self.X
         selector = ColumnSelector(mapping={'X': slice(0, 3)})
         self.assertTrue(selector.fit() is selector)
         assert_frame_equal(selector.predict(X)['X'], X)
+
 
 if __name__ == '__main__':
     unittest.main()
