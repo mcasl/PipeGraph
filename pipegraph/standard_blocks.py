@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import train_test_split
 
+from pipegraph.base import PipeGraph
 from pipegraph.adapters import (AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
                                 AdapterForFitPredictAdaptee,
                                 )
@@ -248,6 +249,24 @@ class Multiplexer(BaseEstimator):
                       for class_number in set(selection)]
         result = pd.concat(array_list, axis=0).sort_index()
         return result
+
+
+class DemuxThenObjectReplicaCollectionThenMux(PipeGraph):
+    def __init__(self, number_of_replicas, object_class, object_parameters ):
+        steps = [ ('demux', Demultiplexer()),
+                  ('object_' + str(i), object(**object_parameters)) for i in range(number_of_replicas),
+                  ('mux', Multiplexer())]
+
+        connections = { 'demux': {'X': 'X',
+                                  'y': 'y'},
+                        ('object_' + str(i)): {'X': ('_External', 'X_' + str(i)),
+                                               'y': ('_External', 'y_' + str(i))} for i in range(number_of_replicas),
+                        'mux': { str(i): ('object_' + str(i)) for i in range(number_of_replicas)}
+                      }
+
+        super().__init__(steps=steps, fit_connections=connections)
+        return self
+
 
 
 strategies_for_custom_adaptees = {
