@@ -14,19 +14,72 @@ from pipegraph.paella import Paella
 from pipegraph.base import (PipeGraphRegressor,
                             PipeGraphClassifier,
                             PipeGraph,
-                            Process,
                             wrap_adaptee_in_process,
-                            build_graph,
-                            make_connections_when_not_provided_to_init,
                             )
-from pipegraph.adapters import AdapterForFitTransformAdaptee, AdapterForFitPredictAdaptee, \
-    AdapterForAtomicFitPredictAdaptee
-from pipegraph.standard_blocks import Concatenator, CustomCombination, TrainTestSplit, ColumnSelector
+
+
+from pipegraph.standard_blocks import (Concatenator,
+                                       CustomCombination,
+                                       TrainTestSplit,
+                                       ColumnSelector,
+                                       Demultiplexer,
+                                       Multiplexer,
+                                       DemuxModelsMux,
+                                       )
 
 logging.basicConfig(level=logging.NOTSET)
 logger = logging.getLogger(__name__)
 
 
+class TestDemuxModelsMux(unittest.TestCase):
+    def setUp(self):
+        X_first = pd.Series(np.random.rand(100, ))
+        y_first = pd.Series(4 * X_first + 0.5 * np.random.randn(100, ))
+
+        X_second = pd.Series(np.random.rand(100, ) + 3)
+        y_second = pd.Series(-4 * X_second + 0.5 * np.random.randn(100, ))
+
+        X_third = pd.Series(np.random.rand(100, ) + 6)
+        y_third = pd.Series(2 * X_third + 0.5 * np.random.randn(100, ))
+
+        self.X = pd.concat([X_first, X_second, X_third], axis=0).to_frame()
+        self.y = pd.concat([y_first, y_second, y_third], axis=0).to_frame()
+
+    def test_DemuxModelsMux__connections(self):
+        X=self.X
+        y=self.y
+        scaler = MinMaxScaler()
+        gaussian_mixture = GaussianMixture(n_components=3)
+        models = DemuxModelsMux(number_of_replicas=3, model_class=LinearRegression, model_parameters={})
+
+        steps = [('scaler', scaler),
+                 ('classifier', gaussian_mixture),
+                 ('models', models), ]
+
+        connections = {'scaler': {'X': 'X'},
+                       'classifier': {'X': 'scaler'},
+                       'models': {'X': 'scaler',
+                                  'y': 'y',
+                                  'selection': 'classifier'},
+                       }
+        pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
+        pgraph.fit(X, y)
+
+        y_pred = pgraph.predict(X)
+        self.assertTrue(isinstance(pgraph.named_steps['models'], DemuxModelsMux))
+        result_connections = pgraph.named_steps['models'].fit_connections
+        expected_connections = {'demux': {'X': 'X', 'selection': 'selection', 'y': 'y'},
+                                'model_0': {'X': ('demux', 'X_0'), 'y': ('demux', 'y_0')},
+                                'model_1': {'X': ('demux', 'X_1'), 'y': ('demux', 'y_1')},
+                                'model_2': {'X': ('demux', 'X_2'), 'y': ('demux', 'y_2')},
+                                'mux': {'0': 'model_0',
+                                        '1': 'model_1',
+                                        '2': 'model_2',
+                                        'selection': 'selection'}}
+        self.assertEqual(result_connections, expected_connections)
+        result_steps = sorted(list(pgraph.named_steps.keys()))
+        expected_steps = sorted(['scaler', 'classifier', 'models'])
+        self.assertEqual(result_steps, expected_steps)
 
 class TestPaella(unittest.TestCase):
     def setUp(self):

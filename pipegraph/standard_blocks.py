@@ -1,18 +1,15 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-
-from pipegraph.base import PipeGraph
-from pipegraph.adapters import (AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
-                                AdapterForFitPredictAdaptee,
-                                )
 
 
 class Concatenator(BaseEstimator):
     """
     Concatenate a set of data
     """
+
     def fit(self):
         """Fit method that does, in this case, nothing but returning self.
         Returns
@@ -102,6 +99,7 @@ class TrainTestSplit(BaseEstimator):
             If None, the random number generator is the RandomState instance used
             by `np.random`.
     """
+
     def __init__(self, test_size=0.25, train_size=None, random_state=None):
         self.test_size = test_size
         self.train_size = train_size
@@ -143,6 +141,7 @@ class ColumnSelector(BaseEstimator):
     ----------
     mapping : list. Each element contains data-column and the new name assigned
     """
+
     def __init__(self, mapping=None):
         self.mapping = mapping
 
@@ -167,7 +166,7 @@ class ColumnSelector(BaseEstimator):
         if self.mapping is None:
             return {'predict': X}
         result = {name: X.iloc[:, column_slice]
-            for name, column_slice in self.mapping.items()}
+                  for name, column_slice in self.mapping.items()}
         return result
 
 
@@ -179,7 +178,6 @@ class CustomPower(BaseEstimator):
     """
 
     def __init__(self, power=1):
-
         self.power = power
 
     def fit(self):
@@ -222,6 +220,7 @@ class Demultiplexer(BaseEstimator):
     ----------
     mapping : list. Each element contains data-column and the new name assigned
     """
+
     def fit(self):
         return self
 
@@ -242,7 +241,7 @@ class Multiplexer(BaseEstimator):
         return self
 
     def predict(self, **kwargs):
-        #list of arrays with the same dimension
+        # list of arrays with the same dimension
         selection = kwargs['selection']
         array_list = [pd.DataFrame(data=kwargs[str(class_number)],
                                    index=np.flatnonzero(selection == class_number))
@@ -251,23 +250,37 @@ class Multiplexer(BaseEstimator):
         return result
 
 
-class DemuxThenObjectReplicaCollectionThenMux(PipeGraph):
-    def __init__(self, number_of_replicas, object_class, object_parameters ):
-        steps = [ ('demux', Demultiplexer()),
-                  ('object_' + str(i), object(**object_parameters)) for i in range(number_of_replicas),
-                  ('mux', Multiplexer())]
+from pipegraph.base import PipeGraph
 
-        connections = { 'demux': {'X': 'X',
-                                  'y': 'y'},
-                        ('object_' + str(i)): {'X': ('_External', 'X_' + str(i)),
-                                               'y': ('_External', 'y_' + str(i))} for i in range(number_of_replicas),
-                        'mux': { str(i): ('object_' + str(i)) for i in range(number_of_replicas)}
-                      }
 
+class DemuxModelsMux(PipeGraph):
+    def __init__(self, number_of_replicas=1, model_class=LinearRegression, model_parameters={}):
+        self.number_of_replicas = number_of_replicas
+        self.model_class = model_class
+        self.model_parameters = model_parameters
+
+        steps = ([('demux', Demultiplexer())] +
+                 [('model_' + str(i), model_class(**model_parameters)) for i in range(number_of_replicas)] +
+                 [('mux', Multiplexer())]
+                 )
+
+        connections = dict(demux={'X': 'X',
+                                  'y': 'y',
+                                  'selection': 'selection'})
+
+        for i in range(number_of_replicas):
+            connections['model_' + str(i)] = {'X': ('demux', 'X_' + str(i)),
+                                               'y': ('demux', 'y_' + str(i))}
+
+        connections['mux'] = {str(i): ('model_' + str(i)) for i in range(number_of_replicas)}
+        connections['mux']['selection'] = 'selection'
         super().__init__(steps=steps, fit_connections=connections)
-        return self
 
 
+
+from pipegraph.adapters import (AdapterForFitPredictAdaptee,
+                                AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
+                                )
 
 strategies_for_custom_adaptees = {
     Concatenator: AdapterForFitPredictAdaptee,
@@ -278,4 +291,5 @@ strategies_for_custom_adaptees = {
     Reshape: AdapterForFitPredictAdaptee,
     Demultiplexer: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
     Multiplexer: AdapterForFitPredictAdaptee,
+    DemuxModelsMux: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
 }

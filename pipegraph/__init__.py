@@ -1,9 +1,18 @@
 from .base import (PipeGraphRegressor,
                    PipeGraphClassifier,
-                   )
-from . import base
+                   PipeGraph,
+                   wrap_adaptee_in_process,
+                  )
+
+from .adapters import (AdapterForFitPredictAdaptee,
+                       AdapterForFitTransformAdaptee,
+                       AdapterForAtomicFitPredictAdaptee,
+                       AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
+                      )
+
 
 __all__ = ['PipeGraphClassifier',
            'PipeGraphRegressor',
-           'base.py',
+           'PipeGraph',
+           'wrap_adaptee_in_process',
            ]

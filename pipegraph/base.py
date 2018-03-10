@@ -6,12 +6,6 @@ from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
 from sklearn.utils import Bunch
 from sklearn.utils.metaestimators import _BaseComposition
 
-from pipegraph.adapters import (AdapterForFitTransformAdaptee,
-                                AdapterForFitPredictAdaptee,
-                                AdapterForAtomicFitPredictAdaptee,
-                                AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
-                                )
-from pipegraph.standard_blocks import strategies_for_custom_adaptees as std_blocks_strategies
 
 logging.basicConfig(level=logging.NOTSET)
 logger = logging.getLogger(__name__)
@@ -893,6 +887,13 @@ def build_graph(connections):
     return graph
 
 
+
+from pipegraph.adapters import (AdapterForFitTransformAdaptee,
+                                AdapterForFitPredictAdaptee,
+                                AdapterForAtomicFitPredictAdaptee,
+                                AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
+                                )
+
 def wrap_adaptee_in_process(adaptee, adapter_class=None):
     """
     This function wraps the objects defined in Pipegraph's steps parameters in order to provide a common interface for them all.
@@ -948,6 +949,9 @@ def make_connections_when_not_provided_to_init(steps):
 
     connections[names[-1]].update({'y': 'y'})
     return connections
+
+
+from pipegraph.standard_blocks import strategies_for_custom_adaptees as std_blocks_strategies
 
 
 strategies_for_custom_adaptees = dict()
