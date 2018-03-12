@@ -339,7 +339,7 @@ As it can be seen, this adapter's ``predict`` method provides the
 dictionary of outputs provided by the adaptee with its original keys.
 
 Wrapping your custom blocks
-===========================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 PipeGraph uses the
 ``wrap_adaptee_in_process(adaptee, strategy_class=None)`` function to

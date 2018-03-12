@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
-import logging
 
 import networkx as nx
+import numpy as np
+import pandas as pd
 from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
+from sklearn.linear_model import LinearRegression
+from sklearn.mixture import GaussianMixture
+
 from sklearn.utils import Bunch
 from sklearn.utils.metaestimators import _BaseComposition
 
-
+import logging
 logging.basicConfig(level=logging.NOTSET)
 logger = logging.getLogger(__name__)
-
 
 class PipeGraphRegressor(BaseEstimator, RegressorMixin):
     """
@@ -225,9 +228,14 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         score_params = {}
         if sample_weight is not None:
             score_params['sample_weight'] = sample_weight
-        final_step_name = self.pipegraph.steps[-1][0]
-        Xt = self.pipegraph._predict_data[self.pipegraph.fit_connections[final_step_name]['X']]
-        return self.pipegraph.steps[-1][-1].score(Xt, y, **score_params)
+        final_step_name, final_step = self.pipegraph.steps[-1]
+
+        predict_inputs = self.pipegraph._read_predict_signature_variables_from_graph_data(
+            graph_data=self.pipegraph._predict_data,
+            step_name=final_step_name)
+
+        Xt=predict_inputs['X']
+        return final_step.score(Xt, y, **score_params)
 
 
 class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
@@ -453,6 +461,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         final_step_name = self.pipegraph.steps[-1][0]
         Xt = self.pipegraph._predict_data[self.pipegraph.fit_connections[final_step_name]['X']]
         return self.pipegraph.steps[-1][-1].score(Xt, y, **score_params)
+
 
 class PipeGraph(_BaseComposition):
     """Class in charge of holding the steps, connections and graphs needed to perform graph like
@@ -888,12 +897,6 @@ def build_graph(connections):
 
 
 
-from pipegraph.adapters import (AdapterForFitTransformAdaptee,
-                                AdapterForFitPredictAdaptee,
-                                AdapterForAtomicFitPredictAdaptee,
-                                AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
-                                )
-
 def wrap_adaptee_in_process(adaptee, adapter_class=None):
     """
     This function wraps the objects defined in Pipegraph's steps parameters in order to provide a common interface for them all.
@@ -951,10 +954,234 @@ def make_connections_when_not_provided_to_init(steps):
     return connections
 
 
-from pipegraph.standard_blocks import strategies_for_custom_adaptees as std_blocks_strategies
+class Concatenator(BaseEstimator):
+    """
+    Concatenate a set of data
+    """
+
+    def fit(self):
+        """Fit method that does, in this case, nothing but returning self.
+        Returns
+        -------
+            self : returns an instance of _Concatenator.
+        """
+        return self
+
+    def predict(self, **kwargs):
+        """Check the input data type for correct concatenating.
+
+        Parameters
+        ----------
+        **kwargs :  sequence of indexables with same length / shape[0]
+            Allowed inputs are lists, numpy arrays, scipy-sparse
+            matrices or pandas dataframes.
+            Data to concatenate.
+        Returns
+        -------
+        Pandas series or Pandas DataFrame with the data input concatenated
+        """
+        df_list = []
+        for name in sorted(kwargs.keys()):
+            item = kwargs[name]
+            if isinstance(item, pd.Series) or isinstance(item, pd.DataFrame):
+                df_list.append(item)
+            else:
+                df_list.append(pd.DataFrame(data=item))
+        return pd.concat(df_list, axis=1)
 
 
-strategies_for_custom_adaptees = dict()
-strategies_for_custom_adaptees.update(std_blocks_strategies,
-                                      )
+class ColumnSelector(BaseEstimator):
+    """ Slice data-input data in columns
+    Parameters
+    ----------
+    mapping : list. Each element contains data-column and the new name assigned
+    """
+
+    def __init__(self, mapping=None):
+        self.mapping = mapping
+
+    def fit(self):
+        """"
+
+        Returns
+        -------
+        self : returns an instance of _CustomPower.
+        """
+        return self
+
+    def predict(self, X):
+        """"
+        X: iterable object
+                Data to slice.
+        Returns
+        -------
+        returns a list with data-column and the new name assigned for each column selected
+        """
+
+        if self.mapping is None:
+            return {'predict': X}
+        result = {name: X.iloc[:, column_slice]
+                  for name, column_slice in self.mapping.items()}
+        return result
+
+
+class Reshape(BaseEstimator):
+    def __init__(self, dimension):
+        self.dimension = dimension
+
+    def fit(self, *pargs, **kwargs):
+        return self
+
+    def predict(self, X, *pargs, **kwargs):
+        if isinstance(X, pd.DataFrame) or isinstance(X, pd.Series):
+            X = X.values
+        return X.reshape(self.dimension)
+
+
+class Demultiplexer(BaseEstimator):
+    """ Slice data-input data in columns
+    Parameters
+    ----------
+    mapping : list. Each element contains data-column and the new name assigned
+    """
+
+    def fit(self):
+        return self
+
+    def predict(self, **kwargs):
+        selection = kwargs.pop('selection')
+        result = dict()
+        for variable, value in kwargs.items():
+            for class_number in set(selection):
+                if value is None:
+                    result[variable + "_" + str(class_number)] = None
+                else:
+                    result[variable + "_" + str(class_number)] = pd.DataFrame(value).loc[selection == class_number, :]
+        return result
+
+
+class Multiplexer(BaseEstimator):
+    def fit(self):
+        return self
+
+    def predict(self, **kwargs):
+        # list of arrays with the same dimension
+        selection = kwargs['selection']
+        array_list = [pd.DataFrame(data=kwargs[str(class_number)],
+                                   index=np.flatnonzero(selection == class_number))
+                      for class_number in set(selection)]
+        result = pd.concat(array_list, axis=0).sort_index()
+        return result
+
+
+class RegressorsWithParametrizedNumberOfReplicas(PipeGraph, RegressorMixin):
+    def __init__(self, number_of_replicas=1, model_prototype=LinearRegression(), model_parameters={}):
+        self.number_of_replicas = number_of_replicas
+        self.model_class = model_prototype
+        self.model_parameters = model_parameters
+
+        steps = ([('demux', Demultiplexer())] +
+                 [('model_' + str(i), model_prototype.__class__(**model_parameters)) for i in range(number_of_replicas)] +
+                 [('mux', Multiplexer())]
+                 )
+
+        connections = dict(demux={'X': 'X',
+                                  'y': 'y',
+                                  'selection': 'selection'})
+
+        for i in range(number_of_replicas):
+            connections['model_' + str(i)] = {'X': ('demux', 'X_' + str(i)),
+                                               'y': ('demux', 'y_' + str(i))}
+
+        connections['mux'] = {str(i): ('model_' + str(i)) for i in range(number_of_replicas)}
+        connections['mux']['selection'] = 'selection'
+        super().__init__(steps=steps, fit_connections=connections)
+
+
+class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
+    def __init__(self, model_prototype=LinearRegression(), model_parameters={}):
+        self.model_prototype = model_prototype
+        self.model_parameters = model_parameters
+        self._fit_data = {}
+        self._predict_data = {}
+        self.steps = []
+
+    def fit(self, *pargs, **kwargs):
+        number_of_replicas = len(set(kwargs['selection']))
+        self.steps = [('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas,
+                                                                            model_parameters=self.model_parameters))]
+
+        self._processes = {name: wrap_adaptee_in_process(adaptee=step_model) for name, step_model in self.steps}
+
+        self.fit_connections = dict(models={'X': 'X',
+                                            'y': 'y',
+                                            'selection': 'selection'})
+        self.predict_connections = self.fit_connections
+        self._fit_graph = build_graph(self.fit_connections)
+        self._predict_graph = build_graph(self.predict_connections)
+        super().fit(*pargs, **kwargs)
+        return self
+
+
+class ClassifierAndRegressorsBundle(PipeGraph, RegressorMixin):
+    def __init__(self,
+                 number_of_replicas=1,
+                 classifier_prototype=GaussianMixture(),
+                 classifier_parameters={},
+                 model_prototype=LinearRegression(),
+                 model_parameters={}):
+
+        self.number_of_replicas = number_of_replicas
+        self.classifier_prototype = classifier_prototype
+        self.classifier_parameters = classifier_parameters
+        self.model_prototype = model_prototype
+        self.model_parameters = model_parameters
+
+        steps = [('classifier', self.classifier_prototype.__class__(n_components=number_of_replicas, **classifier_parameters)) ,
+                 ('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas,
+                                                                        model_prototype=model_prototype,
+                                                                        model_parameters=model_parameters))]
+        connections = dict(classifier={'X': 'X'},
+                           models= {'X': 'X',
+                                    'y': 'y',
+                                    'selection': 'classifier'})
+        super().__init__(steps=steps, fit_connections=connections)
+
+
+
+
+class NeutralRegressor(BaseEstimator, RegressorMixin):
+    def fit(self, X):
+        return self
+
+    def predict(self, X):
+        return X
+
+
+class NeutralClassifier(BaseEstimator, ClassifierMixin):
+    def fit(self, X):
+        return self
+
+    def predict(self, X):
+        return X
+
+
+
+from pipegraph.adapters import (AdapterForFitTransformAdaptee,
+                                AdapterForFitPredictAdaptee,
+                                AdapterForAtomicFitPredictAdaptee,
+                                AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
+                                )
+strategies_for_custom_adaptees = {
+    Concatenator: AdapterForFitPredictAdaptee,
+    ColumnSelector: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
+    Reshape: AdapterForFitPredictAdaptee,
+    Demultiplexer: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
+    Multiplexer: AdapterForFitPredictAdaptee,
+    RegressorsWithParametrizedNumberOfReplicas: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
+    RegressorsWithDataDependentNumberOfReplicas: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
+}
+
+from pipegraph.demo_blocks import strategies_for_demo_blocks_adaptees
+strategies_for_custom_adaptees.update(strategies_for_demo_blocks_adaptees)
 

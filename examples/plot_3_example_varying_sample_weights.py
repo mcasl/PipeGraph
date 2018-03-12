@@ -28,8 +28,8 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GridSearchCV
-from pipegraph.base import PipeGraphRegressor
-from pipegraph.standard_blocks import ColumnSelector, CustomPower, Reshape
+from pipegraph.base import PipeGraphRegressor, ColumnSelector, Reshape
+from pipegraph.demo_blocks import CustomPower
 import matplotlib.pyplot as plt
 
 ###############################################################################

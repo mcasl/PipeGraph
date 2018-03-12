@@ -18,14 +18,19 @@ from pipegraph.base import (PipeGraphRegressor,
                             wrap_adaptee_in_process,
                             build_graph,
                             make_connections_when_not_provided_to_init,
-                            )
+                            Concatenator,
+                            ColumnSelector,
+                            Reshape,
+                            Demultiplexer,
+                            NeutralRegressor,
+                            NeutralClassifier)
 
 from pipegraph.adapters import  (AdapterForFitTransformAdaptee,
                                  AdapterForFitPredictAdaptee,
                                  AdapterForAtomicFitPredictAdaptee,
                                  AdapterForCustomFitPredictWithDictionaryOutputAdaptee)
 
-from pipegraph.standard_blocks import Concatenator, CustomCombination, Demultiplexer
+from pipegraph.demo_blocks import CustomCombination
 
 logging.basicConfig(level=logging.NOTSET)
 logger = logging.getLogger(__name__)
@@ -258,7 +263,7 @@ class TestPipegraph(unittest.TestCase):
         from sklearn.linear_model import LinearRegression
         from sklearn.model_selection import GridSearchCV
         from pipegraph.base import PipeGraphRegressor
-        from pipegraph.standard_blocks import ColumnSelector, CustomPower, Reshape
+        from pipegraph.demo_blocks import CustomPower
 
         X = pd.DataFrame(dict(X=np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
                               sample_weight=np.array(
@@ -831,6 +836,8 @@ class TestPipeGraphRegressor(unittest.TestCase):
         self.y = pd.DataFrame(dict(y=(np.random.rand(self.size, ))))
         sc = MinMaxScaler()
         lm = LinearRegression()
+        neutral_regressor = NeutralRegressor()
+
         steps = [('scaler', sc),
                  ('model',  lm),
                  ]
@@ -838,9 +845,20 @@ class TestPipeGraphRegressor(unittest.TestCase):
                        'model': {'X': ('scaler', 'predict'), 'y': 'y'}, }
         model = PipeGraphRegressor(steps, connections)
 
+        steps = [('scaler', sc),
+                 ('model', lm),
+                 ('neutral', neutral_regressor)
+                 ]
+        connections = {'scaler': {'X': 'X'},
+                       'model': {'X': ('scaler', 'predict'), 'y': 'y'},
+                       'neutral': {'X': 'model'}}
+
+        model_custom = PipeGraphRegressor(steps, connections)
+
         self.sc =sc
         self.lm = lm
         self.model = model
+        self.model_custom = model_custom
 
     def test_PipeGraphRegressor__GridSearchCV(self):
         model = self.model
@@ -851,6 +869,26 @@ class TestPipeGraphRegressor(unittest.TestCase):
         gs.fit(X, y)
         result = gs.best_estimator_.predict(X)
         self.assertEqual(result.shape[0], X.shape[0])
+
+    def test_PipeGraphRegressor__score_sklearn_last_step(self):
+        model = self.model
+        X = self.X
+        y = self.y
+        param_grid = [{'model__fit_intercept': [True, False]}, ]
+        gs = GridSearchCV(estimator=model, param_grid=param_grid)
+        gs.fit(X, y)
+        result = gs.score(X, y)
+        self.assertTrue(result > -42)
+
+    def test_PipeGraphRegressor__score_custom_last_step(self):
+        model = self.model_custom
+        X = self.X
+        y = self.y
+        param_grid = [{'model__fit_intercept': [True, False]}, ]
+        gs = GridSearchCV(estimator=model, param_grid=param_grid)
+        gs.fit(X, y)
+        result = gs.score(X, y)
+        self.assertTrue(result > -42)
 
 
 class TestPipeGraphClassifier(unittest.TestCase):

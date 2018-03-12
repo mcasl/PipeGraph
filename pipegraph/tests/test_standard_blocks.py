@@ -6,26 +6,28 @@ import pandas as pd
 from pandas.util.testing import assert_frame_equal
 from sklearn.cluster import DBSCAN
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import GridSearchCV
 
 from pipegraph.base import (PipeGraphRegressor,
                             PipeGraph,
                             wrap_adaptee_in_process,
-                            )
+                            Concatenator, ColumnSelector, RegressorsWithParametrizedNumberOfReplicas,
+                            RegressorsWithDataDependentNumberOfReplicas,
+                            NeutralRegressor)
+
 from pipegraph.paella import Paella
-from pipegraph.standard_blocks import (Concatenator,
-                                       CustomCombination,
-                                       TrainTestSplit,
-                                       ColumnSelector,
-                                       DemuxModelsMux,
-                                       )
+from pipegraph.demo_blocks import (CustomCombination,
+                                   TrainTestSplit
+                                   )
 
 logging.basicConfig(level=logging.NOTSET)
 logger = logging.getLogger(__name__)
 
 
-class TestDemuxModelsMux(unittest.TestCase):
+class TestModelsWithParameterizedNumberOfReplicas(unittest.TestCase):
     def setUp(self):
         X_first = pd.Series(np.random.rand(100, ))
         y_first = pd.Series(4 * X_first + 0.5 * np.random.randn(100, ))
@@ -39,28 +41,31 @@ class TestDemuxModelsMux(unittest.TestCase):
         self.X = pd.concat([X_first, X_second, X_third], axis=0).to_frame()
         self.y = pd.concat([y_first, y_second, y_third], axis=0).to_frame()
 
-    def test_DemuxModelsMux__connections(self):
-        X = self.X
-        y = self.y
         scaler = MinMaxScaler()
         gaussian_mixture = GaussianMixture(n_components=3)
-        models = DemuxModelsMux(number_of_replicas=3, model_class=LinearRegression, model_parameters={})
+        models = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=3, model_prototype=LinearRegression(), model_parameters={})
+        neutral_regressor = NeutralRegressor()
 
         steps = [('scaler', scaler),
                  ('classifier', gaussian_mixture),
-                 ('models', models), ]
+                 ('models', models),
+                 ('neutral', neutral_regressor)]
 
         connections = {'scaler': {'X': 'X'},
                        'classifier': {'X': 'scaler'},
                        'models': {'X': 'scaler',
                                   'y': 'y',
                                   'selection': 'classifier'},
+                       'neutral': {'X': 'models'}
                        }
-        pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
-        pgraph.fit(X, y)
+        self.pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
 
-        y_pred = pgraph.predict(X)
-        self.assertTrue(isinstance(pgraph.named_steps['models'], DemuxModelsMux))
+    def test_ModelsWithParameterizedNumberOfReplicas__connections(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
+
+        self.assertTrue(isinstance(pgraph.named_steps['models'], RegressorsWithParametrizedNumberOfReplicas))
         result_connections = pgraph.named_steps['models'].fit_connections
         expected_connections = {'demux': {'X': 'X', 'selection': 'selection', 'y': 'y'},
                                 'model_0': {'X': ('demux', 'X_0'), 'y': ('demux', 'y_0')},
@@ -72,8 +77,112 @@ class TestDemuxModelsMux(unittest.TestCase):
                                         'selection': 'selection'}}
         self.assertEqual(result_connections, expected_connections)
         result_steps = sorted(list(pgraph.named_steps.keys()))
-        expected_steps = sorted(['scaler', 'classifier', 'models'])
+        expected_steps = sorted(['scaler', 'classifier', 'models', 'neutral'])
         self.assertEqual(result_steps, expected_steps)
+
+    def test_ModelsWithParameterizedNumberOfReplicas__predict(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
+
+        pgraph.fit(X, y)
+        y_pred = pgraph.predict(X)
+        self.assertEqual(y_pred.shape[0], y.shape[0])
+
+    def test_ModelsWithParameterizedNumberOfReplicas__score(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
+
+        pgraph.fit(X, y)
+        result = pgraph.score(X, y)
+        self.assertTrue(result > -42 )
+
+
+class TestModelsWithDataDependentNumberOfReplicas(unittest.TestCase):
+    def setUp(self):
+        X_first = pd.Series(np.random.rand(1000, ))
+        y_first = pd.Series(4 * X_first + 0.5 * np.random.randn(1000, ))
+
+        X_second = pd.Series(np.random.rand(1000, ) + 3)
+        y_second = pd.Series(-4 * X_second + 0.5 * np.random.randn(1000, ))
+
+        X_third = pd.Series(np.random.rand(1000, ) + 6)
+        y_third = pd.Series(2 * X_third + 0.5 * np.random.randn(1000, ))
+
+        self.X = pd.concat([X_first, X_second, X_third], axis=0).to_frame()
+        self.y = pd.concat([y_first, y_second, y_third], axis=0).to_frame()
+        scaler = MinMaxScaler()
+        gaussian_mixture = GaussianMixture(n_components=3)
+        models = RegressorsWithDataDependentNumberOfReplicas(model_prototype=LinearRegression(), model_parameters={})
+        neutral_regressor = NeutralRegressor()
+
+        steps = [('scaler', scaler),
+                 ('classifier', gaussian_mixture),
+                 ('models', models),
+                 ('neutral', neutral_regressor)]
+
+        connections = {'scaler': {'X': 'X'},
+                       'classifier': {'X': 'scaler'},
+                       'models': {'X': 'scaler',
+                                  'y': 'y',
+                                  'selection': 'classifier'},
+                       'neutral': {'X': 'models'},
+                       }
+
+        self.pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
+
+
+    def test_ModelsWithDataDependentNumberOfReplicas__connections(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
+
+        pgraph.fit(X, y)
+        y_pred = pgraph.predict(X)
+
+        self.assertTrue(isinstance(pgraph.named_steps['models'], RegressorsWithDataDependentNumberOfReplicas))
+        result_connections = pgraph.named_steps['models'].fit_connections
+        expected_connections = {'models': {'X': 'X',
+                                           'selection': 'selection',
+                                           'y': 'y'},
+                               }
+        self.assertEqual(result_connections, expected_connections)
+        result_steps = sorted(list(pgraph.named_steps.keys()))
+        expected_steps = sorted(['scaler', 'classifier', 'models', 'neutral'])
+        self.assertEqual(result_steps, expected_steps)
+        self.assertEqual(y_pred.shape[0], y.shape[0])
+
+    def test_ModelsWithDataDependentNumberOfReplicas__predict(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
+
+        pgraph.fit(X, y)
+        y_pred = pgraph.predict(X)
+        self.assertEqual(y_pred.shape[0], y.shape[0])
+
+    def test_ModelsWithDataDependentNumberOfReplicas__score(self):
+        X = self.X
+        y = self.y
+        pgraph = self.pgraph
+
+        pgraph.fit(X, y)
+        result = pgraph.score(X, y)
+        self.assertTrue(result > -42 )
+
+    def test_ModelsWithDataDependentNumberOfReplicas__GridSearchCV(self):
+        X = self.X
+        y = self.y
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y)
+
+        pgraph = self.pgraph
+        param_grid = {'classifier__n_components': range(2, 10)}
+        gs = GridSearchCV(estimator = pgraph, param_grid=param_grid, refit=True)
+        gs.fit(X_train, y_train)
+        result = gs.score(X_test, y_test)
+        self.assertTrue(result > -42 )
 
 
 class TestPaella(unittest.TestCase):

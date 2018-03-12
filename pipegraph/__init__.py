@@ -1,3 +1,7 @@
+import pipegraph.base
+import pipegraph.adapters
+import pipegraph.demo_blocks
+
 from .base import (PipeGraphRegressor,
                    PipeGraphClassifier,
                    PipeGraph,
