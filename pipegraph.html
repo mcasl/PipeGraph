@@ -93,7 +93,6 @@
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Primer_on_custom_blocks.html">A primer on building PipeGraph’s custom blocks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Primer_on_custom_blocks.html#wrapping-your-custom-blocks">Wrapping your custom blocks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="auto_examples/index.html">General examples</a></li>
 </ul>
 
@@ -642,6 +641,135 @@ Valid parameter keys can be listed with <code class="docutils literal notranslat
 :rtype: self</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="pipegraph.PipeGraph">
+<em class="property">class </em><code class="descclassname">pipegraph.</code><code class="descname">PipeGraph</code><span class="sig-paren">(</span><em>steps</em>, <em>fit_connections=None</em>, <em>predict_connections=None</em>, <em>log_level=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class in charge of holding the steps, connections and graphs needed to perform graph like
+fits and predicts.</p>
+<dl class="docutils">
+<dt>steps <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>List of (name, action) tuples that are chained. The last one is considered to be the output step.</dd>
+<dt>connections: dictionary</dt>
+<dd><p class="first">A dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:</p>
+<ul class="last">
+<li><p class="first">The keys of the nested dictionary represents the input variable as named at the current step.</p>
+</li>
+<li><p class="first">The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:</p>
+<blockquote>
+<div><ul class="simple">
+<li>A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.</li>
+<li>A string representing a variable from an external source to the PipeGraphRegressor object, such as those provided by the user while invoking the fit, predict or fit_predict methods.</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</dd>
+<dt>alternative_connections: dictionary</dt>
+<dd>A dictionary as described for <code class="docutils literal notranslate"><span class="pre">connections</span></code>. This parameters provides the possibility of specifying a PipeGraph
+that uses a different connections dictionary during fit than during predict. The default value, <code class="docutils literal notranslate"><span class="pre">None</span></code>, implies that it is equivalent to the <code class="docutils literal notranslate"><span class="pre">connections</span></code> value, and thus PipeGraph uses the same graph for both <code class="docutils literal notranslate"><span class="pre">fit</span></code> and <code class="docutils literal notranslate"><span class="pre">predict</span></code>.</dd>
+<dt>log_level: int</dt>
+<dd>Log level for traceability purposes. This is yet a unimplemented feature.</dd>
+</dl>
+<dl class="method">
+<dt id="pipegraph.PipeGraph.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>*pargs</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraph.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraph.fit" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pargs</strong> – </li>
+<li><strong>kwargs</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipegraph.PipeGraph.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraph.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraph.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.
+:param deep: If True, will return the parameters for this estimator and</p>
+<blockquote>
+<div>contained subobjects that are estimators.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>params</strong> – Parameter names mapped to their values.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">mapping of string to any</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipegraph.PipeGraph.inject">
+<code class="descname">inject</code><span class="sig-paren">(</span><em>sink</em>, <em>sink_var</em>, <em>source</em>, <em>source_var='predict'</em>, <em>into='fit'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraph.inject"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraph.inject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a connection to the graph.</p>
+<p>sink: Destination
+sink_var: Name of the variable at destination that is going to hold the information
+source: Origin
+source_var: Name of the variable at origin holding the information
+into: This can be either ‘fit’ or ‘predict’, indicating which connections are described: those belonging</p>
+<blockquote>
+<div>to ‘fit_connections’ or those belonging to ‘predict_connections’. Default is ‘fit’.</div></blockquote>
+<dl class="docutils">
+<dt>self:  PipeGraph</dt>
+<dd>Returning self allows chaining operations</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pipegraph.PipeGraph.named_steps">
+<code class="descname">named_steps</code><a class="headerlink" href="#pipegraph.PipeGraph.named_steps" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Returns</em></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipegraph.PipeGraph.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>*pargs</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraph.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraph.predict" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pargs</strong> – </li>
+<li><strong>kwargs</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Returns:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pipegraph.wrap_adaptee_in_process">
+<code class="descclassname">pipegraph.</code><code class="descname">wrap_adaptee_in_process</code><span class="sig-paren">(</span><em>adaptee</em>, <em>adapter_class=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#wrap_adaptee_in_process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.wrap_adaptee_in_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function wraps the objects defined in Pipegraph’s steps parameters in order to provide a common interface for them all.
+This interface declares two main methods: fit and predict. So, no matter whether the adaptee is capable of doing
+predict, transform or fit_predict, once wrapped the adapter uses predict as method for producing output.</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>adaptee: a Scikit-Learn object, for instance; or a user made custom estimator may be.</dt>
+<dd>The object to be wrapped.</dd>
+<dt>adapter_class: A user made class; or one already defined in pipegraph.adapters</dt>
+<dd>The wrapper.</dd>
+</dl>
+</div></blockquote>
+<blockquote>
+<div>An object wrapped into a first adapter layer that provides a common fit and predict interface and then wrapped
+again in a second external layer using the Process class. Besides of being used by PipeGraph itself,
+the user can find this function useful for inserting a user made block as one of the steps
+in PipeGraph step’s parameter.</div></blockquote>
 </dd></dl>
 
 </div>

@@ -25,8 +25,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GridSearchCV
-from pipegraph.base import PipeGraphClassifier
-from pipegraph.standard_blocks import Concatenator
+from pipegraph.base import PipeGraphClassifier, Concatenator
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_iris
 from sklearn.naive_bayes import GaussianNB

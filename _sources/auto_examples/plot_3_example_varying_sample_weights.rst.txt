@@ -36,8 +36,8 @@ Steps of the **PipeGraph**:
     from sklearn.preprocessing import PolynomialFeatures
     from sklearn.linear_model import LinearRegression
     from sklearn.model_selection import GridSearchCV
-    from pipegraph.base import PipeGraphRegressor
-    from pipegraph.standard_blocks import ColumnSelector, CustomPower, Reshape
+    from pipegraph.base import PipeGraphRegressor, ColumnSelector, Reshape
+    from pipegraph.demo_blocks import CustomPower
     import matplotlib.pyplot as plt
 
 
@@ -144,7 +144,7 @@ This example displayed a non linear workflow successfully implemented by **PipeG
 :ref:`Next examples <example4>` show more elaborated examples in increasing complexity order.
 
 
-**Total running time of the script:** ( 0 minutes  0.600 seconds)
+**Total running time of the script:** ( 0 minutes  0.584 seconds)
 
 
 

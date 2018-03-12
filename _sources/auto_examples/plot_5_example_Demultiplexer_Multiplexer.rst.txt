@@ -33,8 +33,7 @@ Steps of the **PipeGraph**:
     from sklearn.preprocessing import MinMaxScaler
     from sklearn.linear_model import LinearRegression
     from sklearn.model_selection import GridSearchCV
-    from pipegraph.base import PipeGraphRegressor
-    from pipegraph.standard_blocks import Demultiplexer, Multiplexer
+    from pipegraph.base import PipeGraphRegressor, Demultiplexer, Multiplexer
     import matplotlib.pyplot as plt
     from sklearn.mixture import GaussianMixture
 
@@ -111,7 +110,7 @@ describing the connections to PipeGraph constructor
 
 
 
-**Total running time of the script:** ( 0 minutes  0.127 seconds)
+**Total running time of the script:** ( 0 minutes  0.044 seconds)
 
 
 

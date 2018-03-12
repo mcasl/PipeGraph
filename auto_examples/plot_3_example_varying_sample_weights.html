@@ -39,7 +39,8 @@
         <link rel="search" title="Search" href="../search.html"/>
     <link rel="top" title="PipeGraph 0.1.0 documentation" href="../index.html"/>
         <link rel="up" title="General examples" href="index.html"/>
-        <link rel="prev" title="Fourth Example: Combination of classifiers" href="plot_4_example_combination_of_classifiers.html"/> 
+        <link rel="next" title="Sixth Example: Encapsulating several blocks into a PipeGraph and reusing it" href="plot_6_example_DemuxModelsMux.html"/>
+        <link rel="prev" title="Ninth Example: # GridSearch on dynamically built component using input signal values" href="plot_9_example_DemuxModelsMux.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -95,13 +96,16 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Primer_on_custom_blocks.html">A primer on building PipeGraph’s custom blocks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Primer_on_custom_blocks.html#wrapping-your-custom-blocks">Wrapping your custom blocks</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">General examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="plot_1_example_two_nodes_in_linear_sequence.html">First example: A simple linear workflow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_2_example_added_gridsearchcv.html">Second example: <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_8_example_DemuxModelsMux.html">Eighth Example: # Dynamically built component using input signal values during the fit stage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_7_example_DemuxModelsMux.html">Seventh Example: Dynamically built component using initialization parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_5_example_Demultiplexer_Multiplexer.html">Fifth Example: Demultiplexor - multiplexor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_4_example_combination_of_classifiers.html">Fourth Example: Combination of classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_9_example_DemuxModelsMux.html">Ninth Example: # GridSearch on dynamically built component using input signal values</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Third Example: Injecting varying <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> vectors to a linear regression model for GridSearchCV</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_6_example_DemuxModelsMux.html">Sixth Example: Encapsulating several blocks into a PipeGraph and reusing it</a></li>
 </ul>
 </li>
 </ul>
@@ -196,8 +200,8 @@ Let’s imagine we have a sample_weight vector and different powers of the vecto
 <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">PolynomialFeatures</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
 <span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
-<span class="kn">from</span> <span class="nn">pipegraph.base</span> <span class="kn">import</span> <span class="n">PipeGraphRegressor</span>
-<span class="kn">from</span> <span class="nn">pipegraph.standard_blocks</span> <span class="kn">import</span> <span class="n">ColumnSelector</span><span class="p">,</span> <span class="n">CustomPower</span><span class="p">,</span> <span class="n">Reshape</span>
+<span class="kn">from</span> <span class="nn">pipegraph.base</span> <span class="kn">import</span> <span class="n">PipeGraphRegressor</span><span class="p">,</span> <span class="n">ColumnSelector</span><span class="p">,</span> <span class="n">Reshape</span>
+<span class="kn">from</span> <span class="nn">pipegraph.demo_blocks</span> <span class="kn">import</span> <span class="n">CustomPower</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 </pre></div>
 </div>
@@ -262,7 +266,7 @@ Let’s imagine we have a sample_weight vector and different powers of the vecto
 </div>
 <p>This example displayed a non linear workflow successfully implemented by <strong>PipeGraph</strong>, while at the same time showing a way to circumvent current limitations of standard <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCV</span></code>, in particular, the retriction on the number of input parameters.
 <a class="reference internal" href="plot_4_example_combination_of_classifiers.html#example4"><span class="std std-ref">Next examples</span></a> show more elaborated examples in increasing complexity order.</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.600 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.584 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_3_example_varying_sample_weights.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_3_example_varying_sample_weights.py</span></code></a></div>
@@ -282,8 +286,10 @@ Let’s imagine we have a sample_weight vector and different powers of the vecto
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
+        <a href="plot_6_example_DemuxModelsMux.html" class="btn btn-neutral float-right" title="Sixth Example: Encapsulating several blocks into a PipeGraph and reusing it" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
-        <a href="plot_4_example_combination_of_classifiers.html" class="btn btn-neutral" title="Fourth Example: Combination of classifiers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+        <a href="plot_9_example_DemuxModelsMux.html" class="btn btn-neutral" title="Ninth Example: # GridSearch on dynamically built component using input signal values" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

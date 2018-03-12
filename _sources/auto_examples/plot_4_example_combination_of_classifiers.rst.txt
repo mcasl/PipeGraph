@@ -33,8 +33,7 @@ Steps of the **PipeGraph**:
     from sklearn.preprocessing import PolynomialFeatures
     from sklearn.linear_model import LinearRegression
     from sklearn.model_selection import GridSearchCV
-    from pipegraph.base import PipeGraphClassifier
-    from pipegraph.standard_blocks import Concatenator
+    from pipegraph.base import PipeGraphClassifier, Concatenator
     import matplotlib.pyplot as plt
     from sklearn.datasets import load_iris
     from sklearn.naive_bayes import GaussianNB
@@ -121,7 +120,7 @@ This example displayed complex data injections that are successfully managed by 
 Next example :ref:`on <example5>`.
 
 
-**Total running time of the script:** ( 0 minutes  56.233 seconds)
+**Total running time of the script:** ( 0 minutes  49.925 seconds)
 
 
 
