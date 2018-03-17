@@ -110,7 +110,7 @@ describing the connections to PipeGraph constructor
 
 
 
-**Total running time of the script:** ( 0 minutes  0.059 seconds)
+**Total running time of the script:** ( 0 minutes  0.044 seconds)
 
 
 

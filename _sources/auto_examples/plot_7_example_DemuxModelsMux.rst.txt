@@ -128,7 +128,7 @@ Using this new component we can build a simplified PipeGraph:
 
 
 
-**Total running time of the script:** ( 0 minutes  0.058 seconds)
+**Total running time of the script:** ( 0 minutes  0.052 seconds)
 
 
 

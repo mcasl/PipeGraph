@@ -119,11 +119,11 @@ Using GridSearchCV to find the best number of clusters and the best regressors
 
  Out::
 
-    Score: 0.9981922189065039
+    Score: 0.9984305275652929
     classifier__n_components: 3
 
 
-**Total running time of the script:** ( 0 minutes  1.677 seconds)
+**Total running time of the script:** ( 0 minutes  1.647 seconds)
 
 
 
