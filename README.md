@@ -1,5 +1,6 @@
 # PipeGraph - An extension to Scikit-Learn
 
+[![PyPI version](https://badge.fury.io/py/pipeGraph.svg)](https://badge.fury.io/py/pipeGraph)
 [![Travis Status](https://travis-ci.org/mcasl/PipeGraph.svg?branch=master)](https://travis-ci.org/mcasl/PipeGraph)
 [![Coverage Status](https://coveralls.io/repos/github/mcasl/PipeGraph/badge.svg?branch=master)](https://coveralls.io/github/mcasl/PipeGraph?branch=master)
 [![CircleCI](https://circleci.com/gh/mcasl/PipeGraph/tree/master.svg?style=svg)](https://circleci.com/gh/mcasl/PipeGraph/tree/master)

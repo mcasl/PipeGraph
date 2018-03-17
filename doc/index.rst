@@ -29,7 +29,7 @@ Let's see a few examples to understand how we can express these situations throu
        :maxdepth: 2
 
        api
-       Primer_on_custom_blocks
+       User_Guide
        auto_examples/index
 
 
