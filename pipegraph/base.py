@@ -43,7 +43,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         Log level for traceability purposes. This is yet a unimplemented feature.
     """
     def __init__(self, steps, fit_connections=None, predict_connections=None, log_level=None):
-        self.pipegraph = PipeGraph(steps, fit_connections, predict_connections, log_level)
+        self._pipegraph = PipeGraph(steps, fit_connections, predict_connections, log_level)
 
     def inject(self, sink, sink_var, source='_External', source_var='predict', into='fit'):
         """
@@ -63,7 +63,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         self:  PipeGraphRegressor
             Returning self allows chaining operations
         """
-        self.pipegraph.inject(sink=sink, sink_var=sink_var, source=source, source_var=source_var, into=into)
+        self._pipegraph.inject(sink=sink, sink_var=sink_var, source=source, source_var=source_var, into=into)
         return self
 
     def get_params(self, deep=True):
@@ -80,7 +80,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         params : mapping of string to any
             Parameter names mapped to their values.
         """
-        return self.pipegraph.get_params(deep=deep)
+        return self._pipegraph.get_params(deep=deep)
 
     def set_params(self, **kwargs):
         """
@@ -90,12 +90,12 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         -------
         self
         """
-        self.pipegraph.set_params(**kwargs)
+        self._pipegraph.set_params(**kwargs)
         return self
 
     @property
     def named_steps(self):
-        return self.pipegraph.named_steps
+        return self._pipegraph.named_steps
 
     def fit(self, X, y=None, **fit_params):
         """
@@ -119,7 +119,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         self : PipeGraphRegressor
             This estimator
         """
-        self.pipegraph.fit(X, y=y, **fit_params)
+        self._pipegraph.fit(X, y=y, **fit_params)
         return self
 
     def predict(self, X):
@@ -136,7 +136,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         -------
         y_pred : array-like
         """
-        return self.pipegraph.predict(X, y=None)['predict']
+        return self._pipegraph.predict(X, y=None)['predict']
 
     def fit_predict(self, X, y=None, **fit_params):
         """
@@ -158,8 +158,8 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         -------
         y_pred : array-like
         """
-        self.pipegraph.fit(X, y=y, **fit_params)
-        return self.pipegraph.predict(X, y=None)
+        self._pipegraph.fit(X, y=y, **fit_params)
+        return self._pipegraph.predict(X, y=None)
 
     def predict_proba(self, X):
         """
@@ -174,7 +174,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         -------
         y_proba : array-like, shape = [n_samples, n_classes]
         """
-        return self.pipegraph.predict(X, y=None)['predict_proba']
+        return self._pipegraph.predict(X, y=None)['predict_proba']
 
     def decision_function(self, X):
         """
@@ -189,8 +189,8 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         -------
         y_score : array-like, shape = [n_samples, n_classes]
         """
-        self.pipegraph.predict(X)
-        return self.pipegraph.steps[-1][-1].decision_function(X)
+        self._pipegraph.predict(X)
+        return self._pipegraph.steps[-1][-1].decision_function(X)
 
     def predict_log_proba(self, X):
         """
@@ -205,7 +205,7 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         -------
         y_proba : array-like, shape = [n_samples, n_classes]
         """
-        return self.pipegraph.predict(X, y=None)['predict_log_proba']
+        return self._pipegraph.predict(X, y=None)['predict_log_proba']
 
     def score(self, X, y=None, sample_weight=None):
         """
@@ -224,14 +224,14 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
          -------
          y_proba : array-like, shape = [n_samples, n_classes]
          """
-        self.pipegraph.predict(X)
+        self._pipegraph.predict(X)
         score_params = {}
         if sample_weight is not None:
             score_params['sample_weight'] = sample_weight
-        final_step_name, final_step = self.pipegraph.steps[-1]
+        final_step_name, final_step = self._pipegraph.steps[-1]
 
-        predict_inputs = self.pipegraph._read_predict_signature_variables_from_graph_data(
-            graph_data=self.pipegraph._predict_data,
+        predict_inputs = self._pipegraph._read_predict_signature_variables_from_graph_data(
+            graph_data=self._pipegraph._predict_data,
             step_name=final_step_name)
 
         Xt=predict_inputs['X']
@@ -266,7 +266,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
 
         """
     def __init__(self, steps, fit_connections=None, predict_connections=None, log_level=None):
-        self.pipegraph = PipeGraph(steps, fit_connections, predict_connections, log_level)
+        self._pipegraph = PipeGraph(steps, fit_connections, predict_connections, log_level)
 
     def inject(self, sink, sink_var, source='_External', source_var='predict', into='fit'):
         """
@@ -286,7 +286,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
                 self:  PipeGraphClassifier
                     Returning self allows chaining operations
                 """
-        self.pipegraph.inject(sink=sink, sink_var=sink_var, source=source, source_var=source_var, into=into)
+        self._pipegraph.inject(sink=sink, sink_var=sink_var, source=source, source_var=source_var, into=into)
         return self
 
     def get_params(self, deep=True):
@@ -303,7 +303,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         params : mapping of string to any
             Parameter names mapped to their values.
         """
-        return self.pipegraph.get_params(deep=deep)
+        return self._pipegraph.get_params(deep=deep)
 
     def set_params(self, **kwargs):
         """
@@ -314,7 +314,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         -------
         self
         """
-        self.pipegraph.set_params(**kwargs)
+        self._pipegraph.set_params(**kwargs)
         return self
 
     @property
@@ -343,7 +343,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         self : PipeGraphClassifier
             This estimator
         """
-        self.pipegraph.fit(X, y=y, **fit_params)
+        self._pipegraph.fit(X, y=y, **fit_params)
         return self
 
     def predict(self, X):
@@ -360,7 +360,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         -------
         y_pred : array-like
         """
-        return self.pipegraph.predict(X, y=None)['predict']
+        return self._pipegraph.predict(X, y=None)['predict']
 
     def fit_predict(self, X, y=None, **fit_params):
         """
@@ -387,8 +387,8 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         -------
         y_pred : array-like
         """
-        self.pipegraph.fit(X, y=y, **fit_params)
-        return self.pipegraph.predict(X)
+        self._pipegraph.fit(X, y=y, **fit_params)
+        return self._pipegraph.predict(X)
 
     def predict_proba(self, X):
         """
@@ -403,7 +403,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         -------
         y_proba : array-like, shape = [n_samples, n_classes]
         """
-        return self.pipegraph.predict(X, y=None)['predict_proba']
+        return self._pipegraph.predict(X, y=None)['predict_proba']
 
     def decision_function(self, X):
         """
@@ -419,8 +419,8 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         y_score : array-like, shape = [n_samples, n_classes]
         """
 
-        self.pipegraph.predict(X)
-        return self.pipegraph.steps[-1][-1].decision_function(X)
+        self._pipegraph.predict(X)
+        return self._pipegraph.steps[-1][-1].decision_function(X)
 
     def predict_log_proba(self, X):
         """
@@ -435,7 +435,7 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         -------
         y_proba : array-like, shape = [n_samples, n_classes]
         """
-        return self.pipegraph.predict(X, y=None)['predict_log_proba']
+        return self._pipegraph.predict(X, y=None)['predict_log_proba']
 
     def score(self, X, y=None, sample_weight=None):
         """
@@ -454,13 +454,13 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
          -------
          y_proba : array-like, shape = [n_samples, n_classes]
          """
-        self.pipegraph.predict(X)
+        self._pipegraph.predict(X)
         score_params = {}
         if sample_weight is not None:
             score_params['sample_weight'] = sample_weight
-        final_step_name = self.pipegraph.steps[-1][0]
-        Xt = self.pipegraph._predict_data[self.pipegraph.fit_connections[final_step_name]['X']]
-        return self.pipegraph.steps[-1][-1].score(Xt, y, **score_params)
+        final_step_name = self._pipegraph.steps[-1][0]
+        Xt = self._pipegraph._predict_data[self._pipegraph.fit_connections[final_step_name]['X']]
+        return self._pipegraph.steps[-1][-1].score(Xt, y, **score_params)
 
 
 class PipeGraph(_BaseComposition):

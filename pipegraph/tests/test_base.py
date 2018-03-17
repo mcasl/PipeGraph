@@ -242,16 +242,16 @@ class TestPipegraph(unittest.TestCase):
                  ('linear_model', linear_model)]
 
         pgraph = PipeGraphRegressor(steps=steps)
-        self.assertTrue(pgraph.pipegraph.fit_connections is None)
-        self.assertTrue(pgraph.pipegraph.predict_connections is None)
+        self.assertTrue(pgraph._pipegraph.fit_connections is None)
+        self.assertTrue(pgraph._pipegraph.predict_connections is None)
         pgraph.fit(X, y)
         y_pred = pgraph.predict(X)
         self.assertEqual(y_pred.shape[0], y.shape[0])
-        self.assertEqual(pgraph.pipegraph.fit_connections, dict(scaler={'X': 'X'},
-                                                                linear_model={'X':('scaler', 'predict'),
+        self.assertEqual(pgraph._pipegraph.fit_connections, dict(scaler={'X': 'X'},
+                                                                 linear_model={'X':('scaler', 'predict'),
                                                                               'y': 'y'}))
-        self.assertEqual(pgraph.pipegraph.predict_connections, dict(scaler={'X': 'X'},
-                                                                linear_model={'X':('scaler', 'predict'),
+        self.assertEqual(pgraph._pipegraph.predict_connections, dict(scaler={'X': 'X'},
+                                                                     linear_model={'X':('scaler', 'predict'),
                                                                               'y': 'y'}))
 
 
@@ -285,8 +285,8 @@ class TestPipegraph(unittest.TestCase):
 
         pgraph = PipeGraphRegressor(steps=steps)
 
-        self.assertTrue(pgraph.pipegraph.fit_connections is None)
-        self.assertTrue(pgraph.pipegraph.predict_connections is None)
+        self.assertTrue(pgraph._pipegraph.fit_connections is None)
+        self.assertTrue(pgraph._pipegraph.predict_connections is None)
 
         (pgraph.inject(sink='selector', sink_var='X', source='_External', source_var='X')
          .inject('custom_power', 'X', 'selector', 'sample_weight')
@@ -296,11 +296,11 @@ class TestPipegraph(unittest.TestCase):
          .inject('linear_model', 'y', source_var='y')
          .inject('linear_model', 'sample_weight', 'custom_power'))
 
-        self.assertTrue(pgraph.pipegraph.fit_connections is not None)
-        self.assertTrue(pgraph.pipegraph.predict_connections is not None)
+        self.assertTrue(pgraph._pipegraph.fit_connections is not None)
+        self.assertTrue(pgraph._pipegraph.predict_connections is not None)
         pgraph.fit(X, y)
-        self.assertEqual(pgraph.pipegraph.fit_connections,
-                        {'selector': {'X': ('_External', 'X')},
+        self.assertEqual(pgraph._pipegraph.fit_connections,
+                         {'selector': {'X': ('_External', 'X')},
                         'custom_power': {'X': ('selector', 'sample_weight')},
                         'scaler': {'X': ('selector', 'X')},
                         'polynomial_features': {'X': ('scaler', 'predict')},
@@ -308,7 +308,7 @@ class TestPipegraph(unittest.TestCase):
                                        'y': ('_External', 'y'),
                                        'sample_weight': ('custom_power', 'predict')}})
 
-        self.assertEqual(pgraph.pipegraph.predict_connections,
+        self.assertEqual(pgraph._pipegraph.predict_connections,
                          {'selector': {'X': ('_External', 'X')},
                           'custom_power': {'X': ('selector', 'sample_weight')},
                           'scaler': {'X': ('selector', 'X')},
