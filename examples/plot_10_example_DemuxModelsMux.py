@@ -47,7 +47,7 @@ print(inspect.getsource(ClassifierAndRegressorsBundle))
 # Using this new component we can build a simplified PipeGraph:
 
 scaler = MinMaxScaler()
-classifier_and_models = ClassifierAndRegressorsBundle()
+classifier_and_models = ClassifierAndRegressorsBundle(number_of_replicas=6)
 neutral_regressor = NeutralRegressor()
 
 steps = [('scaler', scaler),
