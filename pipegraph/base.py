@@ -608,12 +608,18 @@ class PipeGraph(_BaseComposition):
         """
         fit_inputs = self._read_fit_signature_variables_from_graph_data(graph_data=self._fit_data,
                                                                         step_name=step_name)
-        self._processes[step_name].fit(**fit_inputs)
+        try:
+            self._processes[step_name].fit(**fit_inputs)
+        except ValueError:
+            print("ERROR: _fit.fit call ValueError!")
 
         predict_inputs = self._read_predict_signature_variables_from_graph_data(graph_data=self._fit_data,
                                                                                 step_name=step_name)
-        results = self._processes[step_name].predict(**predict_inputs)
-
+        try:
+            results = self._processes[step_name].predict(**predict_inputs)
+        except ValueError:
+            print("ERROR: _fit.predict call ValueError!")
+            
         self._write_step_outputs(graph_data=self._fit_data,
                                  step_name=step_name,
                                  output_data=results)
@@ -662,7 +668,11 @@ class PipeGraph(_BaseComposition):
 
         predict_inputs = self._read_predict_signature_variables_from_graph_data(graph_data=self._predict_data,
                                                                                 step_name=step_name)
-        results = self._processes[step_name].predict(**predict_inputs)
+        try:
+            results = self._processes[step_name].predict(**predict_inputs)
+        except ValueError:
+            print("ERROR: _predict call ValueError!")
+
         self._write_step_outputs(graph_data=self._predict_data, step_name=step_name, output_data=results)
 
     @property
