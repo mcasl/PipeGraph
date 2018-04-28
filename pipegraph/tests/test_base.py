@@ -117,7 +117,7 @@ class TestRootFunctions(unittest.TestCase):
     def test_build_graph__node_names(self):
         graph = build_graph(self.connections)
 
-        node_list = list(graph.nodes)
+        node_list = list(graph.nodes())
         self.assertEqual(sorted(node_list), sorted(['Concatenate_Xy',
                                                     'Gaussian_Mixture',
                                                     'Dbscan',
@@ -539,7 +539,7 @@ class TestPipegraph(unittest.TestCase):
 
     def test_Pipegraph__fit_node_names(self):
         pgraph = self.pgraph.fit(self.X, self.y)
-        node_list = list(pgraph._fit_graph.nodes)
+        node_list = list(pgraph._fit_graph.nodes())
         self.assertEqual(sorted(node_list), sorted(['Concatenate_Xy',
                                                     'Gaussian_Mixture',
                                                     'Dbscan',
@@ -550,7 +550,7 @@ class TestPipegraph(unittest.TestCase):
 
     def test_Pipegraph__predict_node_names(self):
         pgraph = self.pgraph.fit(self.X, self.y)
-        node_list = list(pgraph._predict_graph.nodes)
+        node_list = list(pgraph._predict_graph.nodes())
         self.assertEqual(sorted(node_list), sorted(['Concatenate_Xy',
                                                     'Gaussian_Mixture',
                                                     'Dbscan',

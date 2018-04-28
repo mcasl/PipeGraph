@@ -619,7 +619,7 @@ class PipeGraph(_BaseComposition):
             results = self._processes[step_name].predict(**predict_inputs)
         except ValueError:
             print("ERROR: _fit.predict call ValueError!")
-            
+
         self._write_step_outputs(graph_data=self._fit_data,
                                  step_name=step_name,
                                  output_data=results)
