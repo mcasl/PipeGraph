@@ -25,27 +25,18 @@
   
 
   
-  
     <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../../genindex.html"/>
-        <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="PipeGraph 0.1.0 documentation" href="../../index.html"/>
-        <link rel="up" title="Module code" href="../index.html"/> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -106,7 +97,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">PipeGraph</a>
@@ -114,9 +105,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -145,8 +137,6 @@
     
     
       <li class="wy-breadcrumbs-aside">
-        
-            
         
       </li>
     
@@ -224,8 +214,8 @@
 <span class="sd">        self:  PipeGraphRegressor</span>
 <span class="sd">            Returning self allows chaining operations</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="n">sink</span><span class="o">=</span><span class="n">sink</span><span class="p">,</span> <span class="n">sink_var</span><span class="o">=</span><span class="n">sink_var</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="n">source_var</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="n">into</span><span class="p">)</span></div>
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="n">sink</span><span class="o">=</span><span class="n">sink</span><span class="p">,</span> <span class="n">sink_var</span><span class="o">=</span><span class="n">sink_var</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="n">source_var</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="n">into</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 <div class="viewcode-block" id="PipeGraphRegressor.get_params"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -240,8 +230,8 @@
 <span class="sd">        -------</span>
 <span class="sd">        params : mapping of string to any</span>
 <span class="sd">            Parameter names mapped to their values.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">get_params</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="n">deep</span><span class="p">)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">get_params</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="n">deep</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="PipeGraphRegressor.set_params"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.set_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -251,8 +241,8 @@
 <span class="sd">        -------</span>
 <span class="sd">        self</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">named_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -280,8 +270,8 @@
 <span class="sd">        self : PipeGraphRegressor</span>
 <span class="sd">            This estimator</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span></div>
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 <div class="viewcode-block" id="PipeGraphRegressor.predict"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -296,8 +286,8 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y_pred : array-like</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="s1">&#39;predict&#39;</span><span class="p">]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="s1">&#39;predict&#39;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="PipeGraphRegressor.fit_predict"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.fit_predict">[docs]</a>    <span class="k">def</span> <span class="nf">fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -319,8 +309,8 @@
 <span class="sd">        -------</span>
 <span class="sd">        y_pred : array-like</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="PipeGraphRegressor.predict_proba"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.predict_proba">[docs]</a>    <span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -334,8 +324,8 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y_proba : array-like, shape = [n_samples, n_classes]</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="s1">&#39;predict_proba&#39;</span><span class="p">]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="s1">&#39;predict_proba&#39;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="PipeGraphRegressor.decision_function"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.decision_function">[docs]</a>    <span class="k">def</span> <span class="nf">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -350,8 +340,8 @@
 <span class="sd">        -------</span>
 <span class="sd">        y_score : array-like, shape = [n_samples, n_classes]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="PipeGraphRegressor.predict_log_proba"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.predict_log_proba">[docs]</a>    <span class="k">def</span> <span class="nf">predict_log_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -365,8 +355,8 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y_proba : array-like, shape = [n_samples, n_classes]</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="s1">&#39;predict_log_proba&#39;</span><span class="p">]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="s1">&#39;predict_log_proba&#39;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="PipeGraphRegressor.score"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphRegressor.score">[docs]</a>    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -395,8 +385,8 @@
             <span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">_predict_data</span><span class="p">,</span>
             <span class="n">step_name</span><span class="o">=</span><span class="n">final_step_name</span><span class="p">)</span>
 
-        <span class="n">Xt</span><span class="o">=</span><span class="n">predict_inputs</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">]</span></div></div>
-        <span class="k">return</span> <span class="n">final_step</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xt</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">score_params</span><span class="p">)</span>
+        <span class="n">Xt</span><span class="o">=</span><span class="n">predict_inputs</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">final_step</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xt</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">score_params</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="PipeGraphClassifier"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier">[docs]</a><span class="k">class</span> <span class="nc">PipeGraphClassifier</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">):</span>
@@ -447,8 +437,8 @@
 <span class="sd">                self:  PipeGraphClassifier</span>
 <span class="sd">                    Returning self allows chaining operations</span>
 <span class="sd">                &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="n">sink</span><span class="o">=</span><span class="n">sink</span><span class="p">,</span> <span class="n">sink_var</span><span class="o">=</span><span class="n">sink_var</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="n">source_var</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="n">into</span><span class="p">)</span></div>
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="n">sink</span><span class="o">=</span><span class="n">sink</span><span class="p">,</span> <span class="n">sink_var</span><span class="o">=</span><span class="n">sink_var</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="n">source_var</span><span class="p">,</span> <span class="n">into</span><span class="o">=</span><span class="n">into</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 <div class="viewcode-block" id="PipeGraphClassifier.get_params"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -463,8 +453,8 @@
 <span class="sd">        -------</span>
 <span class="sd">        params : mapping of string to any</span>
 <span class="sd">            Parameter names mapped to their values.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">get_params</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="n">deep</span><span class="p">)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">get_params</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="n">deep</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="PipeGraphClassifier.set_params"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.set_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -475,8 +465,8 @@
 <span class="sd">        -------</span>
 <span class="sd">        self</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">named_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -504,8 +494,8 @@
 <span class="sd">        self : PipeGraphClassifier</span>
 <span class="sd">            This estimator</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span></div>
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
 <div class="viewcode-block" id="PipeGraphClassifier.predict"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -520,8 +510,8 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y_pred : array-like</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="s1">&#39;predict&#39;</span><span class="p">]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="s1">&#39;predict&#39;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="PipeGraphClassifier.fit_predict"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.fit_predict">[docs]</a>    <span class="k">def</span> <span class="nf">fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -548,8 +538,8 @@
 <span class="sd">        -------</span>
 <span class="sd">        y_pred : array-like</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="PipeGraphClassifier.predict_proba"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.predict_proba">[docs]</a>    <span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -563,8 +553,8 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y_proba : array-like, shape = [n_samples, n_classes]</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="s1">&#39;predict_proba&#39;</span><span class="p">]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="s1">&#39;predict_proba&#39;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="PipeGraphClassifier.decision_function"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.decision_function">[docs]</a>    <span class="k">def</span> <span class="nf">decision_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -580,8 +570,8 @@
 <span class="sd">        y_score : array-like, shape = [n_samples, n_classes]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="PipeGraphClassifier.predict_log_proba"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.predict_log_proba">[docs]</a>    <span class="k">def</span> <span class="nf">predict_log_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -595,8 +585,8 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        y_proba : array-like, shape = [n_samples, n_classes]</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="s1">&#39;predict_log_proba&#39;</span><span class="p">]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="s1">&#39;predict_log_proba&#39;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="PipeGraphClassifier.score"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraphClassifier.score">[docs]</a>    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -620,8 +610,8 @@
         <span class="k">if</span> <span class="n">sample_weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">score_params</span><span class="p">[</span><span class="s1">&#39;sample_weight&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_weight</span>
         <span class="n">final_step_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">Xt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">_predict_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">fit_connections</span><span class="p">[</span><span class="n">final_step_name</span><span class="p">][</span><span class="s1">&#39;X&#39;</span><span class="p">]]</span></div></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xt</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">score_params</span><span class="p">)</span>
+        <span class="n">Xt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">_predict_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">fit_connections</span><span class="p">[</span><span class="n">final_step_name</span><span class="p">][</span><span class="s1">&#39;X&#39;</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pipegraph</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">Xt</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">score_params</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="PipeGraph"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraph">[docs]</a><span class="k">class</span> <span class="nc">PipeGraph</span><span class="p">(</span><span class="n">_BaseComposition</span><span class="p">):</span>
@@ -701,8 +691,8 @@
         <span class="k">if</span> <span class="n">sink</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">:</span>
             <span class="n">connections</span><span class="p">[</span><span class="n">sink</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">sink_var</span><span class="p">:</span> <span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">source_var</span><span class="p">)})</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">connections</span><span class="p">[</span><span class="n">sink</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">sink_var</span><span class="p">:</span> <span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">source_var</span><span class="p">)}</span></div>
-        <span class="k">return</span> <span class="bp">self</span>
+            <span class="n">connections</span><span class="p">[</span><span class="n">sink</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">sink_var</span><span class="p">:</span> <span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">source_var</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
     <span class="c1"># copied from sklearn</span>
 <div class="viewcode-block" id="PipeGraph.get_params"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraph.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -717,8 +707,8 @@
 <span class="sd">        -------</span>
 <span class="sd">        params : mapping of string to any</span>
 <span class="sd">            Parameter names mapped to their values.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_params</span><span class="p">(</span><span class="s1">&#39;steps&#39;</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="n">deep</span><span class="p">)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_params</span><span class="p">(</span><span class="s1">&#39;steps&#39;</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="n">deep</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="PipeGraph.fit"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraph.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -758,8 +748,8 @@
 
         <span class="n">fit_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_fit_nodes</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">fit_nodes</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span><span class="n">step_name</span><span class="p">)</span></div>
-        <span class="k">return</span> <span class="bp">self</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fit</span><span class="p">(</span><span class="n">step_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
     <span class="k">def</span> <span class="nf">_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -769,11 +759,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">fit_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_fit_signature_variables_from_graph_data</span><span class="p">(</span><span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span><span class="p">,</span>
                                                                         <span class="n">step_name</span><span class="o">=</span><span class="n">step_name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">**</span><span class="n">fit_inputs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">**</span><span class="n">fit_inputs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: _fit.fit call ValueError!&quot;</span><span class="p">)</span>
 
         <span class="n">predict_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_predict_signature_variables_from_graph_data</span><span class="p">(</span><span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span><span class="p">,</span>
                                                                                 <span class="n">step_name</span><span class="o">=</span><span class="n">step_name</span><span class="p">)</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">**</span><span class="n">predict_inputs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">**</span><span class="n">predict_inputs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: _fit.predict call ValueError!&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_step_outputs</span><span class="p">(</span><span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span><span class="p">,</span>
                                  <span class="n">step_name</span><span class="o">=</span><span class="n">step_name</span><span class="p">,</span>
@@ -811,8 +807,8 @@
 
         <span class="n">desired_output_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">result_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">label</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_data</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">desired_output_step</span><span class="p">,</span> <span class="n">label</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
-                       <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;predict&#39;</span><span class="p">,</span> <span class="s1">&#39;predict_proba&#39;</span><span class="p">,</span> <span class="s1">&#39;predict_log_proba&#39;</span><span class="p">}}</span></div>
-        <span class="k">return</span> <span class="n">result_dict</span>
+                       <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;predict&#39;</span><span class="p">,</span> <span class="s1">&#39;predict_proba&#39;</span><span class="p">,</span> <span class="s1">&#39;predict_log_proba&#39;</span><span class="p">}}</span>
+        <span class="k">return</span> <span class="n">result_dict</span></div>
 
     <span class="k">def</span> <span class="nf">_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -823,7 +819,11 @@
 
         <span class="n">predict_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_predict_signature_variables_from_graph_data</span><span class="p">(</span><span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_predict_data</span><span class="p">,</span>
                                                                                 <span class="n">step_name</span><span class="o">=</span><span class="n">step_name</span><span class="p">)</span>
-        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">**</span><span class="n">predict_inputs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">**</span><span class="n">predict_inputs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: _predict call ValueError!&quot;</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_step_outputs</span><span class="p">(</span><span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_predict_data</span><span class="p">,</span> <span class="n">step_name</span><span class="o">=</span><span class="n">step_name</span><span class="p">,</span> <span class="n">output_data</span><span class="o">=</span><span class="n">results</span><span class="p">)</span>
 
     <span class="nd">@property</span>
@@ -878,7 +878,7 @@
             <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node_and_outer_variable_tuple</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                           <span class="k">for</span> <span class="n">inner_variable</span><span class="p">,</span> <span class="n">node_and_outer_variable_tuple</span> <span class="ow">in</span> <span class="n">connection_tuples</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="p">[</span><span class="n">node_and_outer_variable_tuple</span><span class="p">]</span>
+            <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node_and_outer_variable_tuple</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                           <span class="k">for</span> <span class="n">inner_variable</span><span class="p">,</span> <span class="n">node_and_outer_variable_tuple</span> <span class="ow">in</span> <span class="n">connection_tuples</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
                           <span class="k">if</span> <span class="n">inner_variable</span> <span class="ow">in</span> <span class="n">variable_list</span><span class="p">}</span>
 
@@ -910,7 +910,7 @@
             <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node_and_outer_variable_tuple</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                           <span class="k">for</span> <span class="n">inner_variable</span><span class="p">,</span> <span class="n">node_and_outer_variable_tuple</span> <span class="ow">in</span> <span class="n">connection_tuples</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="p">[</span><span class="n">node_and_outer_variable_tuple</span><span class="p">]</span>
+            <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span><span class="n">inner_variable</span><span class="p">:</span> <span class="n">graph_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node_and_outer_variable_tuple</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                           <span class="k">for</span> <span class="n">inner_variable</span><span class="p">,</span> <span class="n">node_and_outer_variable_tuple</span> <span class="ow">in</span> <span class="n">connection_tuples</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
                           <span class="k">if</span> <span class="n">inner_variable</span> <span class="ow">in</span> <span class="n">variable_list</span><span class="p">}</span>
 
@@ -924,8 +924,8 @@
 <span class="sd">            data_dict:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">graph_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="p">{(</span><span class="n">step_name</span><span class="p">,</span> <span class="n">variable</span><span class="p">):</span> <span class="n">value</span> <span class="k">for</span> <span class="n">variable</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">output_data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
-        <span class="p">)</span>
+            <span class="p">{(</span><span class="n">step_name</span><span class="p">,</span> <span class="n">variable</span><span class="p">):</span> <span class="n">value</span> <span class="k">for</span> <span class="n">variable</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">output_data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="p">)</span></div>
 
 
 <span class="k">class</span> <span class="nc">Process</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
@@ -1095,8 +1095,8 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Error: Unknown adaptee!&#39;</span><span class="p">)</span>
 
-    <span class="n">process</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">strategy</span><span class="p">)</span></div>
-    <span class="k">return</span> <span class="n">process</span>
+    <span class="n">process</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">strategy</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">process</span></div>
 
 
 <span class="k">def</span> <span class="nf">make_connections_when_not_provided_to_init</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
@@ -1349,9 +1349,7 @@
 </pre></div>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -1364,7 +1362,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1383,6 +1381,7 @@
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
             VERSION:'0.1.0',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -1400,14 +1399,13 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
