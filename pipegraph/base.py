@@ -717,7 +717,7 @@ class PipeGraph(_BaseComposition):
             input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
                           for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()}
         else:
-            input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
+            input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
                           for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
                           if inner_variable in variable_list}
 
@@ -749,7 +749,7 @@ class PipeGraph(_BaseComposition):
             input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
                           for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()}
         else:
-            input_data = {inner_variable: graph_data[node_and_outer_variable_tuple]
+            input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
                           for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
                           if inner_variable in variable_list}
 
