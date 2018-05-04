@@ -615,10 +615,12 @@ class PipeGraph(_BaseComposition):
 
         predict_inputs = self._read_predict_signature_variables_from_graph_data(graph_data=self._fit_data,
                                                                                 step_name=step_name)
+        results = dict()
         try:
             results = self._processes[step_name].predict(**predict_inputs)
         except ValueError:
             print("ERROR: _fit.predict call ValueError!")
+
 
         self._write_step_outputs(graph_data=self._fit_data,
                                  step_name=step_name,
@@ -668,6 +670,7 @@ class PipeGraph(_BaseComposition):
 
         predict_inputs = self._read_predict_signature_variables_from_graph_data(graph_data=self._predict_data,
                                                                                 step_name=step_name)
+        results =  {}
         try:
             results = self._processes[step_name].predict(**predict_inputs)
         except ValueError:
