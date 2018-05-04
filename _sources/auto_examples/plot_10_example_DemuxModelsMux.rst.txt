@@ -152,11 +152,11 @@ Using GridSearchCV to find the best number of clusters and the best regressors
 
  Out::
 
-    Score: 0.9979482547974158
-    bundle__number_of_replicas: 9
+    Score: 0.9980138210120671
+    bundle__number_of_replicas: 3
 
 
-**Total running time of the script:** ( 0 minutes  2.282 seconds)
+**Total running time of the script:** ( 0 minutes  2.339 seconds)
 
 
 

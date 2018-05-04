@@ -766,10 +766,12 @@
 
         <span class="n">predict_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_predict_signature_variables_from_graph_data</span><span class="p">(</span><span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span><span class="p">,</span>
                                                                                 <span class="n">step_name</span><span class="o">=</span><span class="n">step_name</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">**</span><span class="n">predict_inputs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: _fit.predict call ValueError!&quot;</span><span class="p">)</span>
+
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_step_outputs</span><span class="p">(</span><span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span><span class="p">,</span>
                                  <span class="n">step_name</span><span class="o">=</span><span class="n">step_name</span><span class="p">,</span>
@@ -819,6 +821,7 @@
 
         <span class="n">predict_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_predict_signature_variables_from_graph_data</span><span class="p">(</span><span class="n">graph_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_predict_data</span><span class="p">,</span>
                                                                                 <span class="n">step_name</span><span class="o">=</span><span class="n">step_name</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span>  <span class="p">{}</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[</span><span class="n">step_name</span><span class="p">]</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">**</span><span class="n">predict_inputs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -1401,9 +1404,7 @@
 
   <script type="text/javascript">
       jQuery(function () {
-          
-          SphinxRtdTheme.Navigation.enableSticky();
-          
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script> 
 
