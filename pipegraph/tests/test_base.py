@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.naive_bayes import GaussianNB
 from numpy.testing import assert_array_equal
 from pandas.util.testing import assert_frame_equal
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import DBSCAN, KMeans
 from sklearn.linear_model import LinearRegression
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import MinMaxScaler
@@ -721,6 +721,35 @@ class TestPipegraph(unittest.TestCase):
         self.assertEqual(pgraph.named_steps, dict(self.steps))
         self.assertEqual(len(pgraph.named_steps), 6)
 
+class TestPipeGraphFitConnections(unittest.TestCase):
+    def setUp(self):
+        self.size = 100
+        self.X = np.random.rand(self.size, 1)
+        self.y = 2 * self.X
+
+        sc = MinMaxScaler()
+        gm = GaussianMixture(n_components=3)
+        km = KMeans(n_clusters=4)
+
+        steps = [('scaler', sc), ('gaussian', gm), ('kmeans', km)]
+        connections_1 = {'scaler': dict(X='X'), 'gaussian': 'scaler'}
+        connections_2 = {'scaler': dict(X='X'), 'kmeans': 'scaler'}
+
+        self.sc = sc
+        self.gm = gm
+        self.km = km
+
+        self.steps = steps
+        self.connections_1 = connections_1
+        self.connections_2 = connections_2
+        self.pgraph = PipeGraph(steps=steps, fit_connections=connections_1)
+        self.param_grid = dict(fit_connections=[connections_1, connections_2])
+
+    def test_Pipegraph__fit_connections_get_params(self):
+        pgraph = self.pgraph
+        self.assertEqual(pgraph.get_params()['fit_connections'], self.connections_1)
+        pgraph.set_params(fit_connections=self.connections_2)
+        self.assertEqual(pgraph.get_params()['fit_connections'], self.connections_2)
 
 class TestPipeGraphSingleNodeLinearModel(unittest.TestCase):
     def setUp(self):

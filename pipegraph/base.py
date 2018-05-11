@@ -591,9 +591,8 @@ class PipeGraph(_BaseComposition):
         if self.predict_connections == {}:
             self.predict_connections = self.fit_connections
 
-        if self._fit_graph is None:
-            self._fit_graph = build_graph(self.fit_connections)
-            self._predict_graph = build_graph(self.predict_connections)
+        self._fit_graph = build_graph(self.fit_connections)
+        self._predict_graph = build_graph(self.predict_connections)
 
         fit_nodes = self._filter_fit_nodes()
         for step_name in fit_nodes:
