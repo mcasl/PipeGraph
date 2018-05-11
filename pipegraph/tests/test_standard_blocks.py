@@ -43,7 +43,7 @@ class TestModelsWithParameterizedNumberOfReplicas(unittest.TestCase):
 
         scaler = MinMaxScaler()
         gaussian_mixture = GaussianMixture(n_components=3)
-        models = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=3, model_prototype=LinearRegression(), model_parameters={})
+        models = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=3, regressor=LinearRegression())
         neutral_regressor = NeutralRegressor()
 
         steps = [('scaler', scaler),
@@ -68,12 +68,12 @@ class TestModelsWithParameterizedNumberOfReplicas(unittest.TestCase):
         self.assertTrue(isinstance(pgraph.named_steps['models'], RegressorsWithParametrizedNumberOfReplicas))
         result_connections = pgraph.named_steps['models'].fit_connections
         expected_connections = {'demux': {'X': 'X', 'selection': 'selection', 'y': 'y'},
-                                'model_0': {'X': ('demux', 'X_0'), 'y': ('demux', 'y_0')},
-                                'model_1': {'X': ('demux', 'X_1'), 'y': ('demux', 'y_1')},
-                                'model_2': {'X': ('demux', 'X_2'), 'y': ('demux', 'y_2')},
-                                'mux': {'0': 'model_0',
-                                        '1': 'model_1',
-                                        '2': 'model_2',
+                                'regressor_0': {'X': ('demux', 'X_0'), 'y': ('demux', 'y_0')},
+                                'regressor_1': {'X': ('demux', 'X_1'), 'y': ('demux', 'y_1')},
+                                'regressor_2': {'X': ('demux', 'X_2'), 'y': ('demux', 'y_2')},
+                                'mux': {'0': 'regressor_0',
+                                        '1': 'regressor_1',
+                                        '2': 'regressor_2',
                                         'selection': 'selection'}}
         self.assertEqual(result_connections, expected_connections)
         result_steps = sorted(list(pgraph.named_steps.keys()))

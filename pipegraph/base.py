@@ -3,7 +3,8 @@
 import networkx as nx
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
+
+from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin, clone
 from sklearn.linear_model import LinearRegression
 from sklearn.mixture import GaussianMixture
 
@@ -559,6 +560,17 @@ class PipeGraph(_BaseComposition):
         """
         return self._get_params('steps', deep=deep)
 
+    # copied from sklearn
+    def set_params(self, **kwargs):
+        """Set the parameters of this estimator.
+        Valid parameter keys can be listed with ``get_params()``.
+        Returns
+        -------
+        self
+        """
+        self._set_params('steps', **kwargs)
+        return self
+
     def fit(self, *pargs, **kwargs):
         """
 
@@ -937,10 +949,10 @@ def wrap_adaptee_in_process(adaptee, adapter_class=None):
         strategy = AdapterForCustomFitPredictWithDictionaryOutputAdaptee(adaptee)
     elif adaptee.__class__ in strategies_for_custom_adaptees:
         strategy = strategies_for_custom_adaptees[adaptee.__class__](adaptee)
-    elif hasattr(adaptee, 'transform'):
-        strategy = AdapterForFitTransformAdaptee(adaptee)
     elif hasattr(adaptee, 'predict'):
         strategy = AdapterForFitPredictAdaptee(adaptee)
+    elif hasattr(adaptee, 'transform'):
+        strategy = AdapterForFitTransformAdaptee(adaptee)
     elif hasattr(adaptee, 'fit_predict'):
         strategy = AdapterForAtomicFitPredictAdaptee(adaptee)
     else:
@@ -1087,13 +1099,12 @@ class Multiplexer(BaseEstimator):
 
 
 class RegressorsWithParametrizedNumberOfReplicas(PipeGraph, RegressorMixin):
-    def __init__(self, number_of_replicas=1, model_prototype=LinearRegression(), model_parameters={}):
+    def __init__(self, number_of_replicas=1, regressor=LinearRegression()):
         self.number_of_replicas = number_of_replicas
-        self.model_class = model_prototype
-        self.model_parameters = model_parameters
+        self.regressor = regressor
 
         steps = ([('demux', Demultiplexer())] +
-                 [('model_' + str(i), model_prototype.__class__(**model_parameters)) for i in range(number_of_replicas)] +
+                 [('regressor_' + str(i), clone(regressor)) for i in range(number_of_replicas)] +
                  [('mux', Multiplexer())]
                  )
 
@@ -1102,10 +1113,10 @@ class RegressorsWithParametrizedNumberOfReplicas(PipeGraph, RegressorMixin):
                                   'selection': 'selection'})
 
         for i in range(number_of_replicas):
-            connections['model_' + str(i)] = {'X': ('demux', 'X_' + str(i)),
+            connections['regressor_' + str(i)] = {'X': ('demux', 'X_' + str(i)),
                                                'y': ('demux', 'y_' + str(i))}
 
-        connections['mux'] = {str(i): ('model_' + str(i)) for i in range(number_of_replicas)}
+        connections['mux'] = {str(i): ('regressor_' + str(i)) for i in range(number_of_replicas)}
         connections['mux']['selection'] = 'selection'
         super().__init__(steps=steps, fit_connections=connections)
 
@@ -1120,8 +1131,7 @@ class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
 
     def fit(self, *pargs, **kwargs):
         number_of_replicas = len(set(kwargs['selection']))
-        self.steps = [('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas,
-                                                                            model_parameters=self.model_parameters))]
+        self.steps = [('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas))]
 
         self._processes = {name: wrap_adaptee_in_process(adaptee=step_model) for name, step_model in self.steps}
 
@@ -1134,32 +1144,39 @@ class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
         super().fit(*pargs, **kwargs)
         return self
 
+def query_number_of_clusters_from_classifier(classifier):
+
+    number_of_clusters_dictionary = {
+        'GaussianMixture': 'n_components',
+        'KMeans': 'n_clusters'
+    }
+
+    classifier_class = type(classifier).__name__
+    number_of_clusters_str = number_of_clusters_dictionary[classifier_class]
+    number_of_cluster = classifier.get_params()[number_of_clusters_str]
+    return number_of_cluster
 
 class ClassifierAndRegressorsBundle(PipeGraph, RegressorMixin):
-    def __init__(self,
-                 number_of_replicas=1,
-                 classifier_prototype=GaussianMixture(),
-                 classifier_parameters={},
-                 model_prototype=LinearRegression(),
-                 model_parameters={}):
+    def __init__(self, steps=[('classifier', GaussianMixture()), ('regressor', LinearRegression())]):
+        self.steps = steps
 
-        self.number_of_replicas = number_of_replicas
-        self.classifier_prototype = classifier_prototype
-        self.classifier_parameters = classifier_parameters
-        self.model_prototype = model_prototype
-        self.model_parameters = model_parameters
+    def fit(self, *pargs, **kwargs):
+        classifier = self.named_steps.classifier
+        regressor = self.named_steps.regressor
+        number_of_clusters = query_number_of_clusters_from_classifier(classifier)
+        multiple_regressors = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_clusters,
+                                                                         regressor=regressor)
 
-        steps = [('classifier', self.classifier_prototype.__class__(n_components=number_of_replicas, **classifier_parameters)) ,
-                 ('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas,
-                                                                        model_prototype=model_prototype,
-                                                                        model_parameters=model_parameters))]
+        steps = [('classifier', classifier), ('regressorsBundle', multiple_regressors)]
         connections = dict(classifier={'X': 'X'},
-                           models= {'X': 'X',
-                                    'y': 'y',
-                                    'selection': 'classifier'})
-        super().__init__(steps=steps, fit_connections=connections)
+                           regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'classifier'})
+        self._adaptee = PipeGraphRegressor(steps=steps, fit_connections=connections)
 
+        self._adaptee.fit(*pargs, **kwargs)
+        return self
 
+    def predict(self, *pargs, **kwargs):
+        return self._adaptee.predict(*pargs, **kwargs)
 
 
 class NeutralRegressor(BaseEstimator, RegressorMixin):
