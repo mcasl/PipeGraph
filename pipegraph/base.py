@@ -1170,7 +1170,7 @@ class ClassifierAndRegressorsBundle(PipeGraph, RegressorMixin):
         steps = [('classifier', classifier), ('regressorsBundle', multiple_regressors)]
         connections = dict(classifier={'X': 'X'},
                            regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'classifier'})
-        self._adaptee = PipeGraphRegressor(steps=steps, fit_connections=connections)
+        self._adaptee = PipeGraph(steps=steps, fit_connections=connections)
 
         self._adaptee.fit(*pargs, **kwargs)
         return self
