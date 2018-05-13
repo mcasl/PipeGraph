@@ -216,8 +216,7 @@ context. This morphing capability opens interesting possibilities to explore ind
 
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">number_of_replicas</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;selection&#39;</span><span class="p">]))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="n">RegressorsWithParametrizedNumberOfReplicas</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="o">=</span><span class="n">number_of_replicas</span><span class="p">,</span>
-                                                                            <span class="n">model_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="p">))]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="n">RegressorsWithParametrizedNumberOfReplicas</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="o">=</span><span class="n">number_of_replicas</span><span class="p">))]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">wrap_adaptee_in_process</span><span class="p">(</span><span class="n">adaptee</span><span class="o">=</span><span class="n">step_model</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">step_model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">}</span>
 
@@ -255,7 +254,7 @@ context. This morphing capability opens interesting possibilities to explore ind
 </pre></div>
 </div>
 <img alt="../_images/sphx_glr_plot_8_example_DemuxModelsMux_001.png" class="align-center" src="../_images/sphx_glr_plot_8_example_DemuxModelsMux_001.png" />
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.080 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.076 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_8_example_DemuxModelsMux.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_8_example_DemuxModelsMux.py</span></code></a></div>

@@ -67,13 +67,12 @@ we called :class:``pipegraph.standard_blocks.RegressorsWithParametrizedNumberOfR
  Out::
 
     class RegressorsWithParametrizedNumberOfReplicas(PipeGraph, RegressorMixin):
-        def __init__(self, number_of_replicas=1, model_prototype=LinearRegression(), model_parameters={}):
+        def __init__(self, number_of_replicas=1, regressor=LinearRegression()):
             self.number_of_replicas = number_of_replicas
-            self.model_class = model_prototype
-            self.model_parameters = model_parameters
+            self.regressor = regressor
 
             steps = ([('demux', Demultiplexer())] +
-                     [('model_' + str(i), model_prototype.__class__(**model_parameters)) for i in range(number_of_replicas)] +
+                     [('regressor_' + str(i), clone(regressor)) for i in range(number_of_replicas)] +
                      [('mux', Multiplexer())]
                      )
 
@@ -82,10 +81,10 @@ we called :class:``pipegraph.standard_blocks.RegressorsWithParametrizedNumberOfR
                                       'selection': 'selection'})
 
             for i in range(number_of_replicas):
-                connections['model_' + str(i)] = {'X': ('demux', 'X_' + str(i)),
+                connections['regressor_' + str(i)] = {'X': ('demux', 'X_' + str(i)),
                                                    'y': ('demux', 'y_' + str(i))}
 
-            connections['mux'] = {str(i): ('model_' + str(i)) for i in range(number_of_replicas)}
+            connections['mux'] = {str(i): ('regressor_' + str(i)) for i in range(number_of_replicas)}
             connections['mux']['selection'] = 'selection'
             super().__init__(steps=steps, fit_connections=connections)
 
@@ -99,9 +98,7 @@ Using this new component we can build a simplified PipeGraph:
 
     scaler = MinMaxScaler()
     gaussian_mixture = GaussianMixture(n_components=3)
-    models = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=3,
-                                                        model_prototype=LinearRegression(),
-                                                        model_parameters={})
+    models = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=3, regressor=LinearRegression())
 
     steps = [('scaler', scaler),
              ('classifier', gaussian_mixture),
@@ -128,7 +125,7 @@ Using this new component we can build a simplified PipeGraph:
 
 
 
-**Total running time of the script:** ( 0 minutes  0.061 seconds)
+**Total running time of the script:** ( 0 minutes  0.064 seconds)
 
 
 

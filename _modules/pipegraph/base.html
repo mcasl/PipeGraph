@@ -154,7 +154,8 @@
 <span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">RegressorMixin</span><span class="p">,</span> <span class="n">ClassifierMixin</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="k">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">RegressorMixin</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">clone</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">LinearRegression</span>
 <span class="kn">from</span> <span class="nn">sklearn.mixture</span> <span class="k">import</span> <span class="n">GaussianMixture</span>
 
@@ -710,6 +711,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_params</span><span class="p">(</span><span class="s1">&#39;steps&#39;</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="n">deep</span><span class="p">)</span></div>
 
+    <span class="c1"># copied from sklearn</span>
+<div class="viewcode-block" id="PipeGraph.set_params"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraph.set_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the parameters of this estimator.</span>
+<span class="sd">        Valid parameter keys can be listed with ``get_params()``.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_params</span><span class="p">(</span><span class="s1">&#39;steps&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
 <div class="viewcode-block" id="PipeGraph.fit"><a class="viewcode-back" href="../../pipegraph.html#pipegraph.PipeGraph.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 
@@ -742,9 +754,8 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span> <span class="o">==</span> <span class="p">{}:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_graph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_fit_graph</span> <span class="o">=</span> <span class="n">build_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_predict_graph</span> <span class="o">=</span> <span class="n">build_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_graph</span> <span class="o">=</span> <span class="n">build_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_connections</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_predict_graph</span> <span class="o">=</span> <span class="n">build_graph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predict_connections</span><span class="p">)</span>
 
         <span class="n">fit_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_fit_nodes</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">step_name</span> <span class="ow">in</span> <span class="n">fit_nodes</span><span class="p">:</span>
@@ -1089,10 +1100,10 @@
         <span class="n">strategy</span> <span class="o">=</span> <span class="n">AdapterForCustomFitPredictWithDictionaryOutputAdaptee</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">adaptee</span><span class="o">.</span><span class="vm">__class__</span> <span class="ow">in</span> <span class="n">strategies_for_custom_adaptees</span><span class="p">:</span>
         <span class="n">strategy</span> <span class="o">=</span> <span class="n">strategies_for_custom_adaptees</span><span class="p">[</span><span class="n">adaptee</span><span class="o">.</span><span class="vm">__class__</span><span class="p">](</span><span class="n">adaptee</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="s1">&#39;transform&#39;</span><span class="p">):</span>
-        <span class="n">strategy</span> <span class="o">=</span> <span class="n">AdapterForFitTransformAdaptee</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="s1">&#39;predict&#39;</span><span class="p">):</span>
         <span class="n">strategy</span> <span class="o">=</span> <span class="n">AdapterForFitPredictAdaptee</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="s1">&#39;transform&#39;</span><span class="p">):</span>
+        <span class="n">strategy</span> <span class="o">=</span> <span class="n">AdapterForFitTransformAdaptee</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">adaptee</span><span class="p">,</span> <span class="s1">&#39;fit_predict&#39;</span><span class="p">):</span>
         <span class="n">strategy</span> <span class="o">=</span> <span class="n">AdapterForAtomicFitPredictAdaptee</span><span class="p">(</span><span class="n">adaptee</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1239,13 +1250,12 @@
 
 
 <span class="k">class</span> <span class="nc">RegressorsWithParametrizedNumberOfReplicas</span><span class="p">(</span><span class="n">PipeGraph</span><span class="p">,</span> <span class="n">RegressorMixin</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_of_replicas</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">model_prototype</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">(),</span> <span class="n">model_parameters</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_of_replicas</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">regressor</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">()):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">number_of_replicas</span> <span class="o">=</span> <span class="n">number_of_replicas</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_class</span> <span class="o">=</span> <span class="n">model_prototype</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span> <span class="o">=</span> <span class="n">model_parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regressor</span> <span class="o">=</span> <span class="n">regressor</span>
 
         <span class="n">steps</span> <span class="o">=</span> <span class="p">([(</span><span class="s1">&#39;demux&#39;</span><span class="p">,</span> <span class="n">Demultiplexer</span><span class="p">())]</span> <span class="o">+</span>
-                 <span class="p">[(</span><span class="s1">&#39;model_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">model_prototype</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="o">**</span><span class="n">model_parameters</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="p">)]</span> <span class="o">+</span>
+                 <span class="p">[(</span><span class="s1">&#39;regressor_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">clone</span><span class="p">(</span><span class="n">regressor</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="p">)]</span> <span class="o">+</span>
                  <span class="p">[(</span><span class="s1">&#39;mux&#39;</span><span class="p">,</span> <span class="n">Multiplexer</span><span class="p">())]</span>
                  <span class="p">)</span>
 
@@ -1254,10 +1264,10 @@
                                   <span class="s1">&#39;selection&#39;</span><span class="p">:</span> <span class="s1">&#39;selection&#39;</span><span class="p">})</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="p">):</span>
-            <span class="n">connections</span><span class="p">[</span><span class="s1">&#39;model_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;demux&#39;</span><span class="p">,</span> <span class="s1">&#39;X_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)),</span>
+            <span class="n">connections</span><span class="p">[</span><span class="s1">&#39;regressor_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;demux&#39;</span><span class="p">,</span> <span class="s1">&#39;X_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)),</span>
                                                <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;demux&#39;</span><span class="p">,</span> <span class="s1">&#39;y_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))}</span>
 
-        <span class="n">connections</span><span class="p">[</span><span class="s1">&#39;mux&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="p">(</span><span class="s1">&#39;model_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="p">)}</span>
+        <span class="n">connections</span><span class="p">[</span><span class="s1">&#39;mux&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="p">(</span><span class="s1">&#39;regressor_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="p">)}</span>
         <span class="n">connections</span><span class="p">[</span><span class="s1">&#39;mux&#39;</span><span class="p">][</span><span class="s1">&#39;selection&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;selection&#39;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="o">=</span><span class="n">connections</span><span class="p">)</span>
 
@@ -1272,8 +1282,7 @@
 
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">number_of_replicas</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;selection&#39;</span><span class="p">]))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="n">RegressorsWithParametrizedNumberOfReplicas</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="o">=</span><span class="n">number_of_replicas</span><span class="p">,</span>
-                                                                            <span class="n">model_parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="p">))]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="n">RegressorsWithParametrizedNumberOfReplicas</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="o">=</span><span class="n">number_of_replicas</span><span class="p">))]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">wrap_adaptee_in_process</span><span class="p">(</span><span class="n">adaptee</span><span class="o">=</span><span class="n">step_model</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">step_model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">}</span>
 
@@ -1286,32 +1295,39 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
+<span class="k">def</span> <span class="nf">query_number_of_clusters_from_classifier</span><span class="p">(</span><span class="n">classifier</span><span class="p">):</span>
+
+    <span class="n">number_of_clusters_dictionary</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;GaussianMixture&#39;</span><span class="p">:</span> <span class="s1">&#39;n_components&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;KMeans&#39;</span><span class="p">:</span> <span class="s1">&#39;n_clusters&#39;</span>
+    <span class="p">}</span>
+
+    <span class="n">classifier_class</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">classifier</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="n">number_of_clusters_str</span> <span class="o">=</span> <span class="n">number_of_clusters_dictionary</span><span class="p">[</span><span class="n">classifier_class</span><span class="p">]</span>
+    <span class="n">number_of_cluster</span> <span class="o">=</span> <span class="n">classifier</span><span class="o">.</span><span class="n">get_params</span><span class="p">()[</span><span class="n">number_of_clusters_str</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">number_of_cluster</span>
 
 <span class="k">class</span> <span class="nc">ClassifierAndRegressorsBundle</span><span class="p">(</span><span class="n">PipeGraph</span><span class="p">,</span> <span class="n">RegressorMixin</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                 <span class="n">number_of_replicas</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                 <span class="n">classifier_prototype</span><span class="o">=</span><span class="n">GaussianMixture</span><span class="p">(),</span>
-                 <span class="n">classifier_parameters</span><span class="o">=</span><span class="p">{},</span>
-                 <span class="n">model_prototype</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">(),</span>
-                 <span class="n">model_parameters</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;classifier&#39;</span><span class="p">,</span> <span class="n">GaussianMixture</span><span class="p">()),</span> <span class="p">(</span><span class="s1">&#39;regressor&#39;</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">())]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="n">steps</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_replicas</span> <span class="o">=</span> <span class="n">number_of_replicas</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">classifier_prototype</span> <span class="o">=</span> <span class="n">classifier_prototype</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">classifier_parameters</span> <span class="o">=</span> <span class="n">classifier_parameters</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_prototype</span> <span class="o">=</span> <span class="n">model_prototype</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span> <span class="o">=</span> <span class="n">model_parameters</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">classifier</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_steps</span><span class="o">.</span><span class="n">classifier</span>
+        <span class="n">regressor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_steps</span><span class="o">.</span><span class="n">regressor</span>
+        <span class="n">number_of_clusters</span> <span class="o">=</span> <span class="n">query_number_of_clusters_from_classifier</span><span class="p">(</span><span class="n">classifier</span><span class="p">)</span>
+        <span class="n">multiple_regressors</span> <span class="o">=</span> <span class="n">RegressorsWithParametrizedNumberOfReplicas</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="o">=</span><span class="n">number_of_clusters</span><span class="p">,</span>
+                                                                         <span class="n">regressor</span><span class="o">=</span><span class="n">regressor</span><span class="p">)</span>
 
-        <span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;classifier&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier_prototype</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">number_of_replicas</span><span class="p">,</span> <span class="o">**</span><span class="n">classifier_parameters</span><span class="p">))</span> <span class="p">,</span>
-                 <span class="p">(</span><span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="n">RegressorsWithParametrizedNumberOfReplicas</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="o">=</span><span class="n">number_of_replicas</span><span class="p">,</span>
-                                                                        <span class="n">model_prototype</span><span class="o">=</span><span class="n">model_prototype</span><span class="p">,</span>
-                                                                        <span class="n">model_parameters</span><span class="o">=</span><span class="n">model_parameters</span><span class="p">))]</span>
+        <span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;classifier&#39;</span><span class="p">,</span> <span class="n">classifier</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;regressorsBundle&#39;</span><span class="p">,</span> <span class="n">multiple_regressors</span><span class="p">)]</span>
         <span class="n">connections</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">classifier</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="s1">&#39;X&#39;</span><span class="p">},</span>
-                           <span class="n">models</span><span class="o">=</span> <span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span>
-                                    <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span>
-                                    <span class="s1">&#39;selection&#39;</span><span class="p">:</span> <span class="s1">&#39;classifier&#39;</span><span class="p">})</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="o">=</span><span class="n">connections</span><span class="p">)</span>
+                           <span class="n">regressorsBundle</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;selection&#39;</span><span class="p">:</span> <span class="s1">&#39;classifier&#39;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span> <span class="o">=</span> <span class="n">PipeGraph</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="o">=</span><span class="n">connections</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
 
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">NeutralRegressor</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">RegressorMixin</span><span class="p">):</span>

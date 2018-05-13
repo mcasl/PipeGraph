@@ -47,7 +47,7 @@ print(inspect.getsource(ClassifierAndRegressorsBundle))
 # Using this new component we can build a simplified PipeGraph:
 
 scaler = MinMaxScaler()
-classifier_and_models = ClassifierAndRegressorsBundle(number_of_replicas=6)
+classifier_and_models = ClassifierAndRegressorsBundle()
 neutral_regressor = NeutralRegressor()
 
 steps = [('scaler', scaler),
@@ -56,7 +56,7 @@ steps = [('scaler', scaler),
 
 connections = {'scaler': {'X': 'X'},
                'bundle': {'X': 'scaler', 'y': 'y'},
-               'neutral': {'X': 'bundle'}}
+               'neutral': {'X': 'bundle', 'y': 'y'}}
 
 pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
 
@@ -66,13 +66,13 @@ pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
 
 from sklearn.model_selection import GridSearchCV
 
-param_grid = {'bundle__number_of_replicas': range(3,10)}
+param_grid = {'bundle__classifier__n_components': range(3,10)}
 gs = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
 gs.fit(X_train, y_train)
 y_pred = gs.predict(X_train)
 plt.scatter(X_train, y_train)
 plt.scatter(X_train, y_pred)
 print("Score:" , gs.score(X_test, y_test))
-print("bundle__number_of_replicas:", gs.best_estimator_.get_params()['bundle__number_of_replicas'])
+print("bundle__classifier__n_components:", gs.best_estimator_.get_params()['bundle__classifier__n_components'])
 
 

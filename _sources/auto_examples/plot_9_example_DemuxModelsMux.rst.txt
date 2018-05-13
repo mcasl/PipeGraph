@@ -120,11 +120,12 @@ Using GridSearchCV to find the best number of clusters and the best regressors
  Out::
 
     ERROR: _predict call ValueError!
-    Score: 0.9979727617006893
+    ERROR: _predict call ValueError!
+    Score: 0.997265185166008
     classifier__n_components: 3
 
 
-**Total running time of the script:** ( 0 minutes  1.781 seconds)
+**Total running time of the script:** ( 0 minutes  1.777 seconds)
 
 
 

@@ -45,9 +45,7 @@ print(inspect.getsource(RegressorsWithParametrizedNumberOfReplicas))
 
 scaler = MinMaxScaler()
 gaussian_mixture = GaussianMixture(n_components=3)
-models = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=3,
-                                                    model_prototype=LinearRegression(),
-                                                    model_parameters={})
+models = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=3, regressor=LinearRegression())
 
 steps = [('scaler', scaler),
          ('classifier', gaussian_mixture),

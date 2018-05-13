@@ -70,28 +70,26 @@ components and combining the classifier with the demultiplexed models:
  Out::
 
     class ClassifierAndRegressorsBundle(PipeGraph, RegressorMixin):
-        def __init__(self,
-                     number_of_replicas=1,
-                     classifier_prototype=GaussianMixture(),
-                     classifier_parameters={},
-                     model_prototype=LinearRegression(),
-                     model_parameters={}):
+        def __init__(self, steps=[('classifier', GaussianMixture()), ('regressor', LinearRegression())]):
+            self.steps = steps
 
-            self.number_of_replicas = number_of_replicas
-            self.classifier_prototype = classifier_prototype
-            self.classifier_parameters = classifier_parameters
-            self.model_prototype = model_prototype
-            self.model_parameters = model_parameters
+        def fit(self, *pargs, **kwargs):
+            classifier = self.named_steps.classifier
+            regressor = self.named_steps.regressor
+            number_of_clusters = query_number_of_clusters_from_classifier(classifier)
+            multiple_regressors = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_clusters,
+                                                                             regressor=regressor)
 
-            steps = [('classifier', self.classifier_prototype.__class__(n_components=number_of_replicas, **classifier_parameters)) ,
-                     ('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas,
-                                                                            model_prototype=model_prototype,
-                                                                            model_parameters=model_parameters))]
+            steps = [('classifier', classifier), ('regressorsBundle', multiple_regressors)]
             connections = dict(classifier={'X': 'X'},
-                               models= {'X': 'X',
-                                        'y': 'y',
-                                        'selection': 'classifier'})
-            super().__init__(steps=steps, fit_connections=connections)
+                               regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'classifier'})
+            self._adaptee = PipeGraph(steps=steps, fit_connections=connections)
+
+            self._adaptee.fit(*pargs, **kwargs)
+            return self
+
+        def predict(self, *pargs, **kwargs):
+            return self._adaptee.predict(*pargs, **kwargs)
 
 
 Using this new component we can build a simplified PipeGraph:
@@ -102,7 +100,7 @@ Using this new component we can build a simplified PipeGraph:
 
 
     scaler = MinMaxScaler()
-    classifier_and_models = ClassifierAndRegressorsBundle(number_of_replicas=6)
+    classifier_and_models = ClassifierAndRegressorsBundle()
     neutral_regressor = NeutralRegressor()
 
     steps = [('scaler', scaler),
@@ -111,7 +109,7 @@ Using this new component we can build a simplified PipeGraph:
 
     connections = {'scaler': {'X': 'X'},
                    'bundle': {'X': 'scaler', 'y': 'y'},
-                   'neutral': {'X': 'bundle'}}
+                   'neutral': {'X': 'bundle', 'y': 'y'}}
 
     pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
 
@@ -131,14 +129,14 @@ Using GridSearchCV to find the best number of clusters and the best regressors
 
     from sklearn.model_selection import GridSearchCV
 
-    param_grid = {'bundle__number_of_replicas': range(3,10)}
+    param_grid = {'bundle__classifier__n_components': range(3,10)}
     gs = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
     gs.fit(X_train, y_train)
     y_pred = gs.predict(X_train)
     plt.scatter(X_train, y_train)
     plt.scatter(X_train, y_pred)
     print("Score:" , gs.score(X_test, y_test))
-    print("bundle__number_of_replicas:", gs.best_estimator_.get_params()['bundle__number_of_replicas'])
+    print("bundle__classifier__n_components:", gs.best_estimator_.get_params()['bundle__classifier__n_components'])
 
 
 
@@ -152,11 +150,11 @@ Using GridSearchCV to find the best number of clusters and the best regressors
 
  Out::
 
-    Score: 0.9980138210120671
-    bundle__number_of_replicas: 3
+    Score: 0.9977988823011191
+    bundle__classifier__n_components: 7
 
 
-**Total running time of the script:** ( 0 minutes  2.339 seconds)
+**Total running time of the script:** ( 0 minutes  6.921 seconds)
 
 
 
