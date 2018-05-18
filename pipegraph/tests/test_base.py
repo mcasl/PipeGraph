@@ -25,10 +25,11 @@ from pipegraph.base import (PipeGraphRegressor,
                             NeutralRegressor,
                             NeutralClassifier)
 
-from pipegraph.adapters import  (AdapterForFitTransformAdaptee,
-                                 AdapterForFitPredictAdaptee,
-                                 AdapterForAtomicFitPredictAdaptee,
-                                 AdapterForCustomFitPredictWithDictionaryOutputAdaptee)
+from pipegraph.adapters import (FitTransformMixin,
+                                FitPredictMixin,
+                                AtomicFitPredictMixin,
+                                CustomFitPredictWithDictionaryOutputMixin)
+
 
 from pipegraph.demo_blocks import CustomCombination
 
@@ -83,16 +84,16 @@ class TestRootFunctions(unittest.TestCase):
     def test_wrap_adaptee_in_process__right_classes(self):
         tests_table = [
             {'model': LinearRegression(),
-             'expected_class': AdapterForFitPredictAdaptee},
+             'expected_class': FitPredictMixin},
 
             {'model': MinMaxScaler(),
-             'expected_class': AdapterForFitTransformAdaptee},
+             'expected_class': FitTransformMixin},
 
             {'model': DBSCAN(),
-             'expected_class': AdapterForAtomicFitPredictAdaptee},
+             'expected_class': AtomicFitPredictMixin},
 
             {'model': Demultiplexer(),
-             'expected_class': AdapterForCustomFitPredictWithDictionaryOutputAdaptee}
+             'expected_class': CustomFitPredictWithDictionaryOutputMixin}
         ]
 
         for test_dict in tests_table:
@@ -104,7 +105,7 @@ class TestRootFunctions(unittest.TestCase):
             lm = LinearRegression()
             wrapped_lm = wrap_adaptee_in_process(lm)
             double_wrap = wrap_adaptee_in_process(wrapped_lm)
-            self.assertEqual(double_wrap._strategy._adaptee , lm)
+            self.assertEqual(double_wrap._strategy , lm)
 
     def test_wrap_adaptee_in_process__raise_exception(self):
         model = object()
@@ -455,7 +456,7 @@ class TestPipegraph(unittest.TestCase):
         pgraph = self.pgraph
         current_step = pgraph._processes['Gaussian_Mixture']
         current_step.fit(X=X)
-        expected = current_step._strategy._adaptee.predict(X=X)
+        expected = current_step._strategy.predict(X=X)
         result = current_step.predict(X=X)['predict']
         assert_array_equal(expected, result)
 
@@ -465,7 +466,7 @@ class TestPipegraph(unittest.TestCase):
         pgraph = self.pgraph
         current_step = pgraph._processes['Dbscan']
         current_step.fit(X=X)
-        expected = current_step._strategy._adaptee.fit_predict(X=X)
+        expected = current_step._strategy.fit_predict(X=X)
         result = current_step.predict(X=X)['predict']
         assert_array_equal(expected, result)
 
@@ -483,7 +484,7 @@ class TestPipegraph(unittest.TestCase):
 
         current_step = pgraph._processes['Combine_Clustering']
         current_step.fit(dominant=result_dbscan, other=result_gaussian)
-        expected = current_step._strategy._adaptee.predict(dominant=result_dbscan, other=result_gaussian)
+        expected = current_step._strategy.predict(dominant=result_dbscan, other=result_gaussian)
         result = current_step.predict(dominant=result_dbscan, other=result_gaussian)['predict']
         assert_array_equal(expected, result)
         self.assertEqual(result.min(), 0)
@@ -957,16 +958,16 @@ class TestProcess(unittest.TestCase):
 
     def test_process__init(self):
         lm = LinearRegression()
-        stepstrategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(stepstrategy)
-        self.assertEqual(step._strategy, stepstrategy)
+        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
+        step = Process(lm)
+        self.assertEqual(step._strategy, lm)
 
     def test_process__fit_lm(self):
         X = self.X
         y = self.y
         lm = LinearRegression()
-        stepstrategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(stepstrategy)
+        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
+        step = Process(lm)
         self.assertEqual(hasattr(step, 'coef_'), False)
         result = step.fit(X=X, y=y)
         self.assertEqual(hasattr(step, 'coef_'), True)
@@ -976,8 +977,8 @@ class TestProcess(unittest.TestCase):
         X = self.X
         y = self.y
         db = DBSCAN()
-        stepstrategy = AdapterForAtomicFitPredictAdaptee(db)
-        step = Process(stepstrategy)
+        db.__class__ = type('newClass', (type(db), AtomicFitPredictMixin), {})
+        step = Process(db)
         self.assertEqual(hasattr(step, 'core_sample_indices_'), False)
         result_fit = step.fit(X=X)
         self.assertEqual(hasattr(step, 'core_sample_indices_'), False)
@@ -991,10 +992,10 @@ class TestProcess(unittest.TestCase):
         y = self.y
         lm = LinearRegression()
         gm = GaussianMixture()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        gm_strategy = AdapterForFitPredictAdaptee(gm)
-        step_lm = Process(lm_strategy)
-        step_gm = Process(gm_strategy)
+        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
+        gm.__class__ = type('newClass', (type(gm), FitPredictMixin), {})
+        step_lm = Process(lm)
+        step_gm = Process(gm)
 
         step_lm.fit(X=X, y=y)
         step_gm.fit(X=X)
@@ -1007,8 +1008,8 @@ class TestProcess(unittest.TestCase):
 
     def test_process__get_params(self):
         lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(lm_strategy)
+        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
+        step = Process(lm)
         result_lm = step.get_params()
         self.assertEqual(result_lm, {'copy_X': True,
                                      'fit_intercept': True,
@@ -1017,8 +1018,8 @@ class TestProcess(unittest.TestCase):
 
     def test_process__set_params(self):
         lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(lm_strategy)
+        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
+        step = Process(lm)
         result_lm_pre = step.get_params()
         self.assertEqual(result_lm_pre, {'copy_X': True,
                                          'fit_intercept': True,
@@ -1034,10 +1035,10 @@ class TestProcess(unittest.TestCase):
     def test_process__get_fit_signature(self):
         lm = LinearRegression()
         gm = GaussianMixture()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        gm_strategy = AdapterForFitPredictAdaptee(gm)
-        step_lm = Process(lm_strategy)
-        step_gm = Process(gm_strategy)
+        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
+        gm.__class__ = type('newClass', (type(gm), FitPredictMixin), {})
+        step_lm = Process(lm)
+        step_gm = Process(gm)
         result_lm = step_lm._get_fit_signature()
         result_gm = step_gm._get_fit_signature()
 
@@ -1046,21 +1047,21 @@ class TestProcess(unittest.TestCase):
 
     def test_process__get_predict_signature_lm(self):
         lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step_lm = Process(lm_strategy)
+        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
+        step_lm = Process(lm)
         result_lm = step_lm._get_predict_signature()
         self.assertEqual(result_lm, ['X'])
 
     def test_process__getattr__(self):
         lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(lm_strategy)
+        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
+        step = Process(lm)
         self.assertEqual(step.copy_X, True)
 
     def test_process__setattr__(self):
         lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(lm_strategy)
+        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
+        step = Process(lm)
         self.assertEqual(step.copy_X, True)
         step.copy_X = False
         self.assertEqual(step.copy_X, False)
@@ -1068,8 +1069,8 @@ class TestProcess(unittest.TestCase):
 
     def test_process__delattr__(self):
         lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(lm_strategy)
+        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
+        step = Process(lm)
         self.assertEqual(step.copy_X, True)
         self.assertEqual('copy_X' in dir(step), False)
         self.assertEqual('copy_X' in dir(lm), True)
@@ -1078,8 +1079,8 @@ class TestProcess(unittest.TestCase):
 
     def test_process__repr__(self):
         lm = LinearRegression()
-        lm_strategy = AdapterForFitPredictAdaptee(lm)
-        step = Process(lm_strategy)
+        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
+        step = Process(lm)
         result = step.__repr__()
         self.assertEqual(result, lm.__repr__())
 

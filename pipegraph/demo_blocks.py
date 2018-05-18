@@ -128,15 +128,15 @@ class CustomPower(BaseEstimator):
         return X.values.reshape(-1, ) ** self.power
 
 
-from pipegraph.adapters import (AdapterForFitPredictAdaptee,
-                                AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
+from pipegraph.adapters import (FitPredictMixin,
+                                CustomFitPredictWithDictionaryOutputMixin,
                                 )
 
 
 strategies_for_demo_blocks_adaptees = {
-    CustomCombination: AdapterForFitPredictAdaptee,
-    TrainTestSplit: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
-    CustomPower: AdapterForFitPredictAdaptee,
+    CustomCombination: FitPredictMixin,
+    TrainTestSplit: CustomFitPredictWithDictionaryOutputMixin,
+    CustomPower: FitPredictMixin,
 }
 
 

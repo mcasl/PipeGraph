@@ -232,7 +232,7 @@ class TestPaella(unittest.TestCase):
         self.pgraph = PipeGraph(steps=steps, fit_connections=connections)
 
     def test_Paella__init(self):
-        self.assertTrue(isinstance(self.pgraph._processes['Paella']._strategy._adaptee, Paella))
+        self.assertTrue(isinstance(self.pgraph._processes['Paella']._strategy, Paella))
 
     def test_Paella__under_fit__Paella__fit(self):
         pgraph = self.pgraph
@@ -244,7 +244,7 @@ class TestPaella(unittest.TestCase):
         pgraph._fit('Dbscan')
         pgraph._fit('Combine_Clustering')
 
-        paellador = pgraph._processes['Paella']._strategy._adaptee
+        paellador = pgraph._processes['Paella']._strategy
 
         X = pgraph._fit_data[('_External', 'X')]
         y = pgraph._fit_data[('_External', 'y')]
@@ -263,7 +263,7 @@ class TestPaella(unittest.TestCase):
 
         X = pgraph._fit_data[('_External', 'X')]
         y = pgraph._fit_data[('_External', 'y')]
-        paellador = pgraph._processes['Paella']._strategy._adaptee
+        paellador = pgraph._processes['Paella']._strategy
         result = paellador.transform(X=X, y=y)
         self.assertEqual(result.shape[0], self.size)
 

@@ -503,7 +503,7 @@ class PipeGraph(_BaseComposition):
 
         self._fit_graph = None
         self._predict_graph = None
-        self._processes = {name: wrap_adaptee_in_process(adaptee=step_model) for name, step_model in steps}
+        self._processes = {name: wrap_adaptee_in_process(step=step_model) for name, step_model in steps}
         self._fit_data = {}
         self._predict_data = {}
 
@@ -844,8 +844,11 @@ class Process(BaseEstimator):
         -------
             self : returns an instance of _strategy.
         """
-        self._strategy.fit(*pargs, **kwargs)
+        self._strategy.pg_fit(*pargs, **kwargs)
         return self
+
+    def predict(self, *pargs, **kwargs):
+        return self._strategy.pg_predict(*pargs, **kwargs)
 
     def __getattr__(self, name):
         """
@@ -921,7 +924,7 @@ def build_graph(connections):
 
 
 
-def wrap_adaptee_in_process(adaptee, adapter_class=None):
+def wrap_adaptee_in_process(step, mixin=None):
     """
     This function wraps the objects defined in Pipegraph's steps parameters in order to provide a common interface for them all.
     This interface declares two main methods: fit and predict. So, no matter whether the adaptee is capable of doing
@@ -941,24 +944,24 @@ def wrap_adaptee_in_process(adaptee, adapter_class=None):
         the user can find this function useful for inserting a user made block as one of the steps
         in PipeGraph step's parameter.
     """
-    if adapter_class is not None:
-        strategy = adapter_class(adaptee)
-    elif isinstance(adaptee, Process):
-        return adaptee
-    elif isinstance(adaptee, PipeGraph):
-        strategy = AdapterForCustomFitPredictWithDictionaryOutputAdaptee(adaptee)
-    elif adaptee.__class__ in strategies_for_custom_adaptees:
-        strategy = strategies_for_custom_adaptees[adaptee.__class__](adaptee)
-    elif hasattr(adaptee, 'predict'):
-        strategy = AdapterForFitPredictAdaptee(adaptee)
-    elif hasattr(adaptee, 'transform'):
-        strategy = AdapterForFitTransformAdaptee(adaptee)
-    elif hasattr(adaptee, 'fit_predict'):
-        strategy = AdapterForAtomicFitPredictAdaptee(adaptee)
-    else:
-        raise ValueError('Error: Unknown adaptee!')
 
-    process = Process(strategy)
+    if mixin is None:
+        if isinstance(step, Process):
+            return step
+        elif step.__class__ in strategies_for_custom_adaptees:
+            mixin = strategies_for_custom_adaptees[step.__class__]
+        elif hasattr(step, 'predict'):
+            mixin = FitPredictMixin
+        elif hasattr(step, 'transform'):
+            mixin = FitTransformMixin
+        elif hasattr(step, 'fit_predict'):
+            mixin = AtomicFitPredictMixin
+        else:
+            raise ValueError('Error: Unknown step class!')
+
+    new_class_name = mixin.__name__ + 'And' + step.__class__.__name__
+    step.__class__ = type(new_class_name, (type(step), mixin), {})
+    process = Process(step)
     return process
 
 
@@ -1133,7 +1136,7 @@ class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
         number_of_replicas = len(set(kwargs['selection']))
         self.steps = [('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas))]
 
-        self._processes = {name: wrap_adaptee_in_process(adaptee=step_model) for name, step_model in self.steps}
+        self._processes = {name: wrap_adaptee_in_process(step=step_model) for name, step_model in self.steps}
 
         self.fit_connections = dict(models={'X': 'X',
                                             'y': 'y',
@@ -1196,19 +1199,22 @@ class NeutralClassifier(BaseEstimator, ClassifierMixin):
 
 
 
-from pipegraph.adapters import (AdapterForFitTransformAdaptee,
-                                AdapterForFitPredictAdaptee,
-                                AdapterForAtomicFitPredictAdaptee,
-                                AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
-                                )
+from pipegraph.adapters import (FitTransformMixin,
+                                FitPredictMixin,
+                                AtomicFitPredictMixin,
+                                CustomFitPredictWithDictionaryOutputMixin)
+
 strategies_for_custom_adaptees = {
-    Concatenator: AdapterForFitPredictAdaptee,
-    ColumnSelector: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
-    Reshape: AdapterForFitPredictAdaptee,
-    Demultiplexer: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
-    Multiplexer: AdapterForFitPredictAdaptee,
-    RegressorsWithParametrizedNumberOfReplicas: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
-    RegressorsWithDataDependentNumberOfReplicas: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
+    PipeGraph: CustomFitPredictWithDictionaryOutputMixin,
+    PipeGraphRegressor: FitPredictMixin,
+    PipeGraphClassifier: FitPredictMixin,
+    Concatenator: FitPredictMixin,
+    ColumnSelector: CustomFitPredictWithDictionaryOutputMixin,
+    Reshape: FitPredictMixin,
+    Demultiplexer: CustomFitPredictWithDictionaryOutputMixin,
+    Multiplexer: FitPredictMixin,
+    RegressorsWithParametrizedNumberOfReplicas: CustomFitPredictWithDictionaryOutputMixin,
+    RegressorsWithDataDependentNumberOfReplicas: CustomFitPredictWithDictionaryOutputMixin,
 }
 
 from pipegraph.demo_blocks import strategies_for_demo_blocks_adaptees

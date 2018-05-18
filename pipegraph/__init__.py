@@ -6,17 +6,17 @@ from .base import (PipeGraphRegressor,
                    PipeGraphClassifier,
                    PipeGraph,
                    wrap_adaptee_in_process,
-                  )
+                   )
 
-from .adapters import (AdapterForFitPredictAdaptee,
-                       AdapterForFitTransformAdaptee,
-                       AdapterForAtomicFitPredictAdaptee,
-                       AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
+from .adapters import (FitPredictMixin,
+                       FitTransformMixin,
+                       AtomicFitPredictMixin,
+                       CustomFitPredictWithDictionaryOutputMixin,
                       )
 
 
 __all__ = ['PipeGraphClassifier',
            'PipeGraphRegressor',
            'PipeGraph',
-           'wrap_adaptee_in_process',
+           'add_mixin_to_step',
            ]
