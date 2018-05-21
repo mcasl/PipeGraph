@@ -1049,8 +1049,11 @@ class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
 def query_number_of_clusters_from_classifier(classifier):
 
     number_of_clusters_dictionary = {
+        'KMeans': 'n_clusters',
+        'SpectralClustering': 'n_clusters',
+        'AgglomerativeClustering': 'n_clusters',
         'GaussianMixture': 'n_components',
-        'KMeans': 'n_clusters'
+        'Birch': 'n_clusters',
     }
 
     classifier_class = type(classifier).__name__
@@ -1107,6 +1110,8 @@ strategies_for_custom_adaptees = {
     PipeGraph: CustomFitPredictWithDictionaryOutputMixin,
     PipeGraphRegressor: FitPredictMixin,
     PipeGraphClassifier: FitPredictMixin,
+    NeutralRegressor:  FitPredictMixin,
+    NeutralClassifier:  FitPredictMixin,
     Concatenator: FitPredictMixin,
     ColumnSelector: CustomFitPredictWithDictionaryOutputMixin,
     Reshape: FitPredictMixin,
