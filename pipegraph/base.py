@@ -861,7 +861,7 @@ def add_mixins_to_step(step, mixin=None):
         else:
             raise ValueError('Error: Unknown step class!')
 
-    new_class_name = mixin.__name__ + 'And' + step.__class__.__name__
+    new_class_name = step.__class__.__name__
     step.__class__ = type(new_class_name, (type(step), mixin), {})
     return step
 
