@@ -850,6 +850,8 @@ def add_mixins_to_step(step, mixin=None):
     if mixin is None:
         if step.__class__ in strategies_for_custom_adaptees:
             mixin = strategies_for_custom_adaptees[step.__class__]
+        elif isinstance(step, PipeGraph):
+            mixin = CustomFitPredictWithDictionaryOutputMixin
         elif hasattr(step, 'predict'):
             mixin = FitPredictMixin
         elif hasattr(step, 'transform'):
