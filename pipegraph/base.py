@@ -498,7 +498,6 @@ class PipeGraph(_BaseComposition):
         self.log_level = log_level
         self._fit_graph = None
         self._predict_graph = None
-        self._steps_dict = {name: add_mixins_to_step(step=step_model) for name, step_model in steps}
         self._fit_data = {}
         self._predict_data = {}
 
@@ -577,7 +576,7 @@ class PipeGraph(_BaseComposition):
         node_names = [name for name, model in self.steps]
         if '_External' in node_names:
             raise ValueError("Please use another name for the _External node. _External is used internally.")
-        self._processes = {name: add_mixins_to_step(step=step_model) for name, step_model in self.steps}
+        self._steps_dict = {name: add_mixins_to_step(step=step_model) for name, step_model in self.steps}
 
         if len(pargs) == 0:
             external_data = {}
