@@ -114,7 +114,7 @@ class TestModelsWithDataDependentNumberOfReplicas(unittest.TestCase):
         self.y = pd.concat([y_first, y_second, y_third], axis=0).to_frame()
         scaler = MinMaxScaler()
         gaussian_mixture = GaussianMixture(n_components=3)
-        models = RegressorsWithDataDependentNumberOfReplicas(model_prototype=LinearRegression(), model_parameters={})
+        models = RegressorsWithDataDependentNumberOfReplicas(regressor=LinearRegression())
         neutral_regressor = NeutralRegressor()
 
         steps = [('scaler', scaler),

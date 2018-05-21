@@ -497,13 +497,8 @@ class PipeGraph(_BaseComposition):
         self.predict_connections = predict_connections if predict_connections is not None else fit_connections
         self.log_level = log_level
 
-        node_names = [name for name, model in steps]
-        if '_External' in node_names:
-            raise ValueError("Please use another name for the _External node. _External is used internally.")
-
         self._fit_graph = None
         self._predict_graph = None
-        self._processes = {name: wrap_adaptee_in_process(adaptee=step_model) for name, step_model in steps}
         self._fit_data = {}
         self._predict_data = {}
 
@@ -578,6 +573,11 @@ class PipeGraph(_BaseComposition):
             pargs:
             kwargs:
         """
+        node_names = [name for name, model in self.steps]
+        if '_External' in node_names:
+            raise ValueError("Please use another name for the _External node. _External is used internally.")
+        self._processes = {name: wrap_adaptee_in_process(adaptee=step_model) for name, step_model in self.steps}
+
         if len(pargs) == 0:
             external_data = {}
         elif len(pargs) == 1:
@@ -1122,16 +1122,15 @@ class RegressorsWithParametrizedNumberOfReplicas(PipeGraph, RegressorMixin):
 
 
 class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
-    def __init__(self, model_prototype=LinearRegression(), model_parameters={}):
-        self.model_prototype = model_prototype
-        self.model_parameters = model_parameters
+    def __init__(self, regressor=LinearRegression()):
+        self.regressor = regressor
         self._fit_data = {}
         self._predict_data = {}
         self.steps = []
 
     def fit(self, *pargs, **kwargs):
         number_of_replicas = len(set(kwargs['selection']))
-        self.steps = [('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas))]
+        self.steps = [('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas, regressor=self.regressor))]
 
         self._processes = {name: wrap_adaptee_in_process(adaptee=step_model) for name, step_model in self.steps}
 
@@ -1147,8 +1146,11 @@ class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
 def query_number_of_clusters_from_classifier(classifier):
 
     number_of_clusters_dictionary = {
+        'KMeans': 'n_clusters',
+        'SpectralClustering': 'n_clusters',
+        'AgglomerativeClustering': 'n_clusters',
         'GaussianMixture': 'n_components',
-        'KMeans': 'n_clusters'
+        'Birch': 'n_clusters',
     }
 
     classifier_class = type(classifier).__name__

@@ -225,7 +225,8 @@ class TestPipegraph(unittest.TestCase):
         self.pgraph = PipeGraph(steps=steps, fit_connections=connections)
 
     def test_Pipegraph__External_step_name(self):
-        self.assertRaises(ValueError, PipeGraph, self.steps_external, self.connections_external)
+        pgraph = PipeGraph(steps=self.steps_external, fit_connections=self.connections_external)
+        self.assertRaises(ValueError, pgraph.fit, self.X, self.y)
 
     def test_Pipegraph__example_1_no_connections(self):
         import numpy as np
