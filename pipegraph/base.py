@@ -1034,7 +1034,7 @@ class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
         number_of_replicas = len(set(kwargs['selection']))
         self.steps = [('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas))]
 
-        self._processes = {name: add_mixins_to_step(step=step_model) for name, step_model in self.steps}
+        self._steps_dict = {name: add_mixins_to_step(step=step_model) for name, step_model in self.steps}
 
         self.fit_connections = dict(models={'X': 'X',
                                             'y': 'y',
