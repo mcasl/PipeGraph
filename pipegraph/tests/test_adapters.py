@@ -6,7 +6,7 @@ from sklearn.cluster import DBSCAN
 from sklearn.linear_model import LinearRegression
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import MinMaxScaler
-from pipegraph.base import wrap_adaptee_in_process
+from pipegraph.base import add_mixins_to_step
 from pipegraph.adapters import (FitTransformMixin,
                                 FitPredictMixin,
                                 AtomicFitPredictMixin,
@@ -116,8 +116,8 @@ class TestCustomFitPredictWithDictionaryOutputMixin(unittest.TestCase):
         X = self.X
         y = self.y.astype(int)
         gm = GaussianNB()
-        wrapped_gm = wrap_adaptee_in_process(gm)
-        double_wrap= wrap_adaptee_in_process(wrapped_gm)
+        wrapped_gm = add_mixins_to_step(gm)
+        double_wrap= add_mixins_to_step(wrapped_gm)
 
         double_wrap.fit(X=X, y=y)
         result = double_wrap.predict(X=X)
@@ -129,15 +129,15 @@ class TestCustomFitPredictWithDictionaryOutputMixin(unittest.TestCase):
 
     def test_FitPredictWithDictionaryOutput__get_fit_signature(self):
         lm = LinearRegression()
-        wrapped_lm = wrap_adaptee_in_process(lm)
-        double_wrap= wrap_adaptee_in_process(wrapped_lm)
+        wrapped_lm = add_mixins_to_step(lm)
+        double_wrap= add_mixins_to_step(wrapped_lm)
         result = double_wrap._get_fit_signature()
         self.assertEqual(sorted(result), sorted(['X', 'y', 'sample_weight']))
 
     def test_FitPredictWithDictionaryOutput__get_predict_signature(self):
         lm = LinearRegression()
-        wrapped_lm = wrap_adaptee_in_process(lm)
-        double_wrap= wrap_adaptee_in_process(wrapped_lm)
+        wrapped_lm = add_mixins_to_step(lm)
+        double_wrap= add_mixins_to_step(wrapped_lm)
         result = double_wrap._get_predict_signature()
         self.assertEqual(result, ['X'])
 

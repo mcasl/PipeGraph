@@ -14,8 +14,7 @@ from pipegraph.paella import Paella
 from pipegraph.base import (PipeGraphRegressor,
                             PipeGraphClassifier,
                             PipeGraph,
-                            Process,
-                            wrap_adaptee_in_process,
+                            add_mixins_to_step,
                             build_graph,
                             make_connections_when_not_provided_to_init,
                             Concatenator,
@@ -98,18 +97,18 @@ class TestRootFunctions(unittest.TestCase):
 
         for test_dict in tests_table:
             model = test_dict['model']
-            step = wrap_adaptee_in_process(model)
-            self.assertEqual(isinstance(step._strategy, test_dict['expected_class']), True)
+            step = add_mixins_to_step(model)
+            self.assertEqual(isinstance(step, test_dict['expected_class']), True)
 
     def test_wrap_adaptee_in_process__wrap_process_does_nothing(self):
             lm = LinearRegression()
-            wrapped_lm = wrap_adaptee_in_process(lm)
-            double_wrap = wrap_adaptee_in_process(wrapped_lm)
-            self.assertEqual(double_wrap._strategy , lm)
+            wrapped_lm = add_mixins_to_step(lm)
+            double_wrap = add_mixins_to_step(wrapped_lm)
+            self.assertEqual(double_wrap , lm)
 
     def test_wrap_adaptee_in_process__raise_exception(self):
         model = object()
-        self.assertRaises(ValueError, wrap_adaptee_in_process, model)
+        self.assertRaises(ValueError, add_mixins_to_step, model)
 
     def test_build_graph__connections_None(self):
         graph = build_graph(None)
@@ -409,9 +408,9 @@ class TestPipegraph(unittest.TestCase):
         X = self.X
         y = self.y
         lm = LinearRegression()
-        lm_step = wrap_adaptee_in_process(lm)
-        lm_step.fit(X=X, y=y)
-        assert_array_equal(lm.predict(X), lm_step.predict(X=X)['predict'])
+        lm_step = add_mixins_to_step(lm)
+        lm_step.pg_fit(X=X, y=y)
+        assert_array_equal(lm.predict(X), lm_step.pg_predict(X=X)['predict'])
 
     def test_Pipegraph__under_fit__concatenate_Xy(self):
         pgraph = self.pgraph
@@ -442,9 +441,9 @@ class TestPipegraph(unittest.TestCase):
         y = self.y
         pgraph = self.pgraph
         expected = pd.concat([X, y], axis=1)
-        current_step = pgraph._processes['Concatenate_Xy']
-        current_step.fit()
-        result = current_step.predict(df1=X, df2=y)['predict']
+        current_step = pgraph._steps_dict['Concatenate_Xy']
+        current_step.pg_fit()
+        result = current_step.pg_predict(df1=X, df2=y)['predict']
         self.assertEqual(expected.shape, result.shape)
         assert_frame_equal(self.X, result.loc[:,['X']])
         assert_frame_equal(self.y, result.loc[:,['y']])
@@ -454,38 +453,38 @@ class TestPipegraph(unittest.TestCase):
         X = self.X
         y = self.y
         pgraph = self.pgraph
-        current_step = pgraph._processes['Gaussian_Mixture']
-        current_step.fit(X=X)
-        expected = current_step._strategy.predict(X=X)
-        result = current_step.predict(X=X)['predict']
+        current_step = pgraph._steps_dict['Gaussian_Mixture']
+        current_step.pg_fit(X=X)
+        expected = current_step.predict(X=X)
+        result = current_step.pg_predict(X=X)['predict']
         assert_array_equal(expected, result)
 
     def test_Pipegraph__predict__dbscan(self):
         X = self.X
         y = self.y
         pgraph = self.pgraph
-        current_step = pgraph._processes['Dbscan']
-        current_step.fit(X=X)
-        expected = current_step._strategy.fit_predict(X=X)
-        result = current_step.predict(X=X)['predict']
+        current_step = pgraph._steps_dict['Dbscan']
+        current_step.pg_fit(X=X)
+        expected = current_step.fit_predict(X=X)
+        result = current_step.pg_predict(X=X)['predict']
         assert_array_equal(expected, result)
 
     def test_Pipegraph__combine_clustering_predict(self):
         X = self.X
         y = self.y
         pgraph = self.pgraph
-        current_step = pgraph._processes['Gaussian_Mixture']
-        current_step.fit(X=pd.concat([X, y], axis=1))
-        result_gaussian = current_step.predict(X=pd.concat([X, y], axis=1))['predict']
+        current_step = pgraph._steps_dict['Gaussian_Mixture']
+        current_step.pg_fit(X=pd.concat([X, y], axis=1))
+        result_gaussian = current_step.pg_predict(X=pd.concat([X, y], axis=1))['predict']
 
-        current_step = pgraph._processes['Dbscan']
-        result_dbscan = current_step.predict(X=pd.concat([X, y], axis=1))['predict']
+        current_step = pgraph._steps_dict['Dbscan']
+        result_dbscan = current_step.pg_predict(X=pd.concat([X, y], axis=1))['predict']
         self.assertEqual(result_dbscan.min(), 0)
 
-        current_step = pgraph._processes['Combine_Clustering']
-        current_step.fit(dominant=result_dbscan, other=result_gaussian)
-        expected = current_step._strategy.predict(dominant=result_dbscan, other=result_gaussian)
-        result = current_step.predict(dominant=result_dbscan, other=result_gaussian)['predict']
+        current_step = pgraph._steps_dict['Combine_Clustering']
+        current_step.pg_fit(dominant=result_dbscan, other=result_gaussian)
+        expected = current_step.predict(dominant=result_dbscan, other=result_gaussian)
+        result = current_step.pg_predict(dominant=result_dbscan, other=result_gaussian)['predict']
         assert_array_equal(expected, result)
         self.assertEqual(result.min(), 0)
 
@@ -493,44 +492,44 @@ class TestPipegraph(unittest.TestCase):
         X = self.X
         y = self.y
         pgraph = self.pgraph
-        current_step = pgraph._processes['Concatenate_Xy']
-        current_step.fit()
-        result = current_step.predict(df1=X, df2=y)
+        current_step = pgraph._steps_dict['Concatenate_Xy']
+        current_step.pg_fit()
+        result = current_step.pg_predict(df1=X, df2=y)
         self.assertEqual(list(result.keys()), ['predict'])
 
     def test_Pipegraph__dbscan__dict_key(self):
         X = self.X
         pgraph = self.pgraph
-        current_step = pgraph._processes['Dbscan']
-        current_step.fit(X=X)
-        result = current_step.predict(X=X)
+        current_step = pgraph._steps_dict['Dbscan']
+        current_step.pg_fit(X=X)
+        result = current_step.pg_predict(X=X)
         self.assertEqual(list(result.keys()), ['predict'])
 
     def test_Pipegraph__combine_clustering__dict_key(self):
         X = self.X
         y = self.y
         pgraph = self.pgraph
-        current_step = pgraph._processes['Combine_Clustering']
-        current_step.fit(dominant=X, other=y)
-        result = current_step.predict(dominant=X, other=y)
+        current_step = pgraph._steps_dict['Combine_Clustering']
+        current_step.pg_fit(dominant=X, other=y)
+        result = current_step.pg_predict(dominant=X, other=y)
         self.assertEqual(list(result.keys()), ['predict'])
 
     def test_Pipegraph__gaussian_mixture__dict_key(self):
         X = self.X
         y = self.y
         pgraph = self.pgraph
-        current_step = pgraph._processes['Gaussian_Mixture']
-        current_step.fit(X=X)
-        result = current_step.predict(X=X)
+        current_step = pgraph._steps_dict['Gaussian_Mixture']
+        current_step.pg_fit(X=X)
+        result = current_step.pg_predict(X=X)
         self.assertEqual(sorted(list(result.keys())), sorted(['predict', 'predict_proba']))
 
     def test_Pipegraph__regressor__dict_key(self):
         X = self.X
         y = self.y
         pgraph = self.pgraph
-        current_step = pgraph._processes['Regressor']
-        current_step.fit(X=X, y=y)
-        result = current_step.predict(X=X)
+        current_step = pgraph._steps_dict['Regressor']
+        current_step.pg_fit(X=X, y=y)
+        result = current_step.pg_predict(X=X)
         self.assertEqual(list(result.keys()), ['predict'])
 
     def test_Pipegraph__data_attributes_empty_at_init(self):
@@ -689,32 +688,32 @@ class TestPipegraph(unittest.TestCase):
 
     def test_Pipegraph__step_get_params_multiple(self):
         pgraph = self.pgraph
-        self.assertEqual(pgraph._processes['Concatenate_Xy'].get_params(), {})
-        self.assertEqual(pgraph._processes['Gaussian_Mixture'].get_params()['n_components'], 3)
-        self.assertEqual(pgraph._processes['Dbscan'].get_params()['eps'], 0.5)
-        self.assertEqual(pgraph._processes['Combine_Clustering'].get_params(), {})
-        self.assertEqual(pgraph._processes['Paella'].get_params()['noise_label'], None)
-        self.assertEqual(pgraph._processes['Paella'].get_params()['max_it'], 10)
-        self.assertEqual(pgraph._processes['Paella'].get_params()['regular_size'], 100)
-        self.assertEqual(pgraph._processes['Paella'].get_params()['minimum_size'], 30)
-        self.assertEqual(pgraph._processes['Paella'].get_params()['width_r'], 0.95)
-        self.assertEqual(pgraph._processes['Paella'].get_params()['n_neighbors'], 1)
-        self.assertEqual(pgraph._processes['Paella'].get_params()['power'], 10)
-        self.assertEqual(pgraph._processes['Regressor'].get_params(),
+        self.assertEqual(pgraph._steps_dict['Concatenate_Xy'].get_params(), {})
+        self.assertEqual(pgraph._steps_dict['Gaussian_Mixture'].get_params()['n_components'], 3)
+        self.assertEqual(pgraph._steps_dict['Dbscan'].get_params()['eps'], 0.5)
+        self.assertEqual(pgraph._steps_dict['Combine_Clustering'].get_params(), {})
+        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['noise_label'], None)
+        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['max_it'], 10)
+        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['regular_size'], 100)
+        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['minimum_size'], 30)
+        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['width_r'], 0.95)
+        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['n_neighbors'], 1)
+        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['power'], 10)
+        self.assertEqual(pgraph._steps_dict['Regressor'].get_params(),
                          {'copy_X': True, 'fit_intercept': True, 'n_jobs': 1, 'normalize': False})
 
     def test_Pipegraph__step_set_params_multiple(self):
         pgraph = self.pgraph
-        self.assertRaises(ValueError, pgraph._processes['Concatenate_Xy'].set_params, ham=2, spam=9)
-        self.assertEqual(pgraph._processes['Gaussian_Mixture'].set_params(n_components=5).get_params()['n_components'],
+        self.assertRaises(ValueError, pgraph._steps_dict['Concatenate_Xy'].set_params, ham=2, spam=9)
+        self.assertEqual(pgraph._steps_dict['Gaussian_Mixture'].set_params(n_components=5).get_params()['n_components'],
                          5)
-        self.assertEqual(pgraph._processes['Dbscan'].set_params(eps=10.2).get_params()['eps'],
+        self.assertEqual(pgraph._steps_dict['Dbscan'].set_params(eps=10.2).get_params()['eps'],
                          10.2)
-        self.assertEqual(pgraph._processes['Paella'].set_params(noise_label=-3).get_params()['noise_label'],
+        self.assertEqual(pgraph._steps_dict['Paella'].set_params(noise_label=-3).get_params()['noise_label'],
                          -3)
-        self.assertEqual(pgraph._processes['Regressor'].set_params(copy_X=False).get_params(),
+        self.assertEqual(pgraph._steps_dict['Regressor'].set_params(copy_X=False).get_params(),
                          {'copy_X': False, 'fit_intercept': True, 'n_jobs': 1, 'normalize': False})
-        self.assertEqual(pgraph._processes['Regressor'].set_params(n_jobs=13).get_params(),
+        self.assertEqual(pgraph._steps_dict['Regressor'].set_params(n_jobs=13).get_params(),
                          {'copy_X': False, 'fit_intercept': True, 'n_jobs': 13, 'normalize': False})
 
     def test_Pipegraph__named_steps(self):
@@ -770,10 +769,10 @@ class TestPipeGraphSingleNodeLinearModel(unittest.TestCase):
 
     def test_single_node_fit(self):
         pgraph = self.pgraph
-        self.assertFalse(hasattr(pgraph._processes['linear_model'], 'coef_'))
+        self.assertFalse(hasattr(pgraph._steps_dict['linear_model'], 'coef_'))
         pgraph.fit(X=self.X, y=self.y)
-        self.assertTrue(hasattr(pgraph._processes['linear_model'], 'coef_'))
-        self.assertAlmostEqual(pgraph._processes['linear_model'].coef_[0][0], 2)
+        self.assertTrue(hasattr(pgraph._steps_dict['linear_model'], 'coef_'))
+        self.assertAlmostEqual(pgraph._steps_dict['linear_model'].coef_[0][0], 2)
 
         self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], self.size)
         result = pgraph.predict(X=self.X)['predict']
@@ -847,10 +846,10 @@ class TestTwoNodes(unittest.TestCase):
 
     def test_TwoNodes_fit(self):
         pgraph = self.pgraph
-        self.assertFalse(hasattr(pgraph._processes['linear_model'], 'coef_'))
+        self.assertFalse(hasattr(pgraph._steps_dict['linear_model'], 'coef_'))
         pgraph.fit(X=self.X, y=self.y)
-        self.assertTrue(hasattr(pgraph._processes['linear_model'], 'coef_'))
-        self.assertTrue(1.9 < pgraph._processes['linear_model'].coef_[0][0] < 2.1)
+        self.assertTrue(hasattr(pgraph._steps_dict['linear_model'], 'coef_'))
+        self.assertTrue(1.9 < pgraph._steps_dict['linear_model'].coef_[0][0] < 2.1)
 
         self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], self.size)
         result = pgraph.predict(X=self.X)['predict']
@@ -949,140 +948,6 @@ class TestPipeGraphClassifier(unittest.TestCase):
         result = gs.best_estimator_.predict(X)
         self.assertEqual(result.shape[0], X.shape[0])
 
-
-class TestProcess(unittest.TestCase):
-    def setUp(self):
-        self.size = 100
-        self.X = np.random.rand(self.size, 1)
-        self.y = self.X + np.random.randn(self.size, 1)
-
-    def test_process__init(self):
-        lm = LinearRegression()
-        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
-        step = Process(lm)
-        self.assertEqual(step._strategy, lm)
-
-    def test_process__fit_lm(self):
-        X = self.X
-        y = self.y
-        lm = LinearRegression()
-        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
-        step = Process(lm)
-        self.assertEqual(hasattr(step, 'coef_'), False)
-        result = step.fit(X=X, y=y)
-        self.assertEqual(hasattr(step, 'coef_'), True)
-        self.assertEqual(step, result)
-
-    def test_process__fit_dbscan(self):
-        X = self.X
-        y = self.y
-        db = DBSCAN()
-        db.__class__ = type('newClass', (type(db), AtomicFitPredictMixin), {})
-        step = Process(db)
-        self.assertEqual(hasattr(step, 'core_sample_indices_'), False)
-        result_fit = step.fit(X=X)
-        self.assertEqual(hasattr(step, 'core_sample_indices_'), False)
-        self.assertEqual(step, result_fit)
-        result_predict = step.predict(X=X)['predict']
-        self.assertEqual(hasattr(step, 'core_sample_indices_'), True)
-        self.assertEqual(result_predict.shape, (self.size,))
-
-    def test_process__predict(self):
-        X = self.X
-        y = self.y
-        lm = LinearRegression()
-        gm = GaussianMixture()
-        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
-        gm.__class__ = type('newClass', (type(gm), FitPredictMixin), {})
-        step_lm = Process(lm)
-        step_gm = Process(gm)
-
-        step_lm.fit(X=X, y=y)
-        step_gm.fit(X=X)
-
-        result_lm = step_lm.predict(X=X)
-        result_gm = step_gm.predict(X=X)
-
-        self.assertEqual(list(result_lm.keys()), ['predict'])
-        self.assertEqual(sorted(list(result_gm.keys())), sorted(['predict', 'predict_proba']))
-
-    def test_process__get_params(self):
-        lm = LinearRegression()
-        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
-        step = Process(lm)
-        result_lm = step.get_params()
-        self.assertEqual(result_lm, {'copy_X': True,
-                                     'fit_intercept': True,
-                                     'n_jobs': 1,
-                                     'normalize': False})
-
-    def test_process__set_params(self):
-        lm = LinearRegression()
-        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
-        step = Process(lm)
-        result_lm_pre = step.get_params()
-        self.assertEqual(result_lm_pre, {'copy_X': True,
-                                         'fit_intercept': True,
-                                         'n_jobs': 1,
-                                         'normalize': False})
-        step.set_params(fit_intercept=False)
-        result_lm_post = step.get_params()
-        self.assertEqual(result_lm_post, {'copy_X': True,
-                                          'fit_intercept': False,
-                                          'n_jobs': 1,
-                                          'normalize': False})
-
-    def test_process__get_fit_signature(self):
-        lm = LinearRegression()
-        gm = GaussianMixture()
-        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
-        gm.__class__ = type('newClass', (type(gm), FitPredictMixin), {})
-        step_lm = Process(lm)
-        step_gm = Process(gm)
-        result_lm = step_lm._get_fit_signature()
-        result_gm = step_gm._get_fit_signature()
-
-        self.assertEqual(result_lm, ['X', 'y', 'sample_weight'])
-        self.assertEqual(result_gm, ['X', 'y'])
-
-    def test_process__get_predict_signature_lm(self):
-        lm = LinearRegression()
-        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
-        step_lm = Process(lm)
-        result_lm = step_lm._get_predict_signature()
-        self.assertEqual(result_lm, ['X'])
-
-    def test_process__getattr__(self):
-        lm = LinearRegression()
-        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
-        step = Process(lm)
-        self.assertEqual(step.copy_X, True)
-
-    def test_process__setattr__(self):
-        lm = LinearRegression()
-        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
-        step = Process(lm)
-        self.assertEqual(step.copy_X, True)
-        step.copy_X = False
-        self.assertEqual(step.copy_X, False)
-        self.assertEqual('copy_X' in dir(step), False)
-
-    def test_process__delattr__(self):
-        lm = LinearRegression()
-        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
-        step = Process(lm)
-        self.assertEqual(step.copy_X, True)
-        self.assertEqual('copy_X' in dir(step), False)
-        self.assertEqual('copy_X' in dir(lm), True)
-        del step.copy_X
-        self.assertEqual('copy_X' in dir(lm), False)
-
-    def test_process__repr__(self):
-        lm = LinearRegression()
-        lm.__class__ = type('newClass', (type(lm), FitPredictMixin), {})
-        step = Process(lm)
-        result = step.__repr__()
-        self.assertEqual(result, lm.__repr__())
 
 class TestPipeGraphCompositable(unittest.TestCase):
     def setUp(self):

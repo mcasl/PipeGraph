@@ -13,7 +13,7 @@ from sklearn.model_selection import GridSearchCV
 
 from pipegraph.base import (PipeGraphRegressor,
                             PipeGraph,
-                            wrap_adaptee_in_process,
+                            add_mixins_to_step,
                             Concatenator, ColumnSelector, RegressorsWithParametrizedNumberOfReplicas,
                             RegressorsWithDataDependentNumberOfReplicas,
                             NeutralRegressor)
@@ -232,7 +232,7 @@ class TestPaella(unittest.TestCase):
         self.pgraph = PipeGraph(steps=steps, fit_connections=connections)
 
     def test_Paella__init(self):
-        self.assertTrue(isinstance(self.pgraph._processes['Paella']._strategy, Paella))
+        self.assertTrue(isinstance(self.pgraph._steps_dict['Paella'], Paella))
 
     def test_Paella__under_fit__Paella__fit(self):
         pgraph = self.pgraph
@@ -244,7 +244,7 @@ class TestPaella(unittest.TestCase):
         pgraph._fit('Dbscan')
         pgraph._fit('Combine_Clustering')
 
-        paellador = pgraph._processes['Paella']._strategy
+        paellador = pgraph._steps_dict['Paella']
 
         X = pgraph._fit_data[('_External', 'X')]
         y = pgraph._fit_data[('_External', 'y')]
@@ -263,19 +263,19 @@ class TestPaella(unittest.TestCase):
 
         X = pgraph._fit_data[('_External', 'X')]
         y = pgraph._fit_data[('_External', 'y')]
-        paellador = pgraph._processes['Paella']._strategy
+        paellador = pgraph._steps_dict['Paella']
         result = paellador.transform(X=X, y=y)
         self.assertEqual(result.shape[0], self.size)
 
     def test_Paella__get_params(self):
         pgraph = self.pgraph
-        paellador = pgraph._processes['Paella']
+        paellador = pgraph._steps_dict['Paella']
         result = paellador.get_params()['minimum_size']
         self.assertEqual(result, 30)
 
     def test_Paella__set_params(self):
         pgraph = self.pgraph
-        paellador = pgraph._processes['Paella']
+        paellador = pgraph._steps_dict['Paella']
         result_pre = paellador.get_params()['max_it']
         self.assertEqual(result_pre, 10)
         result_post = paellador.set_params(max_it=1000).get_params()['max_it']
@@ -289,7 +289,7 @@ class TestTrainTestSplit(unittest.TestCase):
 
     def test_train_test_predict(self):
         tts = TrainTestSplit()
-        step = wrap_adaptee_in_process(tts)
+        step = add_mixins_to_step(tts)
         result = step.predict(X=self.X, y=self.y)
         self.assertEqual(len(result), 4)
         self.assertEqual(sorted(list(result.keys())),

@@ -503,7 +503,7 @@ class PipeGraph(_BaseComposition):
 
         self._fit_graph = None
         self._predict_graph = None
-        self._processes = {name: wrap_adaptee_in_process(step=step_model) for name, step_model in steps}
+        self._steps_dict = {name: add_mixins_to_step(step=step_model) for name, step_model in steps}
         self._fit_data = {}
         self._predict_data = {}
 
@@ -620,7 +620,7 @@ class PipeGraph(_BaseComposition):
         fit_inputs = self._read_fit_signature_variables_from_graph_data(graph_data=self._fit_data,
                                                                         step_name=step_name)
         try:
-            self._processes[step_name].fit(**fit_inputs)
+            self._steps_dict[step_name].pg_fit(**fit_inputs)
         except ValueError:
             print("ERROR: _fit.fit call ValueError!")
 
@@ -628,7 +628,7 @@ class PipeGraph(_BaseComposition):
                                                                                 step_name=step_name)
         results = dict()
         try:
-            results = self._processes[step_name].predict(**predict_inputs)
+            results = self._steps_dict[step_name].pg_predict(**predict_inputs)
         except ValueError:
             print("ERROR: _fit.predict call ValueError!")
 
@@ -683,7 +683,7 @@ class PipeGraph(_BaseComposition):
                                                                                 step_name=step_name)
         results =  {}
         try:
-            results = self._processes[step_name].predict(**predict_inputs)
+            results = self._steps_dict[step_name].pg_predict(**predict_inputs)
         except ValueError:
             print("ERROR: _predict call ValueError!")
 
@@ -725,7 +725,7 @@ class PipeGraph(_BaseComposition):
         """
         connections = self.fit_connections if graph_data is self._fit_data else self.predict_connections
 
-        variable_list = self._processes[step_name]._get_fit_signature()
+        variable_list = self._steps_dict[step_name]._get_fit_signature()
 
         connection_tuples = {}
         for key, value in connections[step_name].items():
@@ -758,7 +758,7 @@ class PipeGraph(_BaseComposition):
         """
         connections = self.fit_connections if graph_data is self._fit_data else self.predict_connections
 
-        variable_list = self._processes[step_name]._get_predict_signature()
+        variable_list = self._steps_dict[step_name]._get_predict_signature()
 
         connection_tuples = {}
         for key, value in connections[step_name].items():
@@ -789,105 +789,6 @@ class PipeGraph(_BaseComposition):
         graph_data.update(
             {(step_name, variable): value for variable, value in output_data.items()}
         )
-
-
-class Process(BaseEstimator):
-    """
-    This class holds an strategy which is in charge of fitting and predicting the PipeGraph steps.
-
-    Parameters
-    ----------
-    strategy : pipegraph.adapters.AdapterForSkLearnLikeAdaptee
-    A wrapper for a sklearn like object
-
-    """
-
-    def __init__(self, strategy):
-        self._strategy = strategy
-
-    def get_params(self):
-        """
-        Get parameters for this estimator or pipeGraph CustomBlock.
-        Parameters
-        -------
-        params : mapping of string to any
-            Parameter names mapped to their values.
-        """
-        return self._strategy.get_params()
-
-    def set_params(self, **params):
-        """"
-        Set the parameters of this estimator.
-        The method works on simple estimators as well as on nested objects
-        such as pipeGraph). The latter have parameters of the form
-        ``<component>__<parameter>`` so that it's possible to update each
-        component of a nested object.
-        Returns
-        -------
-        self
-        """
-        self._strategy.set_params(**params)
-        return self
-
-    def fit(self, *pargs, **kwargs):
-        """
-        Fit the model included in the step
-        ----------
-        *pargs : iterable
-            Training data. Must fulfill input requirements of first step of the
-            pipeline.
-        **kwargs : dict of string -> object
-            Parameters passed to the ``fit`` method of each step, where
-            each parameter name is prefixed such that parameter ``p`` for step
-            ``s`` has key ``s__p``.
-        Returns
-        -------
-            self : returns an instance of _strategy.
-        """
-        self._strategy.pg_fit(*pargs, **kwargs)
-        return self
-
-    def predict(self, *pargs, **kwargs):
-        return self._strategy.pg_predict(*pargs, **kwargs)
-
-    def __getattr__(self, name):
-        """
-
-        Args:
-            name:
-
-        Returns:
-
-        """
-        return getattr(self.__dict__['_strategy'], name)
-
-    def __setattr__(self, name, value):
-        """
-
-        Args:
-            name:
-            value:
-        """
-        if name in ('_strategy',):
-            self.__dict__[name] = value
-        else:
-            setattr(self.__dict__['_strategy'], name, value)
-
-    def __delattr__(self, name):
-        """
-
-        Args:
-            name:
-        """
-        delattr(self.__dict__['_strategy'], name)
-
-    def __repr__(self):
-        """
-
-        Returns:
-
-        """
-        return self._strategy.__repr__()
 
 
 def build_graph(connections):
@@ -924,7 +825,7 @@ def build_graph(connections):
 
 
 
-def wrap_adaptee_in_process(step, mixin=None):
+def add_mixins_to_step(step, mixin=None):
     """
     This function wraps the objects defined in Pipegraph's steps parameters in order to provide a common interface for them all.
     This interface declares two main methods: fit and predict. So, no matter whether the adaptee is capable of doing
@@ -946,9 +847,7 @@ def wrap_adaptee_in_process(step, mixin=None):
     """
 
     if mixin is None:
-        if isinstance(step, Process):
-            return step
-        elif step.__class__ in strategies_for_custom_adaptees:
+        if step.__class__ in strategies_for_custom_adaptees:
             mixin = strategies_for_custom_adaptees[step.__class__]
         elif hasattr(step, 'predict'):
             mixin = FitPredictMixin
@@ -961,8 +860,7 @@ def wrap_adaptee_in_process(step, mixin=None):
 
     new_class_name = mixin.__name__ + 'And' + step.__class__.__name__
     step.__class__ = type(new_class_name, (type(step), mixin), {})
-    process = Process(step)
-    return process
+    return step
 
 
 def make_connections_when_not_provided_to_init(steps):
@@ -1136,7 +1034,7 @@ class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
         number_of_replicas = len(set(kwargs['selection']))
         self.steps = [('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas))]
 
-        self._processes = {name: wrap_adaptee_in_process(step=step_model) for name, step_model in self.steps}
+        self._processes = {name: add_mixins_to_step(step=step_model) for name, step_model in self.steps}
 
         self.fit_connections = dict(models={'X': 'X',
                                             'y': 'y',
