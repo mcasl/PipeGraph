@@ -10,6 +10,7 @@ from sklearn.mixture import GaussianMixture
 
 from sklearn.utils import Bunch
 from sklearn.utils.metaestimators import _BaseComposition
+from pipegraph.adapters import AdapterMixins
 
 import logging
 logging.basicConfig(level=logging.NOTSET)
@@ -847,7 +848,9 @@ def add_mixins_to_step(step, mixin=None):
     """
 
     if mixin is None:
-        if step.__class__ in strategies_for_custom_adaptees:
+        if isinstance(step, AdapterMixins):
+            return step
+        elif step.__class__ in strategies_for_custom_adaptees:
             mixin = strategies_for_custom_adaptees[step.__class__]
         elif isinstance(step, PipeGraph):
             mixin = CustomFitPredictWithDictionaryOutputMixin
