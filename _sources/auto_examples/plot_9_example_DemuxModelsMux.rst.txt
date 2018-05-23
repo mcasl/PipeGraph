@@ -64,7 +64,7 @@ a custom scoring function for a block with an arbitrary number of inputs.
 
     scaler = MinMaxScaler()
     gaussian_mixture = GaussianMixture(n_components=3)
-    models = RegressorsWithDataDependentNumberOfReplicas(model_prototype=LinearRegression(), model_parameters={})
+    models = RegressorsWithDataDependentNumberOfReplicas(regressor=LinearRegression())
     neutral_regressor = NeutralRegressor()
 
     steps = [('scaler', scaler),
@@ -119,13 +119,11 @@ Using GridSearchCV to find the best number of clusters and the best regressors
 
  Out::
 
-    ERROR: _predict call ValueError!
-    ERROR: _predict call ValueError!
-    Score: 0.997265185166008
-    classifier__n_components: 3
+    Score: 0.9980038370380174
+    classifier__n_components: 7
 
 
-**Total running time of the script:** ( 0 minutes  1.777 seconds)
+**Total running time of the script:** ( 0 minutes  1.906 seconds)
 
 
 

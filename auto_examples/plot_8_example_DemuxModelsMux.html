@@ -207,16 +207,15 @@ context. This morphing capability opens interesting possibilities to explore ind
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">RegressorsWithDataDependentNumberOfReplicas</span><span class="p">(</span><span class="n">PipeGraph</span><span class="p">,</span> <span class="n">RegressorMixin</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_prototype</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">(),</span> <span class="n">model_parameters</span><span class="o">=</span><span class="p">{}):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_prototype</span> <span class="o">=</span> <span class="n">model_prototype</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span> <span class="o">=</span> <span class="n">model_parameters</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regressor</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">()):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regressor</span> <span class="o">=</span> <span class="n">regressor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fit_data</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_predict_data</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">number_of_replicas</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;selection&#39;</span><span class="p">]))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="n">RegressorsWithParametrizedNumberOfReplicas</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="o">=</span><span class="n">number_of_replicas</span><span class="p">))]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="n">RegressorsWithParametrizedNumberOfReplicas</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="o">=</span><span class="n">number_of_replicas</span><span class="p">,</span> <span class="n">regressor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">regressor</span><span class="p">))]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">wrap_adaptee_in_process</span><span class="p">(</span><span class="n">adaptee</span><span class="o">=</span><span class="n">step_model</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">step_model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">}</span>
 
@@ -233,7 +232,7 @@ context. This morphing capability opens interesting possibilities to explore ind
 <p>Using this new component we can build a simplified PipeGraph:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
 <span class="n">gaussian_mixture</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">models</span> <span class="o">=</span> <span class="n">RegressorsWithDataDependentNumberOfReplicas</span><span class="p">(</span><span class="n">model_prototype</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">(),</span> <span class="n">model_parameters</span><span class="o">=</span><span class="p">{})</span>
+<span class="n">models</span> <span class="o">=</span> <span class="n">RegressorsWithDataDependentNumberOfReplicas</span><span class="p">(</span><span class="n">regressor</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">())</span>
 
 <span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">scaler</span><span class="p">),</span>
          <span class="p">(</span><span class="s1">&#39;classifier&#39;</span><span class="p">,</span> <span class="n">gaussian_mixture</span><span class="p">),</span>
@@ -254,7 +253,7 @@ context. This morphing capability opens interesting possibilities to explore ind
 </pre></div>
 </div>
 <img alt="../_images/sphx_glr_plot_8_example_DemuxModelsMux_001.png" class="align-center" src="../_images/sphx_glr_plot_8_example_DemuxModelsMux_001.png" />
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.076 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.079 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_8_example_DemuxModelsMux.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_8_example_DemuxModelsMux.py</span></code></a></div>

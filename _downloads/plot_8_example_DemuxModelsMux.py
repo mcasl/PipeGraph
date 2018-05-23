@@ -43,7 +43,7 @@ print(inspect.getsource(RegressorsWithDataDependentNumberOfReplicas))
 
 scaler = MinMaxScaler()
 gaussian_mixture = GaussianMixture(n_components=3)
-models = RegressorsWithDataDependentNumberOfReplicas(model_prototype=LinearRegression(), model_parameters={})
+models = RegressorsWithDataDependentNumberOfReplicas(regressor=LinearRegression())
 
 steps = [('scaler', scaler),
          ('classifier', gaussian_mixture),

@@ -101,7 +101,7 @@ As the last step is a regressor, a :class:`PipeGraphRegressor` is instantiated.
 This example described the basic configuration of a :class:`PipeGraphRegressor`. The :ref:`following examples <example2>` show more elaborated cases in order of increasing complexity.
 
 
-**Total running time of the script:** ( 0 minutes  0.735 seconds)
+**Total running time of the script:** ( 0 minutes  0.797 seconds)
 
 
 
