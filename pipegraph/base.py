@@ -862,6 +862,8 @@ def add_mixins_to_step(step, mixin=None):
             mixin = AtomicFitPredictMixin
         else:
             raise ValueError('Error: Unknown step class!')
+    elif isinstance(step, mixin):
+        return step
 
     new_class_name = step.__class__.__name__
     step.__class__ = type(new_class_name, (type(step), mixin), {})
@@ -1028,27 +1030,23 @@ class RegressorsWithParametrizedNumberOfReplicas(PipeGraph, RegressorMixin):
 
 
 class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
-    def __init__(self, model_prototype=LinearRegression(), model_parameters={}):
-        self.model_prototype = model_prototype
-        self.model_parameters = model_parameters
-        self._fit_data = {}
-        self._predict_data = {}
-        self.steps = []
+    def __init__(self, steps=[('regressor', LinearRegression() )]):
+        self.steps = steps
 
     def fit(self, *pargs, **kwargs):
-        number_of_replicas = len(set(kwargs['selection']))
-        self.steps = [('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas))]
-
-        self._steps_dict = {name: add_mixins_to_step(step=step_model) for name, step_model in self.steps}
-
-        self.fit_connections = dict(models={'X': 'X',
-                                            'y': 'y',
-                                            'selection': 'selection'})
-        self.predict_connections = self.fit_connections
-        self._fit_graph = build_graph(self.fit_connections)
-        self._predict_graph = build_graph(self.predict_connections)
-        super().fit(*pargs, **kwargs)
+        regressor = self.named_steps.regressor
+        number_of_clusters = len(set(kwargs['selection']))
+        multiple_regressors = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_clusters,
+                                                                         regressor=regressor)
+        steps = [('regressorsBundle', multiple_regressors)]
+        connections = dict(regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'selection'})
+        self._adaptee = PipeGraph(steps=steps, fit_connections=connections)
+        self._adaptee.fit(*pargs, **kwargs)
         return self
+
+    def predict(self, *pargs, **kwargs):
+        return self._adaptee.predict(*pargs, **kwargs)
+
 
 def query_number_of_clusters_from_classifier(classifier):
 
