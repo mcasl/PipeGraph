@@ -24,8 +24,7 @@
 
   
 
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
@@ -86,7 +85,6 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../User_Guide.html">pipegraph User Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">General examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="plot_1_example_two_nodes_in_linear_sequence.html">First example: A simple linear workflow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_2_example_added_gridsearchcv.html">Second example: <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration</a></li>
@@ -166,7 +164,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="tenth-example-alternative-solution-to-example-number-9">
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-auto-examples-plot-10-example-demuxmodelsmux-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="tenth-example-alternative-solution-to-example-number-9">
 <span id="example10"></span><span id="sphx-glr-auto-examples-plot-10-example-demuxmodelsmux-py"></span><h1>Tenth Example: # Alternative solution to example number 9<a class="headerlink" href="#tenth-example-alternative-solution-to-example-number-9" title="Permalink to this headline">¶</a></h1>
 <dl class="docutils">
 <dt>We continue demonstrating several interesting features:</dt>
@@ -212,27 +214,27 @@ components and combining the classifier with the demultiplexed models:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ClassifierAndRegressorsBundle</span><span class="p">(</span><span class="n">PipeGraph</span><span class="p">,</span> <span class="n">RegressorMixin</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;classifier&#39;</span><span class="p">,</span> <span class="n">GaussianMixture</span><span class="p">()),</span> <span class="p">(</span><span class="s1">&#39;regressor&#39;</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">())]):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="n">steps</span>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>class ClassifierAndRegressorsBundle(PipeGraph, RegressorMixin):
+    def __init__(self, steps=[(&#39;classifier&#39;, GaussianMixture()), (&#39;regressor&#39;, LinearRegression())]):
+        self.steps = steps
 
-    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="n">classifier</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_steps</span><span class="o">.</span><span class="n">classifier</span>
-        <span class="n">regressor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_steps</span><span class="o">.</span><span class="n">regressor</span>
-        <span class="n">number_of_clusters</span> <span class="o">=</span> <span class="n">query_number_of_clusters_from_classifier</span><span class="p">(</span><span class="n">classifier</span><span class="p">)</span>
-        <span class="n">multiple_regressors</span> <span class="o">=</span> <span class="n">RegressorsWithParametrizedNumberOfReplicas</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="o">=</span><span class="n">number_of_clusters</span><span class="p">,</span>
-                                                                         <span class="n">regressor</span><span class="o">=</span><span class="n">regressor</span><span class="p">)</span>
+    def fit(self, *pargs, **kwargs):
+        classifier = self.named_steps.classifier
+        regressor = self.named_steps.regressor
+        number_of_clusters = query_number_of_clusters_from_classifier(classifier)
+        multiple_regressors = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_clusters,
+                                                                         regressor=regressor)
 
-        <span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;classifier&#39;</span><span class="p">,</span> <span class="n">classifier</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;regressorsBundle&#39;</span><span class="p">,</span> <span class="n">multiple_regressors</span><span class="p">)]</span>
-        <span class="n">connections</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">classifier</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="s1">&#39;X&#39;</span><span class="p">},</span>
-                           <span class="n">regressorsBundle</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;selection&#39;</span><span class="p">:</span> <span class="s1">&#39;classifier&#39;</span><span class="p">})</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span> <span class="o">=</span> <span class="n">PipeGraph</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="o">=</span><span class="n">connections</span><span class="p">)</span>
+        steps = [(&#39;classifier&#39;, classifier), (&#39;regressorsBundle&#39;, multiple_regressors)]
+        connections = dict(classifier={&#39;X&#39;: &#39;X&#39;},
+                           regressorsBundle={&#39;X&#39;: &#39;X&#39;, &#39;y&#39;: &#39;y&#39;, &#39;selection&#39;: &#39;classifier&#39;})
+        self._adaptee = PipeGraph(steps=steps, fit_connections=connections)
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
+        self._adaptee.fit(*pargs, **kwargs)
+        return self
 
-    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adaptee</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="o">*</span><span class="n">pargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    def predict(self, *pargs, **kwargs):
+        return self._adaptee.predict(*pargs, **kwargs)
 </pre></div>
 </div>
 <p>Using this new component we can build a simplified PipeGraph:</p>
@@ -264,14 +266,14 @@ components and combining the classifier with the demultiplexed models:</p>
 <span class="k">print</span><span class="p">(</span><span class="s2">&quot;bundle__classifier__n_components:&quot;</span><span class="p">,</span> <span class="n">gs</span><span class="o">.</span><span class="n">best_estimator_</span><span class="o">.</span><span class="n">get_params</span><span class="p">()[</span><span class="s1">&#39;bundle__classifier__n_components&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-<img alt="../_images/sphx_glr_plot_10_example_DemuxModelsMux_001.png" class="align-center" src="../_images/sphx_glr_plot_10_example_DemuxModelsMux_001.png" />
+<img alt="../_images/sphx_glr_plot_10_example_DemuxModelsMux_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_10_example_DemuxModelsMux_001.png" />
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Score</span><span class="p">:</span> <span class="mf">0.9979264310972674</span>
-<span class="n">bundle__classifier__n_components</span><span class="p">:</span> <span class="mi">5</span>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Score: 0.9979285635631743
+bundle__classifier__n_components: 3
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  7.583 seconds)</p>
-<div class="sphx-glr-footer docutils container">
+<p><strong>Total running time of the script:</strong> ( 0 minutes  7.619 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-10-example-demuxmodelsmux-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_10_example_DemuxModelsMux.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_10_example_DemuxModelsMux.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
@@ -336,10 +338,7 @@ components and combining the classifier with the demultiplexed models:</p>
 
   
 
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
   <script type="text/javascript">
       jQuery(function () {

@@ -1,4 +1,8 @@
+.. note::
+    :class: sphx-glr-download-link-note
 
+    Click :ref:`here <sphx_glr_download_auto_examples_plot_2_example_added_gridsearchcv.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
 
 .. _sphx_glr_auto_examples_plot_2_example_added_gridsearchcv.py:
 
@@ -98,30 +102,36 @@ Now, we use ``PipeGraphRegressor`` as estimator for :class:`GridSearchCV` and pe
 
 
 .. image:: /auto_examples/images/sphx_glr_plot_2_example_added_gridsearchcv_001.png
-    :align: center
+    :class: sphx-glr-single-img
 
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     Information about the parameters of the best estimator: 
      degree: 5 
-     coefficients: [[  -41.79614366   354.66608324 -1407.19988448  2915.42051005
-      -2971.19115169  1194.08331924]]
+     coefficients: [[    0.           392.17231073 -1506.9061746   2987.97887114
+      -2944.04635004  1160.77329434]]
 
 
 This example showed how to use :class:`GridSearchCV` with :class:`PipeGraphRegressor` in a simple linear workflow.
 :ref:`Next example <example3>` provides detail on how to proceed with a non linear case.
 
 
-**Total running time of the script:** ( 0 minutes  0.403 seconds)
+**Total running time of the script:** ( 0 minutes  0.383 seconds)
 
+
+.. _sphx_glr_download_auto_examples_plot_2_example_added_gridsearchcv.py:
 
 
 .. only :: html
 
  .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
 
 
   .. container:: sphx-glr-download

@@ -1,4 +1,8 @@
+.. note::
+    :class: sphx-glr-download-link-note
 
+    Click :ref:`here <sphx_glr_download_auto_examples_plot_7_example_DemuxModelsMux.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
 
 .. _sphx_glr_auto_examples_plot_7_example_DemuxModelsMux.py:
 
@@ -64,7 +68,9 @@ we called :class:``pipegraph.standard_blocks.RegressorsWithParametrizedNumberOfR
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     class RegressorsWithParametrizedNumberOfReplicas(PipeGraph, RegressorMixin):
         def __init__(self, number_of_replicas=1, regressor=LinearRegression()):
@@ -120,18 +126,22 @@ Using this new component we can build a simplified PipeGraph:
 
 
 .. image:: /auto_examples/images/sphx_glr_plot_7_example_DemuxModelsMux_001.png
-    :align: center
+    :class: sphx-glr-single-img
 
 
 
 
-**Total running time of the script:** ( 0 minutes  0.066 seconds)
+**Total running time of the script:** ( 0 minutes  0.063 seconds)
 
+
+.. _sphx_glr_download_auto_examples_plot_7_example_DemuxModelsMux.py:
 
 
 .. only :: html
 
  .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
 
 
   .. container:: sphx-glr-download

@@ -24,8 +24,7 @@
 
   
 
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
@@ -86,7 +85,6 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../User_Guide.html">pipegraph User Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">General examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="plot_1_example_two_nodes_in_linear_sequence.html">First example: A simple linear workflow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_2_example_added_gridsearchcv.html">Second example: <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration</a></li>
@@ -166,7 +164,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="third-example-injecting-varying-sample-weight-vectors-to-a-linear-regression-model-for-gridsearchcv">
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-auto-examples-plot-3-example-varying-sample-weights-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="third-example-injecting-varying-sample-weight-vectors-to-a-linear-regression-model-for-gridsearchcv">
 <span id="example3"></span><span id="sphx-glr-auto-examples-plot-3-example-varying-sample-weights-py"></span><h1>Third Example: Injecting varying <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> vectors to a linear regression model for GridSearchCV<a class="headerlink" href="#third-example-injecting-varying-sample-weight-vectors-to-a-linear-regression-model-for-gridsearchcv" title="Permalink to this headline">¶</a></h1>
 <p>This example illustrates a case in which a varying vector is injected to a linear regression model as <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> in order to evaluate them and obtain the sample_weight that generates the best results.
 Let’s imagine we have a sample_weight vector and different powers of the vector are needed to be evaluated. To perform such experiment, the following issues appear:</p>
@@ -251,16 +253,16 @@ Let’s imagine we have a sample_weight vector and different powers of the vecto
 <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Power that obtains the best results in the linear model: </span><span class="se">\n</span><span class="s1"> {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">power</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/sphx_glr_plot_3_example_varying_sample_weights_001.png" class="align-center" src="../_images/sphx_glr_plot_3_example_varying_sample_weights_001.png" />
+<img alt="../_images/sphx_glr_plot_3_example_varying_sample_weights_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_3_example_varying_sample_weights_001.png" />
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Power</span> <span class="n">that</span> <span class="n">obtains</span> <span class="n">the</span> <span class="n">best</span> <span class="n">results</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">linear</span> <span class="n">model</span><span class="p">:</span>
- <span class="n">CustomPower</span><span class="p">(</span><span class="n">power</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Power that obtains the best results in the linear model:
+ CustomPower(power=20)
 </pre></div>
 </div>
 <p>This example displayed a non linear workflow successfully implemented by <strong>PipeGraph</strong>, while at the same time showing a way to circumvent current limitations of standard <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCV</span></code>, in particular, the retriction on the number of input parameters.
 <a class="reference internal" href="plot_4_example_combination_of_classifiers.html#example4"><span class="std std-ref">Next examples</span></a> show more elaborated examples in increasing complexity order.</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.656 seconds)</p>
-<div class="sphx-glr-footer docutils container">
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.616 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-3-example-varying-sample-weights-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_3_example_varying_sample_weights.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_3_example_varying_sample_weights.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
@@ -325,10 +327,7 @@ Let’s imagine we have a sample_weight vector and different powers of the vecto
 
   
 
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
   <script type="text/javascript">
       jQuery(function () {

@@ -24,8 +24,7 @@
 
   
 
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
@@ -86,7 +85,6 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../User_Guide.html">pipegraph User Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">General examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="plot_1_example_two_nodes_in_linear_sequence.html">First example: A simple linear workflow</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Second example: <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration</a></li>
@@ -166,7 +164,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="second-example-gridsearchcv-demonstration">
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-auto-examples-plot-2-example-added-gridsearchcv-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="second-example-gridsearchcv-demonstration">
 <span id="example2"></span><span id="sphx-glr-auto-examples-plot-2-example-added-gridsearchcv-py"></span><h1>Second example: <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration<a class="headerlink" href="#second-example-gridsearchcv-demonstration" title="Permalink to this headline">¶</a></h1>
 <p>This example shows how to use <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCv</span></code> with <strong>PipeGraph</strong> to effectively fit the best model across a number of hyperparameters.
 It is equivalent to use <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCv</span></code> with <code class="xref py py-class docutils literal notranslate"><span class="pre">Pipeline</span></code>. More complicated cases are shown in the following examples. In this second example we wanted to show how to fit a <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCV</span></code> in a yet simple scenario.</p>
@@ -225,18 +227,18 @@ In this case we just want to explore a few possibilities varying the degree of t
 <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Information about the parameters of the best estimator: </span><span class="se">\n</span><span class="s1"> degree: {} </span><span class="se">\n</span><span class="s1"> coefficients: {} &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">degree</span><span class="p">,</span> <span class="n">coef</span><span class="p">))</span>
 </pre></div>
 </div>
-<img alt="../_images/sphx_glr_plot_2_example_added_gridsearchcv_001.png" class="align-center" src="../_images/sphx_glr_plot_2_example_added_gridsearchcv_001.png" />
+<img alt="../_images/sphx_glr_plot_2_example_added_gridsearchcv_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_2_example_added_gridsearchcv_001.png" />
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Information</span> <span class="n">about</span> <span class="n">the</span> <span class="n">parameters</span> <span class="n">of</span> <span class="n">the</span> <span class="n">best</span> <span class="n">estimator</span><span class="p">:</span>
- <span class="n">degree</span><span class="p">:</span> <span class="mi">5</span>
- <span class="n">coefficients</span><span class="p">:</span> <span class="p">[[</span>  <span class="o">-</span><span class="mf">41.79614366</span>   <span class="mf">354.66608324</span> <span class="o">-</span><span class="mf">1407.19988448</span>  <span class="mf">2915.42051005</span>
-  <span class="o">-</span><span class="mf">2971.19115169</span>  <span class="mf">1194.08331924</span><span class="p">]]</span>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Information about the parameters of the best estimator:
+ degree: 5
+ coefficients: [[    0.           392.17231073 -1506.9061746   2987.97887114
+  -2944.04635004  1160.77329434]]
 </pre></div>
 </div>
 <p>This example showed how to use <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCV</span></code> with <code class="xref py py-class docutils literal notranslate"><span class="pre">PipeGraphRegressor</span></code> in a simple linear workflow.
 <a class="reference internal" href="plot_3_example_varying_sample_weights.html#example3"><span class="std std-ref">Next example</span></a> provides detail on how to proceed with a non linear case.</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.403 seconds)</p>
-<div class="sphx-glr-footer docutils container">
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.383 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-2-example-added-gridsearchcv-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_2_example_added_gridsearchcv.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_2_example_added_gridsearchcv.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
@@ -301,10 +303,7 @@ In this case we just want to explore a few possibilities varying the degree of t
 
   
 
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
   <script type="text/javascript">
       jQuery(function () {

@@ -24,8 +24,7 @@
 
   
 
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
@@ -86,7 +85,6 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../User_Guide.html">pipegraph User Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">General examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="plot_1_example_two_nodes_in_linear_sequence.html">First example: A simple linear workflow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_2_example_added_gridsearchcv.html">Second example: <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration</a></li>
@@ -166,7 +164,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="seventh-example-dynamically-built-component-using-initialization-parameters">
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-auto-examples-plot-7-example-demuxmodelsmux-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="seventh-example-dynamically-built-component-using-initialization-parameters">
 <span id="example7"></span><span id="sphx-glr-auto-examples-plot-7-example-demuxmodelsmux-py"></span><h1>Seventh Example: Dynamically built component using initialization parameters<a class="headerlink" href="#seventh-example-dynamically-built-component-using-initialization-parameters" title="Permalink to this headline">¶</a></h1>
 <dl class="docutils">
 <dt>We continue demonstrating several interesting features:</dt>
@@ -208,27 +210,27 @@ we called :class:<code class="docutils literal notranslate"><span class="pre">pi
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">RegressorsWithParametrizedNumberOfReplicas</span><span class="p">(</span><span class="n">PipeGraph</span><span class="p">,</span> <span class="n">RegressorMixin</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_of_replicas</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">regressor</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">()):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_replicas</span> <span class="o">=</span> <span class="n">number_of_replicas</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">regressor</span> <span class="o">=</span> <span class="n">regressor</span>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>class RegressorsWithParametrizedNumberOfReplicas(PipeGraph, RegressorMixin):
+    def __init__(self, number_of_replicas=1, regressor=LinearRegression()):
+        self.number_of_replicas = number_of_replicas
+        self.regressor = regressor
 
-        <span class="n">steps</span> <span class="o">=</span> <span class="p">([(</span><span class="s1">&#39;demux&#39;</span><span class="p">,</span> <span class="n">Demultiplexer</span><span class="p">())]</span> <span class="o">+</span>
-                 <span class="p">[(</span><span class="s1">&#39;regressor_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">clone</span><span class="p">(</span><span class="n">regressor</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="p">)]</span> <span class="o">+</span>
-                 <span class="p">[(</span><span class="s1">&#39;mux&#39;</span><span class="p">,</span> <span class="n">Multiplexer</span><span class="p">())]</span>
-                 <span class="p">)</span>
+        steps = ([(&#39;demux&#39;, Demultiplexer())] +
+                 [(&#39;regressor_&#39; + str(i), clone(regressor)) for i in range(number_of_replicas)] +
+                 [(&#39;mux&#39;, Multiplexer())]
+                 )
 
-        <span class="n">connections</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">demux</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span>
-                                  <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span>
-                                  <span class="s1">&#39;selection&#39;</span><span class="p">:</span> <span class="s1">&#39;selection&#39;</span><span class="p">})</span>
+        connections = dict(demux={&#39;X&#39;: &#39;X&#39;,
+                                  &#39;y&#39;: &#39;y&#39;,
+                                  &#39;selection&#39;: &#39;selection&#39;})
 
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="p">):</span>
-            <span class="n">connections</span><span class="p">[</span><span class="s1">&#39;regressor_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;demux&#39;</span><span class="p">,</span> <span class="s1">&#39;X_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)),</span>
-                                               <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;demux&#39;</span><span class="p">,</span> <span class="s1">&#39;y_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))}</span>
+        for i in range(number_of_replicas):
+            connections[&#39;regressor_&#39; + str(i)] = {&#39;X&#39;: (&#39;demux&#39;, &#39;X_&#39; + str(i)),
+                                               &#39;y&#39;: (&#39;demux&#39;, &#39;y_&#39; + str(i))}
 
-        <span class="n">connections</span><span class="p">[</span><span class="s1">&#39;mux&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">):</span> <span class="p">(</span><span class="s1">&#39;regressor_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_replicas</span><span class="p">)}</span>
-        <span class="n">connections</span><span class="p">[</span><span class="s1">&#39;mux&#39;</span><span class="p">][</span><span class="s1">&#39;selection&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;selection&#39;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="o">=</span><span class="n">connections</span><span class="p">)</span>
+        connections[&#39;mux&#39;] = {str(i): (&#39;regressor_&#39; + str(i)) for i in range(number_of_replicas)}
+        connections[&#39;mux&#39;][&#39;selection&#39;] = &#39;selection&#39;
+        super().__init__(steps=steps, fit_connections=connections)
 </pre></div>
 </div>
 <p>Using this new component we can build a simplified PipeGraph:</p>
@@ -254,9 +256,9 @@ we called :class:<code class="docutils literal notranslate"><span class="pre">pi
 <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/sphx_glr_plot_7_example_DemuxModelsMux_001.png" class="align-center" src="../_images/sphx_glr_plot_7_example_DemuxModelsMux_001.png" />
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.066 seconds)</p>
-<div class="sphx-glr-footer docutils container">
+<img alt="../_images/sphx_glr_plot_7_example_DemuxModelsMux_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_7_example_DemuxModelsMux_001.png" />
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.063 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-7-example-demuxmodelsmux-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_7_example_DemuxModelsMux.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_7_example_DemuxModelsMux.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
@@ -321,10 +323,7 @@ we called :class:<code class="docutils literal notranslate"><span class="pre">pi
 
   
 
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
   <script type="text/javascript">
       jQuery(function () {

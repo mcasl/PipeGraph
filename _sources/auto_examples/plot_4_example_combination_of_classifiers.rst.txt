@@ -1,4 +1,8 @@
+.. note::
+    :class: sphx-glr-download-link-note
 
+    Click :ref:`here <sphx_glr_download_auto_examples_plot_4_example_combination_of_classifiers.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
 
 .. _sphx_glr_auto_examples_plot_4_example_combination_of_classifiers.py:
 
@@ -111,7 +115,7 @@ In this example we use a :class:`PipeGraphClassifier` because the result is a cl
 
 
 .. image:: /auto_examples/images/sphx_glr_plot_4_example_combination_of_classifiers_001.png
-    :align: center
+    :class: sphx-glr-single-img
 
 
 
@@ -120,13 +124,17 @@ This example displayed complex data injections that are successfully managed by 
 Next example :ref:`on <example5>`.
 
 
-**Total running time of the script:** ( 0 minutes  52.787 seconds)
+**Total running time of the script:** ( 0 minutes  50.065 seconds)
 
+
+.. _sphx_glr_download_auto_examples_plot_4_example_combination_of_classifiers.py:
 
 
 .. only :: html
 
  .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
 
 
   .. container:: sphx-glr-download

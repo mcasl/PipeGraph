@@ -24,8 +24,7 @@
 
   
 
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
@@ -86,7 +85,6 @@
             
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../User_Guide.html">pipegraph User Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">General examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="plot_1_example_two_nodes_in_linear_sequence.html">First example: A simple linear workflow</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_2_example_added_gridsearchcv.html">Second example: <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration</a></li>
@@ -166,7 +164,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="ninth-example-gridsearch-on-dynamically-built-component-using-input-signal-values">
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-auto-examples-plot-9-example-demuxmodelsmux-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="ninth-example-gridsearch-on-dynamically-built-component-using-input-signal-values">
 <span id="example9"></span><span id="sphx-glr-auto-examples-plot-9-example-demuxmodelsmux-py"></span><h1>Ninth Example: # GridSearch on dynamically built component using input signal values<a class="headerlink" href="#ninth-example-gridsearch-on-dynamically-built-component-using-input-signal-values" title="Permalink to this headline">¶</a></h1>
 <dl class="docutils">
 <dt>We continue demonstrating several interesting features:</dt>
@@ -212,7 +214,7 @@ calculating the score using a default scoring function. This is much more conven
 a custom scoring function for a block with an arbitrary number of inputs.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
 <span class="n">gaussian_mixture</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">models</span> <span class="o">=</span> <span class="n">RegressorsWithDataDependentNumberOfReplicas</span><span class="p">(</span><span class="n">regressor</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">())</span>
+<span class="n">models</span> <span class="o">=</span> <span class="n">RegressorsWithDataDependentNumberOfReplicas</span><span class="p">()</span>
 <span class="n">neutral_regressor</span> <span class="o">=</span> <span class="n">NeutralRegressor</span><span class="p">()</span>
 
 <span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">scaler</span><span class="p">),</span>
@@ -244,14 +246,14 @@ a custom scoring function for a block with an arbitrary number of inputs.</p>
 <span class="k">print</span><span class="p">(</span><span class="s2">&quot;classifier__n_components:&quot;</span><span class="p">,</span> <span class="n">gs</span><span class="o">.</span><span class="n">best_estimator_</span><span class="o">.</span><span class="n">get_params</span><span class="p">()[</span><span class="s1">&#39;classifier__n_components&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
-<img alt="../_images/sphx_glr_plot_9_example_DemuxModelsMux_001.png" class="align-center" src="../_images/sphx_glr_plot_9_example_DemuxModelsMux_001.png" />
+<img alt="../_images/sphx_glr_plot_9_example_DemuxModelsMux_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_9_example_DemuxModelsMux_001.png" />
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Score</span><span class="p">:</span> <span class="mf">0.9980038370380174</span>
-<span class="n">classifier__n_components</span><span class="p">:</span> <span class="mi">7</span>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Score: 0.9979312383212906
+classifier__n_components: 3
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  1.906 seconds)</p>
-<div class="sphx-glr-footer docutils container">
+<p><strong>Total running time of the script:</strong> ( 0 minutes  1.820 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-9-example-demuxmodelsmux-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_9_example_DemuxModelsMux.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_9_example_DemuxModelsMux.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
@@ -316,10 +318,7 @@ a custom scoring function for a block with an arbitrary number of inputs.</p>
 
   
 
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
   <script type="text/javascript">
       jQuery(function () {

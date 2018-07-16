@@ -1,4 +1,8 @@
+.. note::
+    :class: sphx-glr-download-link-note
 
+    Click :ref:`here <sphx_glr_download_auto_examples_plot_8_example_DemuxModelsMux.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
 
 .. _sphx_glr_auto_examples_plot_8_example_DemuxModelsMux.py:
 
@@ -62,29 +66,27 @@ context. This morphing capability opens interesting possibilities to explore ind
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
-        def __init__(self, regressor=LinearRegression()):
-            self.regressor = regressor
-            self._fit_data = {}
-            self._predict_data = {}
-            self.steps = []
+        def __init__(self, steps=[('regressor', LinearRegression() )]):
+            self.steps = steps
 
         def fit(self, *pargs, **kwargs):
-            number_of_replicas = len(set(kwargs['selection']))
-            self.steps = [('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas, regressor=self.regressor))]
-
-            self._processes = {name: wrap_adaptee_in_process(adaptee=step_model) for name, step_model in self.steps}
-
-            self.fit_connections = dict(models={'X': 'X',
-                                                'y': 'y',
-                                                'selection': 'selection'})
-            self.predict_connections = self.fit_connections
-            self._fit_graph = build_graph(self.fit_connections)
-            self._predict_graph = build_graph(self.predict_connections)
-            super().fit(*pargs, **kwargs)
+            regressor = self.named_steps.regressor
+            number_of_clusters = len(set(kwargs['selection']))
+            multiple_regressors = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_clusters,
+                                                                             regressor=regressor)
+            steps = [('regressorsBundle', multiple_regressors)]
+            connections = dict(regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'selection'})
+            self._pipegraph = PipeGraph(steps=steps, fit_connections=connections)
+            self._pipegraph.fit(*pargs, **kwargs)
             return self
+
+        def predict(self, *pargs, **kwargs):
+            return self._pipegraph.predict(*pargs, **kwargs)
 
 
 Using this new component we can build a simplified PipeGraph:
@@ -96,7 +98,7 @@ Using this new component we can build a simplified PipeGraph:
 
     scaler = MinMaxScaler()
     gaussian_mixture = GaussianMixture(n_components=3)
-    models = RegressorsWithDataDependentNumberOfReplicas(regressor=LinearRegression())
+    models = RegressorsWithDataDependentNumberOfReplicas()
 
     steps = [('scaler', scaler),
              ('classifier', gaussian_mixture),
@@ -118,18 +120,22 @@ Using this new component we can build a simplified PipeGraph:
 
 
 .. image:: /auto_examples/images/sphx_glr_plot_8_example_DemuxModelsMux_001.png
-    :align: center
+    :class: sphx-glr-single-img
 
 
 
 
-**Total running time of the script:** ( 0 minutes  0.079 seconds)
+**Total running time of the script:** ( 0 minutes  0.075 seconds)
 
+
+.. _sphx_glr_download_auto_examples_plot_8_example_DemuxModelsMux.py:
 
 
 .. only :: html
 
  .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
 
 
   .. container:: sphx-glr-download
