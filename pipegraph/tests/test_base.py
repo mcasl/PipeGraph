@@ -1,3 +1,32 @@
+# -*- coding: utf-8 -*-
+# The MIT License (MIT)
+#
+# Copyright (c) 2018 Laura Fernandez Robles,
+#                    Hector Alaiz Moreton,
+#                    Jaime Cifuentes-Rodriguez,
+#                    Javier Alfonso-Cendón,
+#                    Camino Fernández-Llamas,
+#                    Manuel Castejón-Limas
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import logging
 import unittest
 import numpy as np
@@ -10,7 +39,6 @@ from sklearn.linear_model import LinearRegression
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import GridSearchCV
-from pipegraph.paella import Paella
 from pipegraph.base import (PipeGraphRegressor,
                             PipeGraphClassifier,
                             PipeGraph,
@@ -46,20 +74,11 @@ class TestRootFunctions(unittest.TestCase):
         gaussian_clustering = GaussianMixture(n_components=3)
         dbscan = DBSCAN(eps=0.5)
         mixer = CustomCombination()
-        paellaModel = Paella(regressor=LinearRegression,
-                             noise_label=None,
-                             max_it=10,
-                             regular_size=100,
-                             minimum_size=30,
-                             width_r=0.95,
-                             power=10,
-                             random_state=42)
         linear_model = LinearRegression()
         self.steps = steps = [('Concatenate_Xy', concatenator),
                               ('Gaussian_Mixture', gaussian_clustering),
                               ('Dbscan', dbscan),
                               ('Combine_Clustering', mixer),
-                              ('Paella', paellaModel),
                               ('Regressor', linear_model),
                               ]
 
@@ -75,9 +94,8 @@ class TestRootFunctions(unittest.TestCase):
                 dominant=('Dbscan', 'predict'),
                 other=('Gaussian_Mixture', 'predict')),
 
-            'Paella': dict(X='X', y='y', classification=('Combine_Clustering', 'predict')),
 
-            'Regressor': dict(X='X', y='y', sample_weight=('Paella', 'predict'))
+            'Regressor': dict(X='X', y='y')
         }
 
     def test_wrap_adaptee_in_process__right_classes(self):
@@ -122,7 +140,6 @@ class TestRootFunctions(unittest.TestCase):
                                                     'Gaussian_Mixture',
                                                     'Dbscan',
                                                     'Combine_Clustering',
-                                                    'Paella',
                                                     'Regressor',
                                                     ]))
 
@@ -135,8 +152,6 @@ class TestRootFunctions(unittest.TestCase):
         self.assertEqual(in_edges['Gaussian_Mixture'], ['Concatenate_Xy'])
         self.assertEqual(in_edges['Dbscan'], ['Concatenate_Xy'])
         self.assertEqual(sorted(in_edges['Combine_Clustering']), sorted(['Gaussian_Mixture', 'Dbscan']))
-        self.assertEqual(in_edges['Paella'], ['Combine_Clustering'])
-        self.assertEqual(in_edges['Regressor'], ['Paella'])
 
 
     def test_make_connections_when_not_provided_to_init__Many_steps(self):
@@ -146,8 +161,7 @@ class TestRootFunctions(unittest.TestCase):
                         Gaussian_Mixture={'X': ('Concatenate_Xy', 'predict')},
                         Dbscan={'X': ('Gaussian_Mixture', 'predict')},
                         Combine_Clustering={'X': ('Dbscan', 'predict')},
-                        Paella={'X': ('Combine_Clustering', 'predict')},
-                        Regressor={'X': ('Paella', 'predict'),
+                        Regressor={'X': ('Combine_Clustering', 'predict'),
                                    'y':'y'}
                         )
         self.assertEqual(connections, expected)
@@ -161,20 +175,11 @@ class TestPipegraph(unittest.TestCase):
         gaussian_clustering = GaussianMixture(n_components=3)
         dbscan = DBSCAN(eps=0.5)
         mixer = CustomCombination()
-        paellaModel = Paella(regressor=LinearRegression,
-                             noise_label=None,
-                             max_it=10,
-                             regular_size=100,
-                             minimum_size=30,
-                             width_r=0.95,
-                             power=10,
-                             random_state=42)
         linear_model = LinearRegression()
         steps = [('Concatenate_Xy', concatenator),
                  ('Gaussian_Mixture', gaussian_clustering),
                  ('Dbscan', dbscan),
                  ('Combine_Clustering', mixer),
-                 ('Paella', paellaModel),
                  ('Regressor', linear_model),
                  ]
 
@@ -190,16 +195,13 @@ class TestPipegraph(unittest.TestCase):
                 dominant=('Dbscan', 'predict'),
                 other=('Gaussian_Mixture', 'predict')),
 
-            'Paella': dict(X='X', y='y', classification=('Combine_Clustering', 'predict')),
-
-            'Regressor': dict(X='X', y='y', sample_weight=('Paella', 'predict'))
+            'Regressor': dict(X='X', y='y')
         }
 
         self.steps_external = [('_External', concatenator),
                                ('Gaussian_Mixture', gaussian_clustering),
                                ('Dbscan', dbscan),
                                ('Combine_Clustering', mixer),
-                               ('Paella', paellaModel),
                                ('Regressor', linear_model),
                                ]
 
@@ -215,14 +217,13 @@ class TestPipegraph(unittest.TestCase):
                 dominant=('Dbscan', 'predict'),
                 other=('Gaussian_Mixture', 'predict')),
 
-            'Paella': dict(X='X', y='y', classification=('Combine_Clustering', 'predict')),
-
-            'Regressor': dict(X='X', y='y', sample_weight=('Paella', 'predict'))
+            'Regressor': dict(X='X', y='y')
         }
 
         self.steps = steps
         self.connections = connections
         self.pgraph = PipeGraph(steps=steps, fit_connections=connections)
+        self.pgraph.fit(self.X, self.y)
 
     def test_Pipegraph__External_step_name(self):
         pgraph = PipeGraph(steps=self.steps_external, fit_connections=self.connections_external)
@@ -328,7 +329,6 @@ class TestPipegraph(unittest.TestCase):
                                                          'Gaussian_Mixture',
                                                          'Dbscan',
                                                          'Combine_Clustering',
-                                                         'Paella',
                                                          'Regressor',
                                                          ]))
 
@@ -357,7 +357,6 @@ class TestPipegraph(unittest.TestCase):
                                                              'Gaussian_Mixture',
                                                              'Dbscan',
                                                              'Combine_Clustering',
-                                                             'Paella',
                                                              'Regressor',
                                                              ]))
 
@@ -383,21 +382,18 @@ class TestPipegraph(unittest.TestCase):
         pgraph = self.pgraph
         pgraph._fit_data = {('_External', 'X'): self.X,
                             ('_External', 'y'): self.y,
-                            ('Paella', 'predict'): self.y * 2,
                             ('Dbscan', 'predict'): self.y * 4}
 
         result = pgraph._read_fit_signature_variables_from_graph_data(graph_data=pgraph._fit_data,
                                                                       step_name='Regressor')
         assert_array_equal(result['X'], self.X)
         assert_array_equal(result['y'], self.y)
-        assert_array_equal(result['sample_weight'], self.y * 2)
-        self.assertEqual(len(result), 3)
+        self.assertEqual(len(result), 2)
 
     def test_Pipegraph__read_predict_signature_variables_from_graph_data(self):
         pgraph = self.pgraph
         pgraph._predict_data = {('_External', 'X'): self.X,
                                 ('_External', 'y'): self.y,
-                                ('Paella', 'predict'): self.y * 2,
                                 ('Dbscan', 'predict'): self.y * 4}
 
         result = pgraph._read_predict_signature_variables_from_graph_data(graph_data=pgraph._predict_data,
@@ -417,7 +413,6 @@ class TestPipegraph(unittest.TestCase):
         pgraph = self.pgraph
         pgraph._fit_data = {('_External', 'X'): self.X,
                             ('_External', 'y'): self.y,
-                            ('Paella', 'predict'): self.y * 2,
                             ('Dbscan', 'predict'): self.y * 4,
                             }
         expected = pd.concat([self.X, self.y], axis=1)
@@ -425,17 +420,6 @@ class TestPipegraph(unittest.TestCase):
         self.assertEqual(expected.shape, pgraph._fit_data['Concatenate_Xy', 'predict'].shape)
         assert_frame_equal(self.X, pgraph._fit_data['Concatenate_Xy', 'predict'].loc[:,['X']])
         assert_frame_equal(self.y, pgraph._fit_data['Concatenate_Xy', 'predict'].loc[:,['y']])
-
-    def test_Pipegraph__under_fit__Paella__fit(self):
-        pgraph = self.pgraph
-        pgraph._fit_data = {('_External', 'X'): self.X,
-                            ('_External', 'y'): self.y,
-                            }
-        pgraph._fit('Concatenate_Xy')
-        pgraph._fit('Gaussian_Mixture')
-        pgraph._fit('Dbscan')
-        pgraph._fit('Combine_Clustering')
-        self.assertIsNone(pgraph._fit('Paella'))
 
     def test_Pipegraph__predict__concatenate_Xy(self):
         X = self.X
@@ -533,10 +517,7 @@ class TestPipegraph(unittest.TestCase):
         result = current_step.pg_predict(X=X)
         self.assertEqual(list(result.keys()), ['predict'])
 
-    def test_Pipegraph__data_attributes_empty_at_init(self):
-        pgraph = self.pgraph
-        self.assertEqual(pgraph._fit_data, {})
-        self.assertEqual(pgraph._predict_data, {})
+
 
     def test_Pipegraph__fit_node_names(self):
         pgraph = self.pgraph.fit(self.X, self.y)
@@ -545,7 +526,6 @@ class TestPipegraph(unittest.TestCase):
                                                     'Gaussian_Mixture',
                                                     'Dbscan',
                                                     'Combine_Clustering',
-                                                    'Paella',
                                                     'Regressor',
                                                     ]))
 
@@ -556,7 +536,6 @@ class TestPipegraph(unittest.TestCase):
                                                     'Gaussian_Mixture',
                                                     'Dbscan',
                                                     'Combine_Clustering',
-                                                    'Paella',
                                                     'Regressor',
                                                     ]))
 
@@ -567,7 +546,6 @@ class TestPipegraph(unittest.TestCase):
                                                     'Dbscan',
                                                     'Gaussian_Mixture',
                                                     'Combine_Clustering',
-                                                    'Paella',
                                                     'Regressor',
                                                     ]))
 
@@ -599,9 +577,6 @@ class TestPipegraph(unittest.TestCase):
         self.assertEqual(pgraph._fit_data['Combine_Clustering', 'predict'].max(),
                          pgraph._fit_data['Gaussian_Mixture', 'predict'].max())
 
-        self.assertEqual(pgraph._fit_data['Paella', 'predict'].shape[0], self.y.shape[0])
-        self.assertTrue(pgraph._fit_data['Paella', 'predict'].min() >= 0)
-        self.assertEqual(pgraph._fit_data['Paella', 'predict'].max(), 1)
 
         self.assertEqual(pgraph._fit_data['Regressor', 'predict'].shape[0], self.y.shape[0])
 
@@ -626,9 +601,6 @@ class TestPipegraph(unittest.TestCase):
         self.assertEqual(pgraph._fit_data['Combine_Clustering', 'predict'].max(),
                          pgraph._fit_data['Gaussian_Mixture', 'predict'].max())
 
-        self.assertEqual(pgraph._fit_data['Paella', 'predict'].shape[0], self.y.shape[0])
-        self.assertTrue(pgraph._fit_data['Paella', 'predict'].min() >= 0)
-        self.assertEqual(pgraph._fit_data['Paella', 'predict'].max(), 1)
 
         self.assertEqual(pgraph._fit_data['Regressor', 'predict'].shape[0], self.y.shape[0])
 
@@ -649,9 +621,6 @@ class TestPipegraph(unittest.TestCase):
         self.assertEqual(pgraph._fit_data['Combine_Clustering', 'predict'].max(),
                          pgraph._fit_data['Gaussian_Mixture', 'predict'].max())
 
-        self.assertEqual(pgraph._fit_data['Paella', 'predict'].shape[0], self.y.shape[0])
-        self.assertTrue(pgraph._fit_data['Paella', 'predict'].min() >= 0)
-        self.assertEqual(pgraph._fit_data['Paella', 'predict'].max(), 1)
 
         self.assertEqual(pgraph._fit_data['Regressor', 'predict'].shape[0], self.y.shape[0])
 
@@ -693,15 +662,6 @@ class TestPipegraph(unittest.TestCase):
         self.assertEqual(pgraph._steps_dict['Gaussian_Mixture'].get_params()['n_components'], 3)
         self.assertEqual(pgraph._steps_dict['Dbscan'].get_params()['eps'], 0.5)
         self.assertEqual(pgraph._steps_dict['Combine_Clustering'].get_params(), {})
-        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['noise_label'], None)
-        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['max_it'], 10)
-        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['regular_size'], 100)
-        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['minimum_size'], 30)
-        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['width_r'], 0.95)
-        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['n_neighbors'], 1)
-        self.assertEqual(pgraph._steps_dict['Paella'].get_params()['power'], 10)
-        self.assertEqual(pgraph._steps_dict['Regressor'].get_params(),
-                         {'copy_X': True, 'fit_intercept': True, 'n_jobs': 1, 'normalize': False})
 
     def test_Pipegraph__step_set_params_multiple(self):
         pgraph = self.pgraph
@@ -710,8 +670,6 @@ class TestPipegraph(unittest.TestCase):
                          5)
         self.assertEqual(pgraph._steps_dict['Dbscan'].set_params(eps=10.2).get_params()['eps'],
                          10.2)
-        self.assertEqual(pgraph._steps_dict['Paella'].set_params(noise_label=-3).get_params()['noise_label'],
-                         -3)
         self.assertEqual(pgraph._steps_dict['Regressor'].set_params(copy_X=False).get_params(),
                          {'copy_X': False, 'fit_intercept': True, 'n_jobs': 1, 'normalize': False})
         self.assertEqual(pgraph._steps_dict['Regressor'].set_params(n_jobs=13).get_params(),
@@ -720,7 +678,7 @@ class TestPipegraph(unittest.TestCase):
     def test_Pipegraph__named_steps(self):
         pgraph = self.pgraph
         self.assertEqual(pgraph.named_steps, dict(self.steps))
-        self.assertEqual(len(pgraph.named_steps), 6)
+        self.assertEqual(len(pgraph.named_steps), 5)
 
 class TestPipeGraphFitConnections(unittest.TestCase):
     def setUp(self):
@@ -767,10 +725,10 @@ class TestPipeGraphSingleNodeLinearModel(unittest.TestCase):
         self.pgraph = PipeGraph(steps=steps, fit_connections=connections)
         self.param_grid = dict(linear_model__fit_intercept=[False, True],
                                linear_model__normalize=[True, False])
+        self.pgraph.fit(self.X, self.y)
 
     def test_single_node_fit(self):
         pgraph = self.pgraph
-        self.assertFalse(hasattr(pgraph._steps_dict['linear_model'], 'coef_'))
         pgraph.fit(X=self.X, y=self.y)
         self.assertTrue(hasattr(pgraph._steps_dict['linear_model'], 'coef_'))
         self.assertAlmostEqual(pgraph._steps_dict['linear_model'].coef_[0][0], 2)
@@ -844,10 +802,10 @@ class TestTwoNodes(unittest.TestCase):
         self.param_grid = dict(linear_model__fit_intercept=[False, True],
                                linear_model__normalize=[True, False],
                                )
+        self.pgraph.fit(self.X, self.y)
 
     def test_TwoNodes_fit(self):
         pgraph = self.pgraph
-        self.assertFalse(hasattr(pgraph._steps_dict['linear_model'], 'coef_'))
         pgraph.fit(X=self.X, y=self.y)
         self.assertTrue(hasattr(pgraph._steps_dict['linear_model'], 'coef_'))
         self.assertTrue(1.9 < pgraph._steps_dict['linear_model'].coef_[0][0] < 2.1)

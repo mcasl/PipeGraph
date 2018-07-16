@@ -1,3 +1,32 @@
+# -*- coding: utf-8 -*-
+# The MIT License (MIT)
+#
+# Copyright (c) 2018 Laura Fernandez Robles,
+#                    Hector Alaiz Moreton,
+#                    Jaime Cifuentes-Rodriguez,
+#                    Javier Alfonso-Cendón,
+#                    Camino Fernández-Llamas,
+#                    Manuel Castejón-Limas
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import logging
 import unittest
 import numpy as np
@@ -119,8 +148,8 @@ class TestCustomFitPredictWithDictionaryOutputMixin(unittest.TestCase):
         wrapped_gm = add_mixins_to_step(gm)
         double_wrap= add_mixins_to_step(wrapped_gm)
 
-        double_wrap.fit(X=X, y=y)
-        result = double_wrap.predict(X=X)
+        double_wrap.pg_fit(X=X, y=y)
+        result = double_wrap.pg_predict(X=X)
         self.assertEqual(sorted(list(result.keys())),
                          sorted(['predict', 'predict_proba', 'predict_log_proba']))
         self.assertEqual(result['predict'].shape[0], self.size)

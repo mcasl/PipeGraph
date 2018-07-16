@@ -1,4 +1,31 @@
 # -*- coding: utf-8 -*-
+# The MIT License (MIT)
+#
+# Copyright (c) 2018 Laura Fernandez Robles,
+#                    Hector Alaiz Moreton,
+#                    Jaime Cifuentes-Rodriguez,
+#                    Javier Alfonso-Cendón,
+#                    Camino Fernández-Llamas,
+#                    Manuel Castejón-Limas
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 import networkx as nx
 import numpy as np
@@ -478,7 +505,7 @@ class PipeGraph(_BaseComposition):
         A dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:
 
         - The keys of the nested dictionary represents the input variable as named at the current step.
-        - The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:
+        - The values associated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:
 
             - A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.
             - A string representing a variable from an external source to the PipeGraphRegressor object, such as those provided by the user while invoking the fit, predict or fit_predict methods.
@@ -828,23 +855,19 @@ def build_graph(connections):
 
 def add_mixins_to_step(step, mixin=None):
     """
-    This function wraps the objects defined in Pipegraph's steps parameters in order to provide a common interface for them all.
+    This function adds mixin classes to models in order to provide a common interface for them all.
     This interface declares two main methods: fit and predict. So, no matter whether the adaptee is capable of doing
-    predict, transform or fit_predict, once wrapped the adapter uses predict as method for producing output.
+    predict, transform or fit_predict, once the mixin class is added the model is capable
+    of using pg_predict as method for producing output.
 
     Parameters:
     -----------
-        adaptee: a Scikit-Learn object, for instance; or a user made custom estimator may be.
-            The object to be wrapped.
-        adapter_class: A user made class; or one already defined in pipegraph.adapters
-            The wrapper.
+        step: a Scikit-Learn object, for instance; or a user made custom estimator may be.
+        mixin: A user made class; or one already defined in pipegraph.adapters.
 
     Returns:
     -------
-        An object wrapped into a first adapter layer that provides a common fit and predict interface and then wrapped
-        again in a second external layer using the Process class. Besides of being used by PipeGraph itself,
-        the user can find this function useful for inserting a user made block as one of the steps
-        in PipeGraph step's parameter.
+        The step object transformed by adding a mixing class.
     """
 
     if mixin is None:
@@ -1040,12 +1063,12 @@ class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
                                                                          regressor=regressor)
         steps = [('regressorsBundle', multiple_regressors)]
         connections = dict(regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'selection'})
-        self._adaptee = PipeGraph(steps=steps, fit_connections=connections)
-        self._adaptee.fit(*pargs, **kwargs)
+        self._pipegraph = PipeGraph(steps=steps, fit_connections=connections)
+        self._pipegraph.fit(*pargs, **kwargs)
         return self
 
     def predict(self, *pargs, **kwargs):
-        return self._adaptee.predict(*pargs, **kwargs)
+        return self._pipegraph.predict(*pargs, **kwargs)
 
 
 def query_number_of_clusters_from_classifier(classifier):
