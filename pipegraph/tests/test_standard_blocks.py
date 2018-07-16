@@ -1,3 +1,32 @@
+# -*- coding: utf-8 -*-
+# The MIT License (MIT)
+#
+# Copyright (c) 2018 Laura Fernandez Robles,
+#                    Hector Alaiz Moreton,
+#                    Jaime Cifuentes-Rodriguez,
+#                    Javier Alfonso-Cendón,
+#                    Camino Fernández-Llamas,
+#                    Manuel Castejón-Limas
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import logging
 import unittest
 
@@ -13,14 +42,13 @@ from sklearn.model_selection import GridSearchCV
 
 from pipegraph.base import (PipeGraphRegressor,
                             PipeGraph,
-                            wrap_adaptee_in_process,
+                            add_mixins_to_step,
                             Concatenator, ColumnSelector, RegressorsWithParametrizedNumberOfReplicas,
                             RegressorsWithDataDependentNumberOfReplicas,
                             NeutralRegressor)
 
-from pipegraph.paella import Paella
+
 from pipegraph.demo_blocks import (CustomCombination,
-                                   TrainTestSplit
                                    )
 
 logging.basicConfig(level=logging.NOTSET)
@@ -114,7 +142,7 @@ class TestModelsWithDataDependentNumberOfReplicas(unittest.TestCase):
         self.y = pd.concat([y_first, y_second, y_third], axis=0).to_frame()
         scaler = MinMaxScaler()
         gaussian_mixture = GaussianMixture(n_components=3)
-        models = RegressorsWithDataDependentNumberOfReplicas(regressor=LinearRegression())
+        models = RegressorsWithDataDependentNumberOfReplicas(steps=[('regressor', LinearRegression())])
         neutral_regressor = NeutralRegressor()
 
         steps = [('scaler', scaler),
@@ -131,7 +159,7 @@ class TestModelsWithDataDependentNumberOfReplicas(unittest.TestCase):
                        }
 
         self.pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
-
+        self.pgraph.fit(self.X, self.y)
 
     def test_ModelsWithDataDependentNumberOfReplicas__connections(self):
         X = self.X
@@ -142,11 +170,8 @@ class TestModelsWithDataDependentNumberOfReplicas(unittest.TestCase):
         y_pred = pgraph.predict(X)
 
         self.assertTrue(isinstance(pgraph.named_steps['models'], RegressorsWithDataDependentNumberOfReplicas))
-        result_connections = pgraph.named_steps['models'].fit_connections
-        expected_connections = {'models': {'X': 'X',
-                                           'selection': 'selection',
-                                           'y': 'y'},
-                               }
+        result_connections = pgraph.named_steps['models']._pipegraph.fit_connections
+        expected_connections = {'regressorsBundle': {'X': 'X', 'selection': 'selection', 'y': 'y'}}
         self.assertEqual(result_connections, expected_connections)
         result_steps = sorted(list(pgraph.named_steps.keys()))
         expected_steps = sorted(['scaler', 'classifier', 'models', 'neutral'])
@@ -183,121 +208,6 @@ class TestModelsWithDataDependentNumberOfReplicas(unittest.TestCase):
         gs.fit(X_train, y_train)
         result = gs.score(X_test, y_test)
         self.assertTrue(result > -42 )
-
-
-class TestPaella(unittest.TestCase):
-    def setUp(self):
-        self.size = 100
-        self.X = pd.DataFrame(dict(X=np.random.rand(self.size, )))
-        self.y = pd.DataFrame(dict(y=np.random.rand(self.size, )))
-        concatenator = Concatenator()
-        gaussian_clustering = GaussianMixture(n_components=3)
-        dbscan = DBSCAN(eps=0.5)
-        mixer = CustomCombination()
-        paellaModel = Paella(regressor=LinearRegression,
-                             noise_label=None,
-                             max_it=10,
-                             regular_size=100,
-                             minimum_size=30,
-                             width_r=0.95,
-                             power=10,
-                             random_state=42)
-        linear_model = LinearRegression()
-        steps = [('Concatenate_Xy', concatenator),
-                 ('Gaussian_Mixture', gaussian_clustering),
-                 ('Dbscan', dbscan),
-                 ('Combine_Clustering', mixer),
-                 ('Paella', paellaModel),
-                 ('Regressor', linear_model),
-                 ]
-
-        connections = {
-            'Concatenate_Xy': dict(df1='X',
-                                   df2='y'),
-
-            'Gaussian_Mixture': dict(X=('Concatenate_Xy', 'predict')),
-
-            'Dbscan': dict(X=('Concatenate_Xy', 'predict')),
-
-            'Combine_Clustering': dict(
-                dominant=('Dbscan', 'predict'),
-                other=('Gaussian_Mixture', 'predict')),
-
-            'Paella': dict(X='X', y='y', classification=('Combine_Clustering', 'predict')),
-
-            'Regressor': dict(X='X', y='y', sample_weight=('Paella', 'predict'))
-        }
-        self.steps = steps
-        self.connections = connections
-        self.pgraph = PipeGraph(steps=steps, fit_connections=connections)
-
-    def test_Paella__init(self):
-        self.assertTrue(isinstance(self.pgraph._processes['Paella']._strategy._adaptee, Paella))
-
-    def test_Paella__under_fit__Paella__fit(self):
-        pgraph = self.pgraph
-        pgraph._fit_data = {('_External', 'X'): self.X,
-                            ('_External', 'y'): self.y,
-                            }
-        pgraph._fit('Concatenate_Xy')
-        pgraph._fit('Gaussian_Mixture')
-        pgraph._fit('Dbscan')
-        pgraph._fit('Combine_Clustering')
-
-        paellador = pgraph._processes['Paella']._strategy._adaptee
-
-        X = pgraph._fit_data[('_External', 'X')]
-        y = pgraph._fit_data[('_External', 'y')]
-        classification = pgraph._fit_data[('Combine_Clustering', 'predict')]
-        paellador.fit(X, y, classification)
-
-    def test_Paella__under_predict__Paella__fit(self):
-        pgraph = self.pgraph
-        pgraph._fit_data = {('_External', 'X'): self.X,
-                            ('_External', 'y'): self.y, }
-        pgraph._fit('Concatenate_Xy')
-        pgraph._fit('Gaussian_Mixture')
-        pgraph._fit('Dbscan')
-        pgraph._fit('Combine_Clustering')
-        pgraph._fit('Paella')
-
-        X = pgraph._fit_data[('_External', 'X')]
-        y = pgraph._fit_data[('_External', 'y')]
-        paellador = pgraph._processes['Paella']._strategy._adaptee
-        result = paellador.transform(X=X, y=y)
-        self.assertEqual(result.shape[0], self.size)
-
-    def test_Paella__get_params(self):
-        pgraph = self.pgraph
-        paellador = pgraph._processes['Paella']
-        result = paellador.get_params()['minimum_size']
-        self.assertEqual(result, 30)
-
-    def test_Paella__set_params(self):
-        pgraph = self.pgraph
-        paellador = pgraph._processes['Paella']
-        result_pre = paellador.get_params()['max_it']
-        self.assertEqual(result_pre, 10)
-        result_post = paellador.set_params(max_it=1000).get_params()['max_it']
-        self.assertEqual(result_post, 1000)
-
-
-class TestTrainTestSplit(unittest.TestCase):
-    def setUp(self):
-        self.X = [1, 2, 3, 4, 5, 6, 7, 8]
-        self.y = [101, 200, 300, 400, 500, 600, 700, 800]
-
-    def test_train_test_predict(self):
-        tts = TrainTestSplit()
-        step = wrap_adaptee_in_process(tts)
-        result = step.predict(X=self.X, y=self.y)
-        self.assertEqual(len(result), 4)
-        self.assertEqual(sorted(list(result.keys())),
-                         sorted(['X_train', 'X_test', 'y_train', 'y_test']))
-        self.assertEqual(len(result['X_train']), 6)
-        self.assertEqual(len(result['X_test']), 2)
-        self.assertEqual(len(result['y_train']), 6)
-        self.assertEqual(len(result['y_test']), 2)
 
 
 class TestColumnSelector(unittest.TestCase):
