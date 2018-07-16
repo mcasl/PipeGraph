@@ -46,7 +46,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y)
 
 scaler = MinMaxScaler()
 gaussian_mixture = GaussianMixture(n_components=3)
-models = RegressorsWithDataDependentNumberOfReplicas(regressor=LinearRegression())
+models = RegressorsWithDataDependentNumberOfReplicas()
 neutral_regressor = NeutralRegressor()
 
 steps = [('scaler', scaler),
