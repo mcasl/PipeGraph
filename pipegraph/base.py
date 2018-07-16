@@ -1,4 +1,31 @@
 # -*- coding: utf-8 -*-
+# The MIT License (MIT)
+#
+# Copyright (c) 2018 Laura Fernandez Robles,
+#                    Hector Alaiz Moreton,
+#                    Jaime Cifuentes-Rodriguez,
+#                    Javier Alfonso-Cendón,
+#                    Camino Fernández-Llamas,
+#                    Manuel Castejón-Limas
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 import networkx as nx
 import numpy as np
@@ -10,6 +37,7 @@ from sklearn.mixture import GaussianMixture
 
 from sklearn.utils import Bunch
 from sklearn.utils.metaestimators import _BaseComposition
+from pipegraph.adapters import AdapterMixins
 
 import logging
 logging.basicConfig(level=logging.NOTSET)
@@ -477,7 +505,7 @@ class PipeGraph(_BaseComposition):
         A dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:
 
         - The keys of the nested dictionary represents the input variable as named at the current step.
-        - The values assocciated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:
+        - The values associated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:
 
             - A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.
             - A string representing a variable from an external source to the PipeGraphRegressor object, such as those provided by the user while invoking the fit, predict or fit_predict methods.
@@ -496,14 +524,8 @@ class PipeGraph(_BaseComposition):
         self.fit_connections = fit_connections
         self.predict_connections = predict_connections if predict_connections is not None else fit_connections
         self.log_level = log_level
-
-        node_names = [name for name, model in steps]
-        if '_External' in node_names:
-            raise ValueError("Please use another name for the _External node. _External is used internally.")
-
         self._fit_graph = None
         self._predict_graph = None
-        self._processes = {name: wrap_adaptee_in_process(adaptee=step_model) for name, step_model in steps}
         self._fit_data = {}
         self._predict_data = {}
 
@@ -578,6 +600,12 @@ class PipeGraph(_BaseComposition):
             pargs:
             kwargs:
         """
+
+        node_names = [name for name, model in self.steps]
+        if '_External' in node_names:
+            raise ValueError("Please use another name for the _External node. _External is used internally.")
+        self._steps_dict = {name: add_mixins_to_step(step=step_model) for name, step_model in self.steps}
+
         if len(pargs) == 0:
             external_data = {}
         elif len(pargs) == 1:
@@ -620,7 +648,7 @@ class PipeGraph(_BaseComposition):
         fit_inputs = self._read_fit_signature_variables_from_graph_data(graph_data=self._fit_data,
                                                                         step_name=step_name)
         try:
-            self._processes[step_name].fit(**fit_inputs)
+            self._steps_dict[step_name].pg_fit(**fit_inputs)
         except ValueError:
             print("ERROR: _fit.fit call ValueError!")
 
@@ -628,7 +656,7 @@ class PipeGraph(_BaseComposition):
                                                                                 step_name=step_name)
         results = dict()
         try:
-            results = self._processes[step_name].predict(**predict_inputs)
+            results = self._steps_dict[step_name].pg_predict(**predict_inputs)
         except ValueError:
             print("ERROR: _fit.predict call ValueError!")
 
@@ -683,7 +711,7 @@ class PipeGraph(_BaseComposition):
                                                                                 step_name=step_name)
         results =  {}
         try:
-            results = self._processes[step_name].predict(**predict_inputs)
+            results = self._steps_dict[step_name].pg_predict(**predict_inputs)
         except ValueError:
             print("ERROR: _predict call ValueError!")
 
@@ -725,7 +753,7 @@ class PipeGraph(_BaseComposition):
         """
         connections = self.fit_connections if graph_data is self._fit_data else self.predict_connections
 
-        variable_list = self._processes[step_name]._get_fit_signature()
+        variable_list = self._steps_dict[step_name]._get_fit_signature()
 
         connection_tuples = {}
         for key, value in connections[step_name].items():
@@ -758,7 +786,7 @@ class PipeGraph(_BaseComposition):
         """
         connections = self.fit_connections if graph_data is self._fit_data else self.predict_connections
 
-        variable_list = self._processes[step_name]._get_predict_signature()
+        variable_list = self._steps_dict[step_name]._get_predict_signature()
 
         connection_tuples = {}
         for key, value in connections[step_name].items():
@@ -789,102 +817,6 @@ class PipeGraph(_BaseComposition):
         graph_data.update(
             {(step_name, variable): value for variable, value in output_data.items()}
         )
-
-
-class Process(BaseEstimator):
-    """
-    This class holds an strategy which is in charge of fitting and predicting the PipeGraph steps.
-
-    Parameters
-    ----------
-    strategy : pipegraph.adapters.AdapterForSkLearnLikeAdaptee
-    A wrapper for a sklearn like object
-
-    """
-
-    def __init__(self, strategy):
-        self._strategy = strategy
-
-    def get_params(self):
-        """
-        Get parameters for this estimator or pipeGraph CustomBlock.
-        Parameters
-        -------
-        params : mapping of string to any
-            Parameter names mapped to their values.
-        """
-        return self._strategy.get_params()
-
-    def set_params(self, **params):
-        """"
-        Set the parameters of this estimator.
-        The method works on simple estimators as well as on nested objects
-        such as pipeGraph). The latter have parameters of the form
-        ``<component>__<parameter>`` so that it's possible to update each
-        component of a nested object.
-        Returns
-        -------
-        self
-        """
-        self._strategy.set_params(**params)
-        return self
-
-    def fit(self, *pargs, **kwargs):
-        """
-        Fit the model included in the step
-        ----------
-        *pargs : iterable
-            Training data. Must fulfill input requirements of first step of the
-            pipeline.
-        **kwargs : dict of string -> object
-            Parameters passed to the ``fit`` method of each step, where
-            each parameter name is prefixed such that parameter ``p`` for step
-            ``s`` has key ``s__p``.
-        Returns
-        -------
-            self : returns an instance of _strategy.
-        """
-        self._strategy.fit(*pargs, **kwargs)
-        return self
-
-    def __getattr__(self, name):
-        """
-
-        Args:
-            name:
-
-        Returns:
-
-        """
-        return getattr(self.__dict__['_strategy'], name)
-
-    def __setattr__(self, name, value):
-        """
-
-        Args:
-            name:
-            value:
-        """
-        if name in ('_strategy',):
-            self.__dict__[name] = value
-        else:
-            setattr(self.__dict__['_strategy'], name, value)
-
-    def __delattr__(self, name):
-        """
-
-        Args:
-            name:
-        """
-        delattr(self.__dict__['_strategy'], name)
-
-    def __repr__(self):
-        """
-
-        Returns:
-
-        """
-        return self._strategy.__repr__()
 
 
 def build_graph(connections):
@@ -921,45 +853,44 @@ def build_graph(connections):
 
 
 
-def wrap_adaptee_in_process(adaptee, adapter_class=None):
+def add_mixins_to_step(step, mixin=None):
     """
-    This function wraps the objects defined in Pipegraph's steps parameters in order to provide a common interface for them all.
+    This function adds mixin classes to models in order to provide a common interface for them all.
     This interface declares two main methods: fit and predict. So, no matter whether the adaptee is capable of doing
-    predict, transform or fit_predict, once wrapped the adapter uses predict as method for producing output.
+    predict, transform or fit_predict, once the mixin class is added the model is capable
+    of using pg_predict as method for producing output.
 
     Parameters:
     -----------
-        adaptee: a Scikit-Learn object, for instance; or a user made custom estimator may be.
-            The object to be wrapped.
-        adapter_class: A user made class; or one already defined in pipegraph.adapters
-            The wrapper.
+        step: a Scikit-Learn object, for instance; or a user made custom estimator may be.
+        mixin: A user made class; or one already defined in pipegraph.adapters.
 
     Returns:
     -------
-        An object wrapped into a first adapter layer that provides a common fit and predict interface and then wrapped
-        again in a second external layer using the Process class. Besides of being used by PipeGraph itself,
-        the user can find this function useful for inserting a user made block as one of the steps
-        in PipeGraph step's parameter.
+        The step object transformed by adding a mixing class.
     """
-    if adapter_class is not None:
-        strategy = adapter_class(adaptee)
-    elif isinstance(adaptee, Process):
-        return adaptee
-    elif isinstance(adaptee, PipeGraph):
-        strategy = AdapterForCustomFitPredictWithDictionaryOutputAdaptee(adaptee)
-    elif adaptee.__class__ in strategies_for_custom_adaptees:
-        strategy = strategies_for_custom_adaptees[adaptee.__class__](adaptee)
-    elif hasattr(adaptee, 'predict'):
-        strategy = AdapterForFitPredictAdaptee(adaptee)
-    elif hasattr(adaptee, 'transform'):
-        strategy = AdapterForFitTransformAdaptee(adaptee)
-    elif hasattr(adaptee, 'fit_predict'):
-        strategy = AdapterForAtomicFitPredictAdaptee(adaptee)
-    else:
-        raise ValueError('Error: Unknown adaptee!')
 
-    process = Process(strategy)
-    return process
+    if mixin is None:
+        if isinstance(step, AdapterMixins):
+            return step
+        elif step.__class__ in strategies_for_custom_adaptees:
+            mixin = strategies_for_custom_adaptees[step.__class__]
+        elif isinstance(step, PipeGraph):
+            mixin = CustomFitPredictWithDictionaryOutputMixin
+        elif hasattr(step, 'predict'):
+            mixin = FitPredictMixin
+        elif hasattr(step, 'transform'):
+            mixin = FitTransformMixin
+        elif hasattr(step, 'fit_predict'):
+            mixin = AtomicFitPredictMixin
+        else:
+            raise ValueError('Error: Unknown step class!')
+    elif isinstance(step, mixin):
+        return step
+
+    new_class_name = step.__class__.__name__
+    step.__class__ = type(new_class_name, (type(step), mixin), {})
+    return step
 
 
 def make_connections_when_not_provided_to_init(steps):
@@ -1122,33 +1053,32 @@ class RegressorsWithParametrizedNumberOfReplicas(PipeGraph, RegressorMixin):
 
 
 class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
-    def __init__(self, model_prototype=LinearRegression(), model_parameters={}):
-        self.model_prototype = model_prototype
-        self.model_parameters = model_parameters
-        self._fit_data = {}
-        self._predict_data = {}
-        self.steps = []
+    def __init__(self, steps=[('regressor', LinearRegression() )]):
+        self.steps = steps
 
     def fit(self, *pargs, **kwargs):
-        number_of_replicas = len(set(kwargs['selection']))
-        self.steps = [('models', RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_replicas))]
-
-        self._processes = {name: wrap_adaptee_in_process(adaptee=step_model) for name, step_model in self.steps}
-
-        self.fit_connections = dict(models={'X': 'X',
-                                            'y': 'y',
-                                            'selection': 'selection'})
-        self.predict_connections = self.fit_connections
-        self._fit_graph = build_graph(self.fit_connections)
-        self._predict_graph = build_graph(self.predict_connections)
-        super().fit(*pargs, **kwargs)
+        regressor = self.named_steps.regressor
+        number_of_clusters = len(set(kwargs['selection']))
+        multiple_regressors = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_clusters,
+                                                                         regressor=regressor)
+        steps = [('regressorsBundle', multiple_regressors)]
+        connections = dict(regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'selection'})
+        self._pipegraph = PipeGraph(steps=steps, fit_connections=connections)
+        self._pipegraph.fit(*pargs, **kwargs)
         return self
+
+    def predict(self, *pargs, **kwargs):
+        return self._pipegraph.predict(*pargs, **kwargs)
+
 
 def query_number_of_clusters_from_classifier(classifier):
 
     number_of_clusters_dictionary = {
+        'KMeans': 'n_clusters',
+        'SpectralClustering': 'n_clusters',
+        'AgglomerativeClustering': 'n_clusters',
         'GaussianMixture': 'n_components',
-        'KMeans': 'n_clusters'
+        'Birch': 'n_clusters',
     }
 
     classifier_class = type(classifier).__name__
@@ -1196,19 +1126,24 @@ class NeutralClassifier(BaseEstimator, ClassifierMixin):
 
 
 
-from pipegraph.adapters import (AdapterForFitTransformAdaptee,
-                                AdapterForFitPredictAdaptee,
-                                AdapterForAtomicFitPredictAdaptee,
-                                AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
-                                )
+from pipegraph.adapters import (FitTransformMixin,
+                                FitPredictMixin,
+                                AtomicFitPredictMixin,
+                                CustomFitPredictWithDictionaryOutputMixin)
+
 strategies_for_custom_adaptees = {
-    Concatenator: AdapterForFitPredictAdaptee,
-    ColumnSelector: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
-    Reshape: AdapterForFitPredictAdaptee,
-    Demultiplexer: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
-    Multiplexer: AdapterForFitPredictAdaptee,
-    RegressorsWithParametrizedNumberOfReplicas: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
-    RegressorsWithDataDependentNumberOfReplicas: AdapterForCustomFitPredictWithDictionaryOutputAdaptee,
+    PipeGraph: CustomFitPredictWithDictionaryOutputMixin,
+    PipeGraphRegressor: FitPredictMixin,
+    PipeGraphClassifier: FitPredictMixin,
+    NeutralRegressor:  FitPredictMixin,
+    NeutralClassifier:  FitPredictMixin,
+    Concatenator: FitPredictMixin,
+    ColumnSelector: CustomFitPredictWithDictionaryOutputMixin,
+    Reshape: FitPredictMixin,
+    Demultiplexer: CustomFitPredictWithDictionaryOutputMixin,
+    Multiplexer: FitPredictMixin,
+    RegressorsWithParametrizedNumberOfReplicas: CustomFitPredictWithDictionaryOutputMixin,
+    RegressorsWithDataDependentNumberOfReplicas: CustomFitPredictWithDictionaryOutputMixin,
 }
 
 from pipegraph.demo_blocks import strategies_for_demo_blocks_adaptees
