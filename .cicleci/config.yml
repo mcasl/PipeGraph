@@ -3,6 +3,19 @@ jobs:
   build:
     docker:
       - image: circleci/3.6-jessie-node
-    steps:
-      - checkout
-      - run: echo "hello world"
+   steps:
+     - checkout
+     - run:
+         name: The First Step
+         command: |
+           echo 'Hello World!'
+           echo 'This is the delivery pipeline'
+     - run:
+         name: Code Has Arrived
+         command: |
+           ls -al
+           echo '^^^That should look familiar^^^'
+     - run:
+         name: Running in a Unique Container
+         command: |
+           node -v
