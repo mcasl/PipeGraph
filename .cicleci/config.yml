@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/3.6-jessie-node
     steps:
       - checkout
       - run: echo "hello world"
