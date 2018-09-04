@@ -45,7 +45,7 @@ jobs:
       - run:
           name: Build documentation and autoexamples
           command: |
-            bash .ci_scripts/push_doc.sh
+            bash ci_scripts/push_doc.sh
 
       - store_artifacts:
           path: test-reports
