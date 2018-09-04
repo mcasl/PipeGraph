@@ -39,7 +39,7 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            pytest pipegraph/tests
+            python -m pytest pipegraph/tests
       - store_artifacts:
           path: test-reports
           destination: test-reports
