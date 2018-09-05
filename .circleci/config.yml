@@ -13,8 +13,9 @@ jobs:
       - run:
             name: Make html
             command: |
+               . $HOME/venv/bin/activate
                python setup.py clean
-               python setup.py develop
+               sudo python setup.py develop
                set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
                sudo cat ~/log.txt && if grep -q "Traceback (most recent call last):" ~/log.txt; then false; else true; fi
 
