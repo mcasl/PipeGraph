@@ -7,36 +7,12 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.6.1
+      - image: mcasl/circleci_pipegraph:0.0.1
     steps:
       - checkout
       - run:
-            name: Download dependencies
+            name: Make html
             command: |
-                sudo -E apt-get -yq remove texlive-binaries --purge
-                sudo apt-get update
-                sudo apt-get install libatlas-dev libatlas3gf-base
-                sudo apt-get install build-essential python-dev python-setuptools
-                python3 -m venv venv
-                . venv/bin/activate
-                sudo pip install numpy
-                sudo pip install --upgrade scipy
-                sudo pip install --upgrade matplotlib
-                sudo pip install --upgrade setuptools
-                sudo pip install --upgrade nose
-                sudo pip install --upgrade coverage
-                sudo pip install --upgrade sphinx
-                sudo pip install --upgrade pillow
-                sudo pip install --upgrade sphinx-gallery
-                sudo pip install --upgrade sphinx_rtd_theme
-                sudo pip install --upgrade networkx pandas
-
-                sudo -E apt-get -yq update
-                sudo -E apt-get -yq --no-install-suggests --no-install-recommends --force-yes install dvipng texlive-latex-base texlive-latex-extra
-                sudo pip install --upgrade cython numpydoc
-                sudo pip install --upgrade scikit-learn
-                sudo pip install --upgrade seaborn
-            post:
                 - python setup.py clean
                 - python setup.py develop
                 - set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
