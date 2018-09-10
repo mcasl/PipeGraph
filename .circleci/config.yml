@@ -1,52 +1,44 @@
-# Python CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-python/ for more details
-#
+# Modified from https://github.com/scikit-learn-contrib/imbalanced-learn/blob/master/.circleci/config.yml
 version: 2
+
 jobs:
-  build:
+  python3:
     docker:
       - image: circleci/python:3.6.1
-
-    working_directory: ~/repo
-
+    environment:
+      - USERNAME: "mcasl"
+      - DOC_REPO: "PipeGraph"
+      - DOC_URL: ""
+      - EMAIL: "manuel.castejon@gmail.com"
+      - MINICONDA_PATH: ~/miniconda
+      - CONDA_ENV_NAME: testenv
+      - PYTHON_VERSION: 3
     steps:
       - checkout
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "requirements.txt" }}
-          # fallback to using the latest  cache if no exact match is found
-          - v1-dependencies-
-
-      - run:
-          name: install dependencies
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
-
-      - save_cache:
-          paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
-        
-      # run tests!
-      # this example uses Django's built-in test-runner
-      # other common Python testing frameworks include pytest and nose
-      # https://pytest.org
-      # https://nose.readthedocs.io
-      - run:
-          name: Run Unitary Tests
-          command: |
-            . venv/bin/activate
-            python -m pytest pipegraph/tests
-
-      - run:
-          name: Build documentation and autoexamples
-          command: |
-            bash ci_scripts/circleci/push_doc.sh
-
+      - run: ./build_tools/circle/checkout_merge_commit.sh
+      - run: ./build_tools/circle/build_doc.sh
       - store_artifacts:
-          path: test-reports
-          destination: test-reports
+          path: doc/_build/html
+          destination: doc
+      - store_artifacts:
+          path: ~/log.txt
+      - persist_to_workspace:
+          root: doc/_build/html
+          paths: .
+      - attach_workspace:
+          at: doc/_build/html
+      - run: ls -ltrh doc/_build/html
+      # - deploy:
+      #     command: |
+      #       if [[ "${CIRCLE_BRANCH}" =~ ^master$|^[0-9]+\.[0-9]+\.X$ ]]; then
+      #         bash ./build_tools/circle/push_doc.sh doc/_build/html
+      #       fi
+    filters:
+      branches:
+        ignore: gh-pages
+
+workflows:
+  version: 2
+  build-doc-and-deploy:
+    jobs:
+      - python3
