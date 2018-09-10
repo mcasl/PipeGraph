@@ -4,7 +4,7 @@ version: 2
 jobs:
   python3:
     docker:
-      - image: circleci/python:3.6.1
+      - image: circle/python:3.6.1
     environment:
       - USERNAME: "mcasl"
       - DOC_REPO: "PipeGraph"
