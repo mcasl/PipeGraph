@@ -1,59 +1,38 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
 version: 2
-
-# Downloaded and modified from from https://github.com/scikit-learn/scikit-learn
-
-
 jobs:
-  python3:
+  build:
     docker:
-      - image: circleci/python:3.6.1
-    environment:
-      - MINICONDA_PATH: ~/miniconda
-      - CONDA_ENV_NAME: testenv
-      - PYTHON_VERSION: 3
+      - image: mcasl/circleci_pipegraph:0.0.1
+    working_directory: ~/repo
     steps:
       - checkout
-      - run: ./build_tools/circle/checkout_merge_commit.sh
-      - restore_cache:
-          key: v1-datasets-{{ .Branch }}
-      - run: ./build_tools/circle/build_doc.sh
-      - save_cache:
-          key: v1-datasets-{{ .Branch }}
-          paths:
-            - ~/scikit_learn_data
-      - store_artifacts:
-          path: doc/_build/html/stable
-          destination: doc
-      - store_artifacts:
-          path: ~/log.txt
-          destination: log.txt
-      # Persists generated documentation so that it can be attached and deployed
-      # in the 'deploy' step.
-      - persist_to_workspace:
-          root: doc/_build/html
-          paths: .
 
-  deploy:
-    docker:
-      - image: circleci/python:3.6.1
-    steps:
-      - checkout
-      - run: ./build_tools/circle/checkout_merge_commit.sh
-      # Attach documentation generated in the 'python3' step so that it can be
-      # deployed.
-      - attach_workspace:
-          at: doc/_build/html
-      - run: ls -ltrh doc/_build/html/stable
-      - deploy:
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest  cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: Install dependencies
           command: |
-            if [[ "${CIRCLE_BRANCH}" =~ ^master$|^[0-9]+\.[0-9]+\.X$ ]]; then
-              bash build_tools/circle/push_doc.sh doc/_build/html/stable
-            fi
-workflows:
-  version: 2
-  build-doc-and-deploy:
-    jobs:
-      - python3
-      - deploy:
-          requires:
-            - python3
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+
+      - run:
+          name: Run tests
+          command: |
+            . venv/bin/activate
+            python -m pytest --junitxml=~/repo/tests-report pipegraph/tests
+      - store_artifacts:
+          path: tests-report
+          destination: tests-report
