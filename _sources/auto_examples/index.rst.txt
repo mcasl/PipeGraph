@@ -1,0 +1,238 @@
+:orphan:
+
+.. _general_examples:
+
+General examples
+================
+
+Introductory examples.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Let&#x27;s start with a simple example that could be perfectly expressed using a :class:`Pipeline`. ...">
+
+.. only:: html
+
+    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_1_example_two_nodes_in_linear_sequence_thumb.png
+
+        :ref:`sphx_glr_auto_examples_plot_1_example_two_nodes_in_linear_sequence.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/plot_1_example_two_nodes_in_linear_sequence
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use :class:`GridSearchCv` with **PipeGraph** to effectively fit the b...">
+
+.. only:: html
+
+    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_2_example_added_gridsearchcv_thumb.png
+
+        :ref:`sphx_glr_auto_examples_plot_2_example_added_gridsearchcv.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/plot_2_example_added_gridsearchcv
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="We continue demonstrating several interesting features:  1. How the user can choose to encapsul...">
+
+.. only:: html
+
+    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_8_example_DemuxModelsMux_thumb.png
+
+        :ref:`sphx_glr_auto_examples_plot_8_example_DemuxModelsMux.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/plot_8_example_DemuxModelsMux
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="We continue demonstrating several interesting features:  1. How the user can choose to encapsul...">
+
+.. only:: html
+
+    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_7_example_DemuxModelsMux_thumb.png
+
+        :ref:`sphx_glr_auto_examples_plot_7_example_DemuxModelsMux.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/plot_7_example_DemuxModelsMux
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="We continue demonstrating several interesting features:  1. How the user can choose to encapsul...">
+
+.. only:: html
+
+    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_10_example_DemuxModelsMux_thumb.png
+
+        :ref:`sphx_glr_auto_examples_plot_10_example_DemuxModelsMux.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/plot_10_example_DemuxModelsMux
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="An imaginative layout using a classifier to predict the cluster labels and fitting a separate m...">
+
+.. only:: html
+
+    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_5_example_Demultiplexer_Multiplexer_thumb.png
+
+        :ref:`sphx_glr_auto_examples_plot_5_example_Demultiplexer_Multiplexer.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/plot_5_example_Demultiplexer_Multiplexer
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="A set of classifiers is combined as input to a neural network. Additionally, the scaled inputs ...">
+
+.. only:: html
+
+    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_4_example_combination_of_classifiers_thumb.png
+
+        :ref:`sphx_glr_auto_examples_plot_4_example_combination_of_classifiers.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/plot_4_example_combination_of_classifiers
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="We continue demonstrating several interesting features:  1. How the user can choose to encapsul...">
+
+.. only:: html
+
+    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_9_example_DemuxModelsMux_thumb.png
+
+        :ref:`sphx_glr_auto_examples_plot_9_example_DemuxModelsMux.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/plot_9_example_DemuxModelsMux
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="- The shape of the graph is not a linear sequence as those that can be implemented using Pipeli...">
+
+.. only:: html
+
+    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_3_example_varying_sample_weights_thumb.png
+
+        :ref:`sphx_glr_auto_examples_plot_3_example_varying_sample_weights.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/plot_3_example_varying_sample_weights
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="A demonstration of several interesting features will be done in the following examples:  1. How...">
+
+.. only:: html
+
+    .. figure:: /auto_examples/images/thumb/sphx_glr_plot_6_example_DemuxModelsMux_thumb.png
+
+        :ref:`sphx_glr_auto_examples_plot_6_example_DemuxModelsMux.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/plot_6_example_DemuxModelsMux
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-gallery
+
+
+  .. container:: sphx-glr-download
+
+    :download:`Download all examples in Python source code: auto_examples_python.zip <//home/circleci/PipeGraph/doc/auto_examples/auto_examples_python.zip>`
+
+
+
+  .. container:: sphx-glr-download
+
+    :download:`Download all examples in Jupyter notebooks: auto_examples_jupyter.zip <//home/circleci/PipeGraph/doc/auto_examples/auto_examples_jupyter.zip>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
