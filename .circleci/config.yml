@@ -32,7 +32,13 @@ jobs:
           name: Run tests
           command: |
             . venv/bin/activate
-            python -m pytest --junitxml=~/repo/tests-report pipegraph/tests
+            mkdir test-reports
+            python -m pytest --junitxml=test-reports/junit.xml pipegraph/tests
+
+      - store_test_results:
+                path: test-reports
+
       - store_artifacts:
-          path: tests-report
-          destination: tests-report
+                path: test-reports
+
+
