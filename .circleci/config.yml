@@ -53,11 +53,6 @@ jobs:
       - store_artifacts:
             path: test-reports
 
-      - persist_to_workspace:
-            root: $HOME/repo
-            paths:
-              - repo
-
       - run:
           name: Make HTML documentation
           command: |
@@ -70,9 +65,9 @@ jobs:
       - deploy:
           name: Push Documentation to Github Pages
           command: |
-            #if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
                 ci_scripts/circleci/push_doc.sh doc/_build/html
-            #fi
+            fi
 
       - store_artifacts:
           path: doc/_build/html
