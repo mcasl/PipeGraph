@@ -12,7 +12,7 @@ jobs:
         - USERNAME: "mcasl"
         - DOC_REPO: "PipeGraph"
         - DOC_URL: ""
-        - EMAIL: "manuel.castejon8@gmail.com"
+        - EMAIL: "manuel.castejon@gmail.com"
 
     working_directory: ~/PipeGraph
 
