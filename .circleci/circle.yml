@@ -1,0 +1,74 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+jobs:
+  build:
+
+    docker:
+      - image: mcasl/circleci_pipegraph:0.0.2
+        environment:
+        - USERNAME: "mcasl"
+        - DOC_REPO: "PipeGraph"
+        - DOC_URL: ""
+        - EMAIL: "manuel.castejon8@gmail.com"
+
+    working_directory: ~/PipeGraph
+
+    branches:
+      ignore:
+        - gh-pages
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest  cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: Install dependencies
+          command: |
+            python3 -m venv %HOME/venv
+            . $HOME/venv/bin/activate
+            pip install -r requirements.txt
+      - save_cache:
+          paths:
+            - $HOME/venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+
+      - run:
+          name: Run tests
+          command: |
+            . $HOME/venv/bin/activate
+            mkdir test-reports
+            python -m pytest --junitxml=test-reports/junit.xml pipegraph/tests
+
+      - store_test_results:
+            path: test-reports
+
+      - store_artifacts:
+            path: test-reports
+
+      - run:
+          name: Make HTML documentation
+          command: |
+            . $HOME/venv/bin/activate
+            python setup.py clean
+            python setup.py develop
+            set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
+            sudo cat ~/log.txt && if grep -q "Traceback (most recent call last):" ~/log.txt; then false; else true; fi
+
+      - deploy:
+          name: Push Documentation to Github Pages
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+                ci_scripts/circleci/push_doc.sh doc/_build/html
+            fi
+
+      - store_artifacts:
+          path: doc/_build/html
+          destination: ~/log.txt
