@@ -40,8 +40,7 @@ from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import GridSearchCV
 
-from pipegraph.base import (PipeGraphRegressor,
-                            PipeGraph,
+from pipegraph.base import (PipeGraph,
                             add_mixins_to_step,
                             Concatenator, ColumnSelector, RegressorsWithParametrizedNumberOfReplicas,
                             RegressorsWithDataDependentNumberOfReplicas,
@@ -86,7 +85,7 @@ class TestModelsWithParameterizedNumberOfReplicas(unittest.TestCase):
                                   'selection': 'classifier'},
                        'neutral': {'X': 'models'}
                        }
-        self.pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
+        self.pgraph = PipeGraph(steps=steps, fit_connections=connections)
 
     def test_ModelsWithParameterizedNumberOfReplicas__connections(self):
         X = self.X
@@ -158,7 +157,7 @@ class TestModelsWithDataDependentNumberOfReplicas(unittest.TestCase):
                        'neutral': {'X': 'models'},
                        }
 
-        self.pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
+        self.pgraph = PipeGraph(steps=steps, fit_connections=connections)
         self.pgraph.fit(self.X, self.y)
 
     def test_ModelsWithDataDependentNumberOfReplicas__connections(self):

@@ -43,405 +43,9 @@ import logging
 logging.basicConfig(level=logging.NOTSET)
 logger = logging.getLogger(__name__)
 
-class PipeGraphRegressor(BaseEstimator, RegressorMixin):
-    """
-    PipeGraph with a regressor default score.
-    This class implements an interface to the PipeGraph base class which is compatible with GridSearchCV.
-    This documentation is heavily based on Scikit-Learn's Pipeline on purpose as its aim is to provide an interface
-    as similar to Pipeline as possible.
-
-    Parameters
-    ----------
-    steps : list
-        List of (name, action) tuples that are chained. The last one is considered to be the output step.
-
-    connections: dictionary
-        A dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:
-
-            - The keys of the nested dictionary represents the input variable as named at the current step.
-            - The values associated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:
-
-                - A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.
-                - A string representing a variable from an external source to the PipeGraphRegressor object, such as those provided by the user while invoking the fit, predict or fit_predict methods.
-
-    alternative_connections: dictionary
-        A dictionary as described for ``connections``. This parameters provides the possibility of specifying a PipeGraph
-        that uses a different connection dictionary during fit than during predict. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.
-
-    log_level: int
-        Log level for traceability purposes. This is yet a unimplemented feature.
-    """
-    def __init__(self, steps, fit_connections=None, predict_connections=None, log_level=None):
-        self._pipegraph = PipeGraph(steps, fit_connections, predict_connections, log_level)
-
-    def inject(self, sink, sink_var, source='_External', source_var='predict', into='fit'):
-        """
-        Adds a connection to the graph.
-
-        Parameters:
-        -----------
-        sink: Destination
-        sink_var: Name of the variable at destination that is going to hold the information
-        source: Origin
-        source_var: Name of the variable at origin holding the information
-        into: This can be either 'fit' or 'predict', indicating which connections are described: those belonging
-              to 'fit_connections' or those belonging to 'predict_connections'. Default is 'fit'.
-
-        Returns:
-        --------
-        self:  PipeGraphRegressor
-            Returning self allows chaining operations
-        """
-        self._pipegraph.inject(sink=sink, sink_var=sink_var, source=source, source_var=source_var, into=into)
-        return self
-
-    def get_params(self, deep=True):
-        """
-        Get parameters for this estimator.
-
-        Parameters
-        ----------
-        deep : boolean, optional
-            If True, will return the parameters for this estimator and its nested estimators.
-
-        Returns
-        -------
-        params : mapping of string to any
-            Parameter names mapped to their values.
-        """
-        return self._pipegraph.get_params(deep=deep)
-
-    def set_params(self, **kwargs):
-        """
-        Set the parameters of this estimator.
-        Valid parameter keys can be listed with ``get_params()``.
-        Returns
-        -------
-        self
-        """
-        self._pipegraph.set_params(**kwargs)
-        return self
-
-    @property
-    def named_steps(self):
-        return self._pipegraph.named_steps
-
-    def fit(self, X, y=None, **fit_params):
-        """
-        Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.
-
-        Parameters
-        ----------
-        X: iterable object
-            Training data. Must fulfill input requirements of first step of the PipeGraph.
-
-        y : iterable, default=None
-            Training targets. Must fulfill label requirements for all steps of the PipeGraph.
-
-        **fit_params : dict of string -> object
-            Parameters passed to the ``fit`` method of each step, where
-            each parameter name is prefixed such that parameter ``p`` for step
-            ``s`` has key ``s__p``.
-
-        Returns
-        -------
-        self : PipeGraphRegressor
-            This estimator
-        """
-        self._pipegraph.fit(X, y=y, **fit_params)
-        return self
-
-    def predict(self, X):
-        """
-        Predict the PipeGraph steps one after the other and following the topological
-        order defined by the alternative_connections attribute, in case it is not None, or the connections attribute otherwise.
-
-        Parameters
-        ----------
-        X: iterable object
-            Data to predict on. Must fulfill input requirements of first step of the PipeGraph.
-
-        Returns
-        -------
-        y_pred : array-like
-        """
-        return self._pipegraph.predict(X, y=None)['predict']
-
-    def fit_predict(self, X, y=None, **fit_params):
-        """
-        This is equivalent to applying the fit method and then predict method.
-
-        Parameters
-        ----------
-        X : iterable
-            Training data. Must fulfill input requirements of first step of
-            the PipeGraph
-        y : iterable, default=None
-            Training targets. Must fulfill label requirements for all steps of the PipeGraph.
-        **fit_params : dict of string -> object
-            Parameters passed to the ``fit`` method of each step, where
-            each parameter name is prefixed such that parameter ``p`` for step
-            ``s`` has key ``s__p``.
-
-        Returns
-        -------
-        y_pred : array-like
-        """
-        self._pipegraph.fit(X, y=y, **fit_params)
-        return self._pipegraph.predict(X, y=None)
-
-    def predict_proba(self, X):
-        """
-        Applies PipeGraphRegressor's predict method and returns the predict_proba output of the final estimator
-
-        Parameters
-        ----------
-        X: iterable object
-            Data to predict on. Must fulfill input requirements of first step of the PipeGraph.
-
-        Returns
-        -------
-        y_proba : array-like, shape = [n_samples, n_classes]
-        """
-        return self._pipegraph.predict(X, y=None)['predict_proba']
-
-    def decision_function(self, X):
-        """
-        Applies PipeGraphRegressor's predict method and returns the decision_function output of the final estimator
-
-         Parameters
-         ----------
-         X: iterable object
-            Data to predict on. Must fulfill input requirements of first step of the PipeGraph.
-
-        Returns
-        -------
-        y_score : array-like, shape = [n_samples, n_classes]
-        """
-        self._pipegraph.predict(X)
-        return self._pipegraph.steps[-1][-1].decision_function(X)
-
-    def predict_log_proba(self, X):
-        """
-        Applies PipeGraphRegressor's predict method and returns the predict_log_proba output of the final estimator
-
-        Parameters
-        ----------
-        X: iterable object
-            Data to predict on. Must fulfill input requirements of first step of the PipeGraph
-
-        Returns
-        -------
-        y_proba : array-like, shape = [n_samples, n_classes]
-        """
-        return self._pipegraph.predict(X, y=None)['predict_log_proba']
-
-
-
-class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
-    """PipeGraph with a classifier default score.
-    This class implements an interface to the PipeGraph base class which is compatible with GridSearchCV.
-    This documentation is heavily based on Scikit-Learn's Pipeline on purpose as it is the aim of this class
-    to provide an interface as similar to Pipeline as possible.
-
-    Parameters
-    ----------
-    steps : list
-        List of (name, action) tuples that are chained. The last one is considered to be the output step.
-
-    connections: dictionary
-        A dictionary whose keys of the top level entries of the dictionary must the same as those of the previously defined steps. The values assocciated to these keys define the variables from other steps that are going to be considered as inputs for the current step. They are dictionaries themselves, where:
-            - The keys of the nested dictionary represents the input variable as named at the current step.
-            - The values associated to these keys define the steps that hold the desired information, and the variables as named at that step. This information can be written as:
-                - A tuple with the label of the step in position 0 followed by the name of the output variable in position 1.
-                - A string representing a variable from an external source to the PipeGraphClassifier object, such as those provided by the user while invoking the fit, predict or fit_predict methods.
-
-    alternative_connections: dictionary
-        A dictionary as described for ``connections``. This parameters provides the possibility of specifying a PipeGraph
-        that uses different connection dictionaries during fit than during predict. The default value, ``None``, implies that it is equivalent to the ``connections`` value, and thus PipeGraph uses the same graph for both ``fit`` and ``predict``.
-
-
-    log_level: int
-        Log level for traceability purposes. This is yet a unimplemented feature.
-
-        """
-    def __init__(self, steps, fit_connections=None, predict_connections=None, log_level=None):
-        self._pipegraph = PipeGraph(steps, fit_connections, predict_connections, log_level)
-
-    def inject(self, sink, sink_var, source='_External', source_var='predict', into='fit'):
-        """
-                Adds a connection to the graph.
-
-                Parameters:
-                -----------
-                sink: Destination
-                sink_var: Name of the variable at destination that is going to hold the information
-                source: Origin
-                source_var: Name of the variable at origin holding the information
-                into: This can be either 'fit' or 'predict', indicating which connections are described: those belonging
-                      to 'fit_connections' or those belonging to 'predict_connections'. Default is 'fit'.
-
-                Returns:
-                --------
-                self:  PipeGraphClassifier
-                    Returning self allows chaining operations
-                """
-        self._pipegraph.inject(sink=sink, sink_var=sink_var, source=source, source_var=source_var, into=into)
-        return self
-
-    def get_params(self, deep=True):
-        """
-        Get parameters for this estimator.
-
-        Parameters
-        ----------
-        deep : boolean, optional
-            If True, will return the parameters for this estimator and its nested estimators.
-
-        Returns
-        -------
-        params : mapping of string to any
-            Parameter names mapped to their values.
-        """
-        return self._pipegraph.get_params(deep=deep)
-
-    def set_params(self, **kwargs):
-        """
-        Set the parameters of this estimator.
-        Valid parameter keys can be listed with ``get_params()``.
-
-        Returns
-        -------
-        self
-        """
-        self._pipegraph.set_params(**kwargs)
-        return self
-
-    @property
-    def named_steps(self):
-        return pipegraph.named_steps
-
-    def fit(self, X, y=None, **fit_params):
-        """
-        Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.
-
-        Parameters
-        ----------
-        X: iterable object
-            Training data. Must fulfill input requirements of first step of the PipeGraph.
-
-        y : iterable, default=None
-            Training targets. Must fulfill label requirements for all steps of the PipeGraph.
-
-        **fit_params : dict of string -> object
-            Parameters passed to the ``fit`` method of each step, where
-            each parameter name is prefixed such that parameter ``p`` for step
-            ``s`` has key ``s__p``.
-
-        Returns
-        -------
-        self : PipeGraphClassifier
-            This estimator
-        """
-        self._pipegraph.fit(X, y=y, **fit_params)
-        return self
-
-    def predict(self, X):
-        """
-        Predict the PipeGraph steps one after the other and following the topological
-        order defined by the alternative_connections attribute, in case it is not None, or the connections attribute otherwise.
-
-        Parameters
-        ----------
-        X: iterable object
-            Data to predict on. Must fulfill input requirements of first step of the PipeGraph.
-
-        Returns
-        -------
-        y_pred : array-like
-        """
-        return self._pipegraph.predict(X, y=None)['predict']
-
-    def fit_predict(self, X, y=None, **fit_params):
-        """
-        Applies fit_predict of last step in PipeGraph after it predicts the PipeGraph steps one after
-        the other and following the topological order of the graph.
-
-        Applies predict of a PipeGraph to the data following the topological order of the graph, followed by the
-        fit_predict method of the final step in the PipeGraph. Valid only if the final step implements fit_predict.
-
-        Parameters
-        ----------
-        X: iterable object
-            Training data. Must fulfill input requirements of first step of
-            the pipeline.
-        y : iterable, default=None
-            Training targets. Must fulfill label requirements for all steps
-            of the pipeline.
-        **fit_params : dict of string -> object
-            Parameters passed to the ``fit`` method of each step, where
-            each parameter name is prefixed such that parameter ``p`` for step
-            ``s`` has key ``s__p``.
-
-        Returns
-        -------
-        y_pred : array-like
-        """
-        self._pipegraph.fit(X, y=y, **fit_params)
-        return self._pipegraph.predict(X)
-
-    def predict_proba(self, X):
-        """
-        Applies PipeGraphClassifier's predict method and returns the predict_proba output of the final estimator
-
-        Parameters
-        ----------
-        X: iterable object
-            Data to predict on. Must fulfill input requirements of first step of the PipeGraph.
-
-        Returns
-        -------
-        y_proba : array-like, shape = [n_samples, n_classes]
-        """
-        return self._pipegraph.predict(X, y=None)['predict_proba']
-
-    def decision_function(self, X):
-        """
-        Applies PipeGraphClasifier's predict method and returns the decision_function output of the final estimator
-
-         Parameters
-         ----------
-         X: iterable object
-            Data to predict on. Must fulfill input requirements of first step of the PipeGraph.
-
-        Returns
-        -------
-        y_score : array-like, shape = [n_samples, n_classes]
-        """
-
-        self._pipegraph.predict(X)
-        return self._pipegraph.steps[-1][-1].decision_function(X)
-
-    def predict_log_proba(self, X):
-        """
-        Applies PipeGraphRegressor's predict method and returns the predict_log_proba output of the final estimator
-
-        Parameters
-        ----------
-        X: iterable object
-            Data to predict on. Must fulfill input requirements of first step of the PipeGraph
-
-        Returns
-        -------
-        y_proba : array-like, shape = [n_samples, n_classes]
-        """
-        return self._pipegraph.predict(X, y=None)['predict_log_proba']
-
-
 
 class PipeGraph(_BaseComposition):
-    """Class in charge of holding the steps, connections and graphs needed to perform graph like
-    fits and predicts.
+    """PipeGraph class holds the steps, connections and graphs needed to perform graph-like fits and predicts.
 
     Parameters:
     -----------
@@ -476,7 +80,7 @@ class PipeGraph(_BaseComposition):
         self._fit_data = {}
         self._predict_data = {}
 
-    def inject(self, sink, sink_var, source, source_var='predict', into='fit'):
+    def inject(self, sink, sink_var, source='_External', source_var='predict', into='fit'):
         """
                 Adds a connection to the graph.
 
@@ -540,12 +144,47 @@ class PipeGraph(_BaseComposition):
         self._set_params('steps', **kwargs)
         return self
 
-    def fit(self, *pargs, **kwargs):
-        """
 
-        Args:
-            pargs:
-            kwargs:
+    def fit(self, X, y=None, **fit_params):
+        """
+        Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.
+
+        Parameters
+        ----------
+        X: iterable object
+            Training data. Must fulfill input requirements of first step of the PipeGraph.
+
+        y : iterable, default=None
+            Training targets. Must fulfill label requirements for all steps of the PipeGraph.
+
+        **fit_params : dict of string -> object
+            Parameters passed to the ``fit`` method of each step, where
+            each parameter name is prefixed such that parameter ``p`` for step
+            ``s`` has key ``s__p``.
+
+        Returns
+        -------
+        self : PipeGraphClassifier
+            This estimator
+        """
+        self.pg_fit(X, y=y, **fit_params)
+        return self
+
+    def pg_fit(self, *pargs, **kwargs):
+        """
+        Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.
+
+        Parameters
+        ----------
+        *pargs :
+            Arbitrary number of positional arguments.
+        **kwargs : dict of string -> object
+             Arbitrary number of keyword arguments.
+
+        Returns
+        -------
+        self : PipeGraphClassifier
+            This estimator
         """
 
         node_names = [name for name, model in self.steps]
@@ -583,24 +222,26 @@ class PipeGraph(_BaseComposition):
 
         fit_nodes = self._filter_fit_nodes()
         for step_name in fit_nodes:
-            self._fit(step_name)
+            self._fit_single(step_name)
         return self
 
-    def _fit(self, step_name):
+    def _fit_single(self, step_name):
         """
 
         Args:
             step_name:
         """
-        fit_inputs = self._read_fit_signature_variables_from_graph_data(graph_data=self._fit_data,
-                                                                        step_name=step_name)
+        fit_inputs = self._fetch_signature_values(graph_data=self._fit_data,
+                                                  step_name=step_name,
+                                                  method='fit')
         try:
             self._steps_dict[step_name].pg_fit(**fit_inputs)
         except ValueError:
             print("ERROR: _fit.fit call ValueError!")
 
-        predict_inputs = self._read_predict_signature_variables_from_graph_data(graph_data=self._fit_data,
-                                                                                step_name=step_name)
+        predict_inputs = self._fetch_signature_values(graph_data=self._fit_data,
+                                                      step_name=step_name,
+                                                      method='predict')
         results = dict()
         try:
             results = self._steps_dict[step_name].pg_predict(**predict_inputs)
@@ -612,15 +253,85 @@ class PipeGraph(_BaseComposition):
                                  step_name=step_name,
                                  output_data=results)
 
-    def predict(self, *pargs, **kwargs):
+    def predict(self, X):
+        """
+        Predict the PipeGraph steps one after the other and following the topological
+        order defined by the alternative_connections attribute, in case it is not None, or the connections attribute otherwise.
+
+        Parameters
+        ----------
+        X: iterable object
+            Data to predict on. Must fulfill input requirements of first step of the PipeGraph.
+
+        Returns
+        -------
+        y_pred : array-like
+        """
+        return self.pg_predict(X, y=None)['predict']
+
+    def predict_proba(self, X):
+        """
+        Applies PipeGraph's predict method and returns the predict_proba output of the final estimator
+
+        Parameters
+        ----------
+        X: iterable object
+            Data to predict on. Must fulfill input requirements of first step of the PipeGraph.
+
+        Returns
+        -------
+        y_proba : array-like, shape = [n_samples, n_classes]
+        """
+        return self.pg_predict(X, y=None)['predict_proba']
+
+    def decision_function(self, X):
+        """
+        Applies PipeGraph's predict method and returns the decision_function output of the final estimator
+
+         Parameters
+         ----------
+         X: iterable object
+            Data to predict on. Must fulfill input requirements of first step of the PipeGraph.
+
+        Returns
+        -------
+        y_score : array-like, shape = [n_samples, n_classes]
         """
 
-        Args:
-            pargs:
-            kwargs:
+        self.predict(X)
+        return self.steps[-1][-1].decision_function(X)
 
-        Returns:
+    def predict_log_proba(self, X):
+        """
+        Applies PipeGraph's predict method and returns the predict_log_proba output of the final estimator
 
+        Parameters
+        ----------
+        X: iterable object
+            Data to predict on. Must fulfill input requirements of first step of the PipeGraph
+
+        Returns
+        -------
+        y_proba : array-like, shape = [n_samples, n_classes]
+        """
+        return self.pg_predict(X, y=None)['predict_log_proba']
+
+    def pg_predict(self, *pargs, **kwargs):
+        """
+        Predict the PipeGraph steps one after the other and following the topological
+        order defined by the alternative_connections attribute, in case it is not None, or the connections attribute otherwise.
+
+        Parameters
+        ----------
+        *pargs :
+            Arbitrary number of positional arguments.
+        **kwargs : dict of string -> object
+             Arbitrary number of keyword arguments.
+
+        Returns
+        -------
+        result_dict : dict
+             Dictionary containing a single or multiple outputs
         """
         if len(pargs) == 0:
             external_data = {}
@@ -640,22 +351,23 @@ class PipeGraph(_BaseComposition):
         predict_nodes = self._filter_predict_nodes()
 
         for name in predict_nodes:
-            self._predict(name)
+            self._pg_predict_single(name)
 
         desired_output_step = self.steps[-1][0]
         result_dict = {label: self._predict_data.get((desired_output_step, label), None)
                        for label in {'predict', 'predict_proba', 'predict_log_proba'}}
         return result_dict
 
-    def _predict(self, step_name):
+    def _pg_predict_single(self, step_name):
         """
 
         Args:
             step_name:
         """
 
-        predict_inputs = self._read_predict_signature_variables_from_graph_data(graph_data=self._predict_data,
-                                                                                step_name=step_name)
+        predict_inputs = self._fetch_signature_values(graph_data=self._predict_data,
+                                                      step_name=step_name,
+                                                      method='predict')
         results =  {}
         try:
             results = self._steps_dict[step_name].pg_predict(**predict_inputs)
@@ -663,6 +375,34 @@ class PipeGraph(_BaseComposition):
             print("ERROR: _predict call ValueError!")
 
         self._write_step_outputs(graph_data=self._predict_data, step_name=step_name, output_data=results)
+
+    def fit_predict(self, X, y=None, **fit_params):
+        """
+        Applies fit_predict of last step in PipeGraph after it predicts the PipeGraph steps one after
+        the other and following the topological order of the graph.
+
+        Applies predict of a PipeGraph to the data following the topological order of the graph, followed by the
+        fit_predict method of the final step in the PipeGraph. Valid only if the final step implements fit_predict.
+
+        Parameters
+        ----------
+        X: iterable object
+            Training data. Must fulfill input requirements of first step of
+            the pipeline.
+        y : iterable, default=None
+            Training targets. Must fulfill label requirements for all steps
+            of the pipeline.
+        **fit_params : dict of string -> object
+            Parameters passed to the ``fit`` method of each step, where
+            each parameter name is prefixed such that parameter ``p`` for step
+            ``s`` has key ``s__p``.
+
+        Returns
+        -------
+        y_pred : array-like
+        """
+        self.fit(X, y=y, **fit_params)
+        return self.predict(X)
 
     def score(self, X, y=None, sample_weight=None):
         """
@@ -681,16 +421,15 @@ class PipeGraph(_BaseComposition):
          -------
          y_proba : array-like, shape = [n_samples, n_classes]
          """
-        self._pipegraph.predict(X)
+        self.predict(X)
         score_params = {}
         if sample_weight is not None:
             score_params['sample_weight'] = sample_weight
-        final_step_name, final_step = self._pipegraph.steps[-1]
+        final_step_name, final_step = self.steps[-1]
 
-        predict_inputs = self._pipegraph._read_predict_signature_variables_from_graph_data(
-            graph_data=self._pipegraph._predict_data,
-            step_name=final_step_name)
-
+        predict_inputs = self._fetch_signature_values(graph_data=self._predict_data,
+                                                      step_name=final_step_name,
+                                                      method='predict')
         Xt = predict_inputs['X']
         return final_step.score(Xt, y, **score_params)
 
@@ -719,7 +458,7 @@ class PipeGraph(_BaseComposition):
         """
         return (name for name in nx.topological_sort(self._predict_graph))
 
-    def _read_fit_signature_variables_from_graph_data(self, graph_data, step_name):
+    def _fetch_signature_values(self, graph_data, step_name, method):
         """
 
         Args:
@@ -729,9 +468,6 @@ class PipeGraph(_BaseComposition):
 
         """
         connections = self.fit_connections if graph_data is self._fit_data else self.predict_connections
-
-        variable_list = self._steps_dict[step_name]._get_fit_signature()
-
         connection_tuples = {}
         for key, value in connections[step_name].items():
             if not isinstance(value, str):
@@ -741,47 +477,24 @@ class PipeGraph(_BaseComposition):
             else:
                 connection_tuples.update({key: ('_External', value)})
 
+        if isinstance(self._steps_dict[step_name], PipeGraph):
+            input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
+                          for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()}
+            return input_data
+
+        if method == 'fit':
+            variable_list = self._steps_dict[step_name]._get_fit_signature()
+        elif method=='predict':
+            variable_list = self._steps_dict[step_name]._get_predict_signature()
 
         if 'kwargs' in variable_list:
             input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
                           for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()}
-        else:
-            input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
-                          for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
-                          if inner_variable in variable_list}
+            return input_data
 
-        return input_data
-
-    def _read_predict_signature_variables_from_graph_data(self, graph_data, step_name):
-        """
-
-        Args:
-            step_name:
-
-        Returns:
-
-        """
-        connections = self.fit_connections if graph_data is self._fit_data else self.predict_connections
-
-        variable_list = self._steps_dict[step_name]._get_predict_signature()
-
-        connection_tuples = {}
-        for key, value in connections[step_name].items():
-            if not isinstance(value, str):
-                connection_tuples.update({key: value})
-            elif value in connections:
-                connection_tuples.update({key: (value, 'predict')})
-            else:
-                connection_tuples.update({key: ('_External', value)})
-
-        if 'kwargs' in variable_list:
-            input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
-                          for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()}
-        else:
-            input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
-                          for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
-                          if inner_variable in variable_list}
-
+        input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
+                      for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
+                      if inner_variable in variable_list}
         return input_data
 
     def _write_step_outputs(self, graph_data, step_name, output_data):
@@ -848,12 +561,11 @@ def add_mixins_to_step(step, mixin=None):
     """
 
     if mixin is None:
-        if isinstance(step, AdapterMixins):
+        is_a_mixin_not_needed = isinstance(step, AdapterMixins) or  isinstance(step, PipeGraph)
+        if is_a_mixin_not_needed:
             return step
         elif step.__class__ in strategies_for_custom_adaptees:
             mixin = strategies_for_custom_adaptees[step.__class__]
-        elif isinstance(step, PipeGraph):
-            mixin = CustomFitPredictWithDictionaryOutputMixin
         elif hasattr(step, 'predict'):
             mixin = FitPredictMixin
         elif hasattr(step, 'transform'):
@@ -1033,7 +745,7 @@ class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
     def __init__(self, steps=[('regressor', LinearRegression() )]):
         self.steps = steps
 
-    def fit(self, *pargs, **kwargs):
+    def pg_fit(self, *pargs, **kwargs):
         regressor = self.named_steps.regressor
         number_of_clusters = len(set(kwargs['selection']))
         multiple_regressors = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_clusters,
@@ -1041,11 +753,11 @@ class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
         steps = [('regressorsBundle', multiple_regressors)]
         connections = dict(regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'selection'})
         self._pipegraph = PipeGraph(steps=steps, fit_connections=connections)
-        self._pipegraph.fit(*pargs, **kwargs)
+        self._pipegraph.pg_fit(*pargs, **kwargs)
         return self
 
-    def predict(self, *pargs, **kwargs):
-        return self._pipegraph.predict(*pargs, **kwargs)
+    def pg_predict(self, *pargs, **kwargs):
+        return self._pipegraph.pg_predict(*pargs, **kwargs)
 
 
 def query_number_of_clusters_from_classifier(classifier):
@@ -1067,7 +779,7 @@ class ClassifierAndRegressorsBundle(PipeGraph, RegressorMixin):
     def __init__(self, steps=[('classifier', GaussianMixture()), ('regressor', LinearRegression())]):
         self.steps = steps
 
-    def fit(self, *pargs, **kwargs):
+    def pg_fit(self, *pargs, **kwargs):
         classifier = self.named_steps.classifier
         regressor = self.named_steps.regressor
         number_of_clusters = query_number_of_clusters_from_classifier(classifier)
@@ -1079,11 +791,11 @@ class ClassifierAndRegressorsBundle(PipeGraph, RegressorMixin):
                            regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'classifier'})
         self._adaptee = PipeGraph(steps=steps, fit_connections=connections)
 
-        self._adaptee.fit(*pargs, **kwargs)
+        self._adaptee.pg_fit(*pargs, **kwargs)
         return self
 
-    def predict(self, *pargs, **kwargs):
-        return self._adaptee.predict(*pargs, **kwargs)
+    def pg_predict(self, *pargs, **kwargs):
+        return self._adaptee.pg_predict(*pargs, **kwargs)
 
 
 class NeutralRegressor(BaseEstimator, RegressorMixin):
@@ -1109,9 +821,6 @@ from pipegraph.adapters import (FitTransformMixin,
                                 CustomFitPredictWithDictionaryOutputMixin)
 
 strategies_for_custom_adaptees = {
-    PipeGraph: CustomFitPredictWithDictionaryOutputMixin,
-    PipeGraphRegressor: FitPredictMixin,
-    PipeGraphClassifier: FitPredictMixin,
     NeutralRegressor:  FitPredictMixin,
     NeutralClassifier:  FitPredictMixin,
     Concatenator: FitPredictMixin,
@@ -1119,8 +828,6 @@ strategies_for_custom_adaptees = {
     Reshape: FitPredictMixin,
     Demultiplexer: CustomFitPredictWithDictionaryOutputMixin,
     Multiplexer: FitPredictMixin,
-    RegressorsWithParametrizedNumberOfReplicas: CustomFitPredictWithDictionaryOutputMixin,
-    RegressorsWithDataDependentNumberOfReplicas: CustomFitPredictWithDictionaryOutputMixin,
 }
 
 from pipegraph.demo_blocks import strategies_for_demo_blocks_adaptees

@@ -39,9 +39,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import GridSearchCV
-from pipegraph.base import (PipeGraphRegressor,
-                            PipeGraphClassifier,
-                            PipeGraph,
+from pipegraph.base import (PipeGraph,
                             add_mixins_to_step,
                             build_graph,
                             make_connections_when_not_provided_to_init,
@@ -233,7 +231,7 @@ class TestPipegraph(unittest.TestCase):
         import numpy as np
         from sklearn.preprocessing import MinMaxScaler
         from sklearn.linear_model import LinearRegression
-        from pipegraph import PipeGraphRegressor
+        from pipegraph import PipeGraph
 
         X = np.random.rand(100, 1)
         y = 4 * X + 0.5 * np.random.randn(100, 1)
@@ -243,16 +241,16 @@ class TestPipegraph(unittest.TestCase):
         steps = [('scaler', scaler),
                  ('linear_model', linear_model)]
 
-        pgraph = PipeGraphRegressor(steps=steps)
-        self.assertTrue(pgraph._pipegraph.fit_connections is None)
-        self.assertTrue(pgraph._pipegraph.predict_connections is None)
+        pgraph = PipeGraph(steps=steps)
+        self.assertTrue(pgraph.fit_connections is None)
+        self.assertTrue(pgraph.predict_connections is None)
         pgraph.fit(X, y)
         y_pred = pgraph.predict(X)
         self.assertEqual(y_pred.shape[0], y.shape[0])
-        self.assertEqual(pgraph._pipegraph.fit_connections, dict(scaler={'X': 'X'},
+        self.assertEqual(pgraph.fit_connections, dict(scaler={'X': 'X'},
                                                                  linear_model={'X':('scaler', 'predict'),
                                                                               'y': 'y'}))
-        self.assertEqual(pgraph._pipegraph.predict_connections, dict(scaler={'X': 'X'},
+        self.assertEqual(pgraph.predict_connections, dict(scaler={'X': 'X'},
                                                                      linear_model={'X':('scaler', 'predict'),
                                                                               'y': 'y'}))
 
@@ -264,7 +262,7 @@ class TestPipegraph(unittest.TestCase):
         from sklearn.preprocessing import PolynomialFeatures
         from sklearn.linear_model import LinearRegression
         from sklearn.model_selection import GridSearchCV
-        from pipegraph.base import PipeGraphRegressor
+        from pipegraph.base import PipeGraph
         from pipegraph.demo_blocks import CustomPower
 
         X = pd.DataFrame(dict(X=np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
@@ -285,10 +283,10 @@ class TestPipegraph(unittest.TestCase):
                  ('polynomial_features', polynomial_features),
                  ('linear_model', linear_model)]
 
-        pgraph = PipeGraphRegressor(steps=steps)
+        pgraph = PipeGraph(steps=steps)  #PipeGraphRegressor
 
-        self.assertTrue(pgraph._pipegraph.fit_connections is None)
-        self.assertTrue(pgraph._pipegraph.predict_connections is None)
+        self.assertTrue(pgraph.fit_connections is None)
+        self.assertTrue(pgraph.predict_connections is None)
 
         (pgraph.inject(sink='selector', sink_var='X', source='_External', source_var='X')
          .inject('custom_power', 'X', 'selector', 'sample_weight')
@@ -298,10 +296,10 @@ class TestPipegraph(unittest.TestCase):
          .inject('linear_model', 'y', source_var='y')
          .inject('linear_model', 'sample_weight', 'custom_power'))
 
-        self.assertTrue(pgraph._pipegraph.fit_connections is not None)
-        self.assertTrue(pgraph._pipegraph.predict_connections is not None)
+        self.assertTrue(pgraph.fit_connections is not None)
+        self.assertTrue(pgraph.predict_connections is not None)
         pgraph.fit(X, y)
-        self.assertEqual(pgraph._pipegraph.fit_connections,
+        self.assertEqual(pgraph.fit_connections,
                          {'selector': {'X': ('_External', 'X')},
                         'custom_power': {'X': ('selector', 'sample_weight')},
                         'scaler': {'X': ('selector', 'X')},
@@ -310,7 +308,7 @@ class TestPipegraph(unittest.TestCase):
                                        'y': ('_External', 'y'),
                                        'sample_weight': ('custom_power', 'predict')}})
 
-        self.assertEqual(pgraph._pipegraph.predict_connections,
+        self.assertEqual(pgraph.predict_connections,
                          {'selector': {'X': ('_External', 'X')},
                           'custom_power': {'X': ('selector', 'sample_weight')},
                           'scaler': {'X': ('selector', 'X')},
@@ -384,8 +382,9 @@ class TestPipegraph(unittest.TestCase):
                             ('_External', 'y'): self.y,
                             ('Dbscan', 'predict'): self.y * 4}
 
-        result = pgraph._read_fit_signature_variables_from_graph_data(graph_data=pgraph._fit_data,
-                                                                      step_name='Regressor')
+        result = pgraph._fetch_signature_values(graph_data=pgraph._fit_data,
+                                                step_name='Regressor',
+                                                method='fit')
         assert_array_equal(result['X'], self.X)
         assert_array_equal(result['y'], self.y)
         self.assertEqual(len(result), 2)
@@ -396,8 +395,9 @@ class TestPipegraph(unittest.TestCase):
                                 ('_External', 'y'): self.y,
                                 ('Dbscan', 'predict'): self.y * 4}
 
-        result = pgraph._read_predict_signature_variables_from_graph_data(graph_data=pgraph._predict_data,
-                                                                          step_name='Regressor')
+        result = pgraph._fetch_signature_values(graph_data=pgraph._predict_data,
+                                                step_name='Regressor',
+                                                method='predict')
         assert_array_equal(result['X'], self.X)
         self.assertEqual(len(result), 1)
 
@@ -416,7 +416,7 @@ class TestPipegraph(unittest.TestCase):
                             ('Dbscan', 'predict'): self.y * 4,
                             }
         expected = pd.concat([self.X, self.y], axis=1)
-        pgraph._fit('Concatenate_Xy')
+        pgraph._fit_single('Concatenate_Xy')
         self.assertEqual(expected.shape, pgraph._fit_data['Concatenate_Xy', 'predict'].shape)
         assert_frame_equal(self.X, pgraph._fit_data['Concatenate_Xy', 'predict'].loc[:,['X']])
         assert_frame_equal(self.y, pgraph._fit_data['Concatenate_Xy', 'predict'].loc[:,['y']])
@@ -582,7 +582,7 @@ class TestPipegraph(unittest.TestCase):
 
     def test_Pipegraph__graph_fit_three_positional(self):
         pgraph = self.pgraph
-        self.assertRaises(ValueError, pgraph.fit, self.X, self.y, self.y)
+        self.assertRaises(TypeError, pgraph.fit, self.X, self.y, self.y)
 
     def test_Pipegraph__graph_fit_two_positional(self):
         pgraph = self.pgraph
@@ -626,10 +626,10 @@ class TestPipegraph(unittest.TestCase):
 
 
 
-    def test_Pipegraph__graph_predict_using_keywords(self):
+    def test_Pipegraph__graph_pg_predict_using_keywords(self):
         pgraph = self.pgraph
         pgraph.fit(X=self.X, y=self.y)
-        pgraph.predict(X=self.X, y=self.y)
+        pgraph.pg_predict(X=self.X, y=self.y)
         assert_frame_equal(pgraph._predict_data['_External', 'X'], self.X)
         assert_frame_equal(pgraph._predict_data['_External', 'y'], self.y)
         self.assertEqual(pgraph._predict_data['Regressor', 'predict'].shape[0], self.y.shape[0])
@@ -637,20 +637,20 @@ class TestPipegraph(unittest.TestCase):
     def test_Pipegraph__graph_predict_using_three_positional(self):
         pgraph = self.pgraph
         pgraph.fit(X=self.X, y=self.y)
-        self.assertRaises(ValueError, pgraph.predict, self.X, self.y, self.y)
+        self.assertRaises(TypeError, pgraph.predict, self.X, self.y, self.y)
 
     def test_Pipegraph__graph_predict_using_two_positional(self):
         pgraph = self.pgraph
         pgraph.fit(X=self.X, y=self.y)
-        pgraph.predict(self.X, self.y)
+        pgraph.pg_predict(self.X, self.y)
         assert_frame_equal(pgraph._predict_data['_External', 'X'], self.X)
         assert_frame_equal(pgraph._predict_data['_External', 'y'], self.y)
         self.assertEqual(pgraph._predict_data['Regressor', 'predict'].shape[0], self.y.shape[0])
 
-    def test_Pipegraph__graph_predict_using_one_positional(self):
+    def test_Pipegraph__graph_pg_predict_using_one_positional(self):
         pgraph = self.pgraph
         pgraph.fit(X=self.X, y=self.y)
-        pgraph.predict(self.X, y=self.y)
+        pgraph.pg_predict(self.X, y=self.y)
         assert_frame_equal(pgraph._predict_data['_External', 'X'], self.X)
         assert_frame_equal(pgraph._predict_data['_External', 'y'], self.y)
         self.assertEqual(pgraph._predict_data['Regressor', 'predict'].shape[0], self.y.shape[0])
@@ -671,7 +671,7 @@ class TestPipegraph(unittest.TestCase):
         self.assertEqual(pgraph._steps_dict['Dbscan'].set_params(eps=10.2).get_params()['eps'],
                          10.2)
         self.assertEqual(pgraph._steps_dict['Regressor'].set_params(copy_X=False).get_params(),
-                         {'copy_X': False, 'fit_intercept': True, 'n_jobs': 1, 'normalize': False})
+                         {'copy_X': False, 'fit_intercept': True, 'n_jobs': None, 'normalize': False})
         self.assertEqual(pgraph._steps_dict['Regressor'].set_params(n_jobs=13).get_params(),
                          {'copy_X': False, 'fit_intercept': True, 'n_jobs': 13, 'normalize': False})
 
@@ -734,7 +734,7 @@ class TestPipeGraphSingleNodeLinearModel(unittest.TestCase):
         self.assertAlmostEqual(pgraph._steps_dict['linear_model'].coef_[0][0], 2)
 
         self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], self.size)
-        result = pgraph.predict(X=self.X)['predict']
+        result = pgraph.predict(X=self.X)
         self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], self.size)
         self.assertEqual(result.shape[0], self.size)
 
@@ -811,7 +811,7 @@ class TestTwoNodes(unittest.TestCase):
         self.assertTrue(1.9 < pgraph._steps_dict['linear_model'].coef_[0][0] < 2.1)
 
         self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], self.size)
-        result = pgraph.predict(X=self.X)['predict']
+        result = pgraph.predict(X=self.X)
         self.assertEqual(pgraph._fit_data['linear_model', 'predict'].shape[0], self.size)
         self.assertEqual(result.shape[0], self.size)
 
@@ -831,7 +831,7 @@ class TestPipeGraphRegressor(unittest.TestCase):
                  ]
         connections = {'scaler': {'X': 'X'},
                        'model': {'X': ('scaler', 'predict'), 'y': 'y'}, }
-        model = PipeGraphRegressor(steps, connections)
+        model = PipeGraph(steps, connections)
 
         steps = [('scaler', sc),
                  ('model', lm),
@@ -841,7 +841,7 @@ class TestPipeGraphRegressor(unittest.TestCase):
                        'model': {'X': ('scaler', 'predict'), 'y': 'y'},
                        'neutral': {'X': 'model'}}
 
-        model_custom = PipeGraphRegressor(steps, connections)
+        model_custom = PipeGraph(steps, connections)
 
         self.sc =sc
         self.lm = lm
@@ -891,7 +891,7 @@ class TestPipeGraphClassifier(unittest.TestCase):
                  ]
         connections = {'scaler': {'X': 'X'},
                        'model': {'X': ('scaler', 'predict'), 'y': 'y'}, }
-        model = PipeGraphClassifier(steps, connections)
+        model = PipeGraph(steps, connections)
 
         self.sc =sc
         self.nb = nb
@@ -926,8 +926,8 @@ class TestPipeGraphCompositable(unittest.TestCase):
         self.assertEqual(new_graph.named_steps,  {'pgraph': self.pgraph})
 
         new_graph.fit(X, y)
-        result = new_graph.predict(X)['predict']
-        expected = self.pgraph.predict(X)['predict']
+        result = new_graph.predict(X)
+        expected = self.pgraph.predict(X)
         self.assertEqual(result.shape[0], expected.shape[0])
 
 

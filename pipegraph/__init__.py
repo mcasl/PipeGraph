@@ -31,9 +31,7 @@ import pipegraph.base
 import pipegraph.adapters
 import pipegraph.demo_blocks
 
-from .base import (PipeGraphRegressor,
-                   PipeGraphClassifier,
-                   PipeGraph,
+from .base import (PipeGraph,
                    add_mixins_to_step,
                    )
 
@@ -44,8 +42,6 @@ from .adapters import (FitPredictMixin,
                       )
 
 
-__all__ = ['PipeGraphClassifier',
-           'PipeGraphRegressor',
-           'PipeGraph',
+__all__ = ['PipeGraph',
            'add_mixin_to_step',
            ]

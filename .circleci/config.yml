@@ -7,7 +7,7 @@ jobs:
   build:
 
     docker:
-      - image: mcasl/circleci_pipegraph:0.0.2
+      - image: mcasl/circleci_pipegraph:0.0.3
         environment:
         - USERNAME: "mcasl"
         - DOC_REPO: "PipeGraph"
