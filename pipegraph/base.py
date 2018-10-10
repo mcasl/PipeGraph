@@ -236,35 +236,6 @@ class PipeGraphRegressor(BaseEstimator, RegressorMixin):
         """
         return self._pipegraph.predict(X, y=None)['predict_log_proba']
 
-    def score(self, X, y=None, sample_weight=None):
-        """
-        Applies PipeGraphRegressor's predict method and returns the score output of the final estimator
-
-        Parameters
-        ----------
-         X : iterable
-             Data to predict on. Must fulfill input requirements of first step of the pipeGrpaph.
-         y : iterable, default=None
-            Targets used for scoring. Must fulfill label requirements for all steps of the pipeGrpaph.
-         sample_weight : array-like, default=None
-            If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.
-
-         Returns
-         -------
-         y_proba : array-like, shape = [n_samples, n_classes]
-         """
-        self._pipegraph.predict(X)
-        score_params = {}
-        if sample_weight is not None:
-            score_params['sample_weight'] = sample_weight
-        final_step_name, final_step = self._pipegraph.steps[-1]
-
-        predict_inputs = self._pipegraph._read_predict_signature_variables_from_graph_data(
-            graph_data=self._pipegraph._predict_data,
-            step_name=final_step_name)
-
-        Xt=predict_inputs['X']
-        return final_step.score(Xt, y, **score_params)
 
 
 class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
@@ -466,30 +437,6 @@ class PipeGraphClassifier(BaseEstimator, ClassifierMixin):
         """
         return self._pipegraph.predict(X, y=None)['predict_log_proba']
 
-    def score(self, X, y=None, sample_weight=None):
-        """
-        Applies PipeGraphRegressor's predict method and returns the score output of the final estimator
-
-         Parameters
-         ----------
-         X : iterable
-             Data to predict on. Must fulfill input requirements of first step of the pipeGrpaph.
-         y : iterable, default=None
-            Targets used for scoring. Must fulfill label requirements for all steps of the pipeGrpaph.
-         sample_weight : array-like, default=None
-            If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.
-
-         Returns
-         -------
-         y_proba : array-like, shape = [n_samples, n_classes]
-         """
-        self._pipegraph.predict(X)
-        score_params = {}
-        if sample_weight is not None:
-            score_params['sample_weight'] = sample_weight
-        final_step_name = self._pipegraph.steps[-1][0]
-        Xt = self._pipegraph._predict_data[self._pipegraph.fit_connections[final_step_name]['X']]
-        return self._pipegraph.steps[-1][-1].score(Xt, y, **score_params)
 
 
 class PipeGraph(_BaseComposition):
@@ -716,6 +663,36 @@ class PipeGraph(_BaseComposition):
             print("ERROR: _predict call ValueError!")
 
         self._write_step_outputs(graph_data=self._predict_data, step_name=step_name, output_data=results)
+
+    def score(self, X, y=None, sample_weight=None):
+        """
+        Applies PipeGraph's predict method and returns the score output of the final estimator
+
+        Parameters
+        ----------
+         X : iterable
+             Data to predict on. Must fulfill input requirements of first step of the pipeGraph.
+         y : iterable, default=None
+            Targets used for scoring. Must fulfill label requirements for all steps of the pipeGraph.
+         sample_weight : array-like, default=None
+            If not None, this argument is passed as sample_weight keyword argument to the score method of the final estimator.
+
+         Returns
+         -------
+         y_proba : array-like, shape = [n_samples, n_classes]
+         """
+        self._pipegraph.predict(X)
+        score_params = {}
+        if sample_weight is not None:
+            score_params['sample_weight'] = sample_weight
+        final_step_name, final_step = self._pipegraph.steps[-1]
+
+        predict_inputs = self._pipegraph._read_predict_signature_variables_from_graph_data(
+            graph_data=self._pipegraph._predict_data,
+            step_name=final_step_name)
+
+        Xt = predict_inputs['X']
+        return final_step.score(Xt, y, **score_params)
 
     @property
     def named_steps(self):
