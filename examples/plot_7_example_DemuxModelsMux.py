@@ -19,7 +19,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.mixture import GaussianMixture
 
-from pipegraph.base import PipeGraph, PipeGraphRegressor, Demultiplexer, Multiplexer, \
+from pipegraph.base import PipeGraph, PipeGraph, Demultiplexer, Multiplexer, \
     RegressorsWithParametrizedNumberOfReplicas
 
 X_first = pd.Series(np.random.rand(100,))
@@ -58,7 +58,7 @@ connections = {'scaler': {'X': 'X'},
                           'selection': 'classifier'},
                }
 
-pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
+pgraph = PipeGraph(steps=steps, fit_connections=connections)
 pgraph.fit(X, y)
 y_pred = pgraph.predict(X)
 plt.scatter(X, y)

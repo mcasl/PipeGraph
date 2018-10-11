@@ -25,7 +25,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GridSearchCV
-from pipegraph.base import PipeGraphClassifier, Concatenator
+from pipegraph.base import PipeGraph, Concatenator
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_iris
 from sklearn.naive_bayes import GaussianNB
@@ -52,7 +52,7 @@ steps = [('scaler', scaler),
 ###############################################################################
 # In this example we use a :class:`PipeGraphClassifier` because the result is a classification and we want to take advantage of Scikit-Learn default scoring method for classifiers.
 
-pgraph = PipeGraphClassifier(steps=steps)
+pgraph = PipeGraph(steps=steps)
 (pgraph.inject(sink='scaler', sink_var='X', source='_External', source_var='X')
        .inject('gaussian_nb', 'X', 'scaler')
        .inject('gaussian_nb', 'y', source_var='y')
