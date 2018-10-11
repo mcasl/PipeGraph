@@ -18,7 +18,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.mixture import GaussianMixture
 
 from sklearn.linear_model import LinearRegression
-from pipegraph.base import PipeGraphRegressor, RegressorsWithDataDependentNumberOfReplicas
+from pipegraph.base import PipeGraph, RegressorsWithDataDependentNumberOfReplicas
 
 X_first = pd.Series(np.random.rand(100,))
 y_first = pd.Series(4 * X_first + 0.5*np.random.randn(100,))
@@ -56,7 +56,7 @@ connections = {'scaler': {'X': 'X'},
                           'selection': 'classifier'},
                }
 
-pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
+pgraph = PipeGraph(steps=steps, fit_connections=connections)
 pgraph.fit(X, y)
 y_pred = pgraph.predict(X)
 plt.scatter(X, y)

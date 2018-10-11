@@ -28,7 +28,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GridSearchCV
-from pipegraph.base import PipeGraphRegressor, ColumnSelector, Reshape
+from pipegraph.base import PipeGraph, ColumnSelector, Reshape
 from pipegraph.demo_blocks import CustomPower
 import matplotlib.pyplot as plt
 
@@ -56,7 +56,7 @@ steps = [('selector', selector),
          ('polynomial_features', polynomial_features),
          ('linear_model', linear_model)]
 
-pgraph = PipeGraphRegressor(steps=steps)
+pgraph = PipeGraph(steps=steps)
 
 (pgraph.inject(sink='selector', sink_var='X', source='_External', source_var='X')
        .inject('custom_power', 'X', 'selector', 'sample_weight')

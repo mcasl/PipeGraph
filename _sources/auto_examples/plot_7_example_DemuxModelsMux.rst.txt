@@ -31,7 +31,7 @@ We continue demonstrating several interesting features:
     from sklearn.preprocessing import MinMaxScaler
     from sklearn.mixture import GaussianMixture
 
-    from pipegraph.base import PipeGraph, PipeGraphRegressor, Demultiplexer, Multiplexer, \
+    from pipegraph.base import PipeGraph, PipeGraph, Demultiplexer, Multiplexer, \
         RegressorsWithParametrizedNumberOfReplicas
 
     X_first = pd.Series(np.random.rand(100,))
@@ -117,7 +117,7 @@ Using this new component we can build a simplified PipeGraph:
                               'selection': 'classifier'},
                    }
 
-    pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
+    pgraph = PipeGraph(steps=steps, fit_connections=connections)
     pgraph.fit(X, y)
     y_pred = pgraph.predict(X)
     plt.scatter(X, y)
@@ -131,7 +131,7 @@ Using this new component we can build a simplified PipeGraph:
 
 
 
-**Total running time of the script:** ( 0 minutes  0.056 seconds)
+**Total running time of the script:** ( 0 minutes  0.038 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_7_example_DemuxModelsMux.py:

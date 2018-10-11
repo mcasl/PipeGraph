@@ -195,7 +195,7 @@ Let’s imagine we have a sample_weight vector and different powers of the vecto
 <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">PolynomialFeatures</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
 <span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
-<span class="kn">from</span> <span class="nn">pipegraph.base</span> <span class="kn">import</span> <span class="n">PipeGraphRegressor</span><span class="p">,</span> <span class="n">ColumnSelector</span><span class="p">,</span> <span class="n">Reshape</span>
+<span class="kn">from</span> <span class="nn">pipegraph.base</span> <span class="kn">import</span> <span class="n">PipeGraph</span><span class="p">,</span> <span class="n">ColumnSelector</span><span class="p">,</span> <span class="n">Reshape</span>
 <span class="kn">from</span> <span class="nn">pipegraph.demo_blocks</span> <span class="kn">import</span> <span class="n">CustomPower</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 </pre></div>
@@ -220,7 +220,7 @@ Let’s imagine we have a sample_weight vector and different powers of the vecto
          <span class="p">(</span><span class="s1">&#39;polynomial_features&#39;</span><span class="p">,</span> <span class="n">polynomial_features</span><span class="p">),</span>
          <span class="p">(</span><span class="s1">&#39;linear_model&#39;</span><span class="p">,</span> <span class="n">linear_model</span><span class="p">)]</span>
 
-<span class="n">pgraph</span> <span class="o">=</span> <span class="n">PipeGraphRegressor</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">)</span>
+<span class="n">pgraph</span> <span class="o">=</span> <span class="n">PipeGraph</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">)</span>
 
 <span class="p">(</span><span class="n">pgraph</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="n">sink</span><span class="o">=</span><span class="s1">&#39;selector&#39;</span><span class="p">,</span> <span class="n">sink_var</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;_External&#39;</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">)</span>
        <span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="s1">&#39;custom_power&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;selector&#39;</span><span class="p">,</span> <span class="s1">&#39;sample_weight&#39;</span><span class="p">)</span>
@@ -261,7 +261,7 @@ Let’s imagine we have a sample_weight vector and different powers of the vecto
 </div>
 <p>This example displayed a non linear workflow successfully implemented by <strong>PipeGraph</strong>, while at the same time showing a way to circumvent current limitations of standard <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCV</span></code>, in particular, the retriction on the number of input parameters.
 <a class="reference internal" href="plot_4_example_combination_of_classifiers.html#example4"><span class="std std-ref">Next examples</span></a> show more elaborated examples in increasing complexity order.</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.625 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.561 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-3-example-varying-sample-weights-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/b364c98485bc90ea156c263d2fddc4d0/plot_3_example_varying_sample_weights.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_3_example_varying_sample_weights.py</span></code></a></div>
@@ -291,7 +291,7 @@ Let’s imagine we have a sample_weight vector and different powers of the vecto
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, The authors.
+        &copy; Copyright 2018, The authors
 
     </p>
   </div>
@@ -310,21 +310,14 @@ Let’s imagine we have a sample_weight vector and different powers of the vecto
 
   
 
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.1.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
 
   
 

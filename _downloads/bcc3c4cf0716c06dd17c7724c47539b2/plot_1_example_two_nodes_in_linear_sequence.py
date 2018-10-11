@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
-from pipegraph import PipeGraphRegressor
+from pipegraph import PipeGraph
 
 X = np.random.rand(100, 1)
 y = 4 * X + 0.5*np.random.randn(100, 1)
@@ -48,7 +48,7 @@ steps = [('scaler', scaler),
 # As the last step is a regressor, a :class:`PipeGraphRegressor` is instantiated.
 #  The results from applying ``fit`` and ``predict`` and predict data are shown.
 
-pgraph = PipeGraphRegressor(steps=steps)
+pgraph = PipeGraph(steps=steps)
 pgraph.fit(X, y)
 y_pred = pgraph.predict(X)
 

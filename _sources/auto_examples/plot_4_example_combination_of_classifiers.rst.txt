@@ -37,7 +37,7 @@ Steps of the **PipeGraph**:
     from sklearn.preprocessing import PolynomialFeatures
     from sklearn.linear_model import LinearRegression
     from sklearn.model_selection import GridSearchCV
-    from pipegraph.base import PipeGraphClassifier, Concatenator
+    from pipegraph.base import PipeGraph, Concatenator
     import matplotlib.pyplot as plt
     from sklearn.datasets import load_iris
     from sklearn.naive_bayes import GaussianNB
@@ -74,7 +74,7 @@ In this example we use a :class:`PipeGraphClassifier` because the result is a cl
 .. code-block:: python
 
 
-    pgraph = PipeGraphClassifier(steps=steps)
+    pgraph = PipeGraph(steps=steps)
     (pgraph.inject(sink='scaler', sink_var='X', source='_External', source_var='X')
            .inject('gaussian_nb', 'X', 'scaler')
            .inject('gaussian_nb', 'y', source_var='y')
@@ -124,7 +124,7 @@ This example displayed complex data injections that are successfully managed by 
 Next example :ref:`on <example5>`.
 
 
-**Total running time of the script:** ( 0 minutes  52.465 seconds)
+**Total running time of the script:** ( 0 minutes  16.703 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_4_example_combination_of_classifiers.py:

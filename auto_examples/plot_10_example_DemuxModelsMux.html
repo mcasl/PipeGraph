@@ -188,7 +188,7 @@
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
 <span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
 
-<span class="kn">from</span> <span class="nn">pipegraph.base</span> <span class="kn">import</span> <span class="p">(</span> <span class="n">PipeGraphRegressor</span><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">pipegraph.base</span> <span class="kn">import</span> <span class="p">(</span> <span class="n">PipeGraph</span><span class="p">,</span>
                              <span class="n">ClassifierAndRegressorsBundle</span><span class="p">,</span>
                              <span class="n">NeutralRegressor</span>
                             <span class="p">)</span>
@@ -218,7 +218,7 @@ components and combining the classifier with the demultiplexed models:</p>
     def __init__(self, steps=[(&#39;classifier&#39;, GaussianMixture()), (&#39;regressor&#39;, LinearRegression())]):
         self.steps = steps
 
-    def fit(self, *pargs, **kwargs):
+    def pg_fit(self, *pargs, **kwargs):
         classifier = self.named_steps.classifier
         regressor = self.named_steps.regressor
         number_of_clusters = query_number_of_clusters_from_classifier(classifier)
@@ -230,11 +230,11 @@ components and combining the classifier with the demultiplexed models:</p>
                            regressorsBundle={&#39;X&#39;: &#39;X&#39;, &#39;y&#39;: &#39;y&#39;, &#39;selection&#39;: &#39;classifier&#39;})
         self._adaptee = PipeGraph(steps=steps, fit_connections=connections)
 
-        self._adaptee.fit(*pargs, **kwargs)
+        self._adaptee.pg_fit(*pargs, **kwargs)
         return self
 
-    def predict(self, *pargs, **kwargs):
-        return self._adaptee.predict(*pargs, **kwargs)
+    def pg_predict(self, *pargs, **kwargs):
+        return self._adaptee.pg_predict(*pargs, **kwargs)
 </pre></div>
 </div>
 <p>Using this new component we can build a simplified PipeGraph:</p>
@@ -250,7 +250,7 @@ components and combining the classifier with the demultiplexed models:</p>
                <span class="s1">&#39;bundle&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;y&#39;</span><span class="p">},</span>
                <span class="s1">&#39;neutral&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;X&#39;</span><span class="p">:</span> <span class="s1">&#39;bundle&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="s1">&#39;y&#39;</span><span class="p">}}</span>
 
-<span class="n">pgraph</span> <span class="o">=</span> <span class="n">PipeGraphRegressor</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="o">=</span><span class="n">connections</span><span class="p">)</span>
+<span class="n">pgraph</span> <span class="o">=</span> <span class="n">PipeGraph</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="o">=</span><span class="n">connections</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Using GridSearchCV to find the best number of clusters and the best regressors</p>
@@ -268,11 +268,11 @@ components and combining the classifier with the demultiplexed models:</p>
 </div>
 <img alt="../_images/sphx_glr_plot_10_example_DemuxModelsMux_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_10_example_DemuxModelsMux_001.png" />
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Score: 0.9980835187159897
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Score: 0.9980430622288714
 bundle__classifier__n_components: 3
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  2.601 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  2.643 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-10-example-demuxmodelsmux-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/b5766e904b82dc827ca972c006bfd343/plot_10_example_DemuxModelsMux.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_10_example_DemuxModelsMux.py</span></code></a></div>
@@ -302,7 +302,7 @@ bundle__classifier__n_components: 3
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, The authors.
+        &copy; Copyright 2018, The authors
 
     </p>
   </div>
@@ -321,21 +321,14 @@ bundle__classifier__n_components: 3
 
   
 
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.1.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
 
   
 

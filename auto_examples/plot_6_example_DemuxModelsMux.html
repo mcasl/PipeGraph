@@ -197,7 +197,7 @@ We prepare the data and build a PipeGraph with these steps alone:</p>
 <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span>
 <span class="kn">from</span> <span class="nn">sklearn.mixture</span> <span class="kn">import</span> <span class="n">GaussianMixture</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
-<span class="kn">from</span> <span class="nn">pipegraph.base</span> <span class="kn">import</span> <span class="n">PipeGraph</span><span class="p">,</span> <span class="n">PipeGraphRegressor</span><span class="p">,</span> <span class="n">Demultiplexer</span><span class="p">,</span> <span class="n">Multiplexer</span>
+<span class="kn">from</span> <span class="nn">pipegraph.base</span> <span class="kn">import</span> <span class="n">PipeGraph</span><span class="p">,</span> <span class="n">PipeGraph</span><span class="p">,</span> <span class="n">Demultiplexer</span><span class="p">,</span> <span class="n">Multiplexer</span>
 
 <span class="n">X_first</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">,))</span>
 <span class="n">y_first</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">X_first</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">100</span><span class="p">,))</span>
@@ -258,7 +258,7 @@ We prepare the data and build a PipeGraph with these steps alone:</p>
                           <span class="s1">&#39;selection&#39;</span><span class="p">:</span> <span class="s1">&#39;classifier&#39;</span><span class="p">},</span>
                <span class="p">}</span>
 
-<span class="n">pgraph</span> <span class="o">=</span> <span class="n">PipeGraphRegressor</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="o">=</span><span class="n">connections</span><span class="p">)</span>
+<span class="n">pgraph</span> <span class="o">=</span> <span class="n">PipeGraph</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">fit_connections</span><span class="o">=</span><span class="n">connections</span><span class="p">)</span>
 <span class="n">pgraph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="n">y_pred</span> <span class="o">=</span> <span class="n">pgraph</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -266,7 +266,7 @@ We prepare the data and build a PipeGraph with these steps alone:</p>
 </pre></div>
 </div>
 <img alt="../_images/sphx_glr_plot_6_example_DemuxModelsMux_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_6_example_DemuxModelsMux_001.png" />
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.121 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.039 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-6-example-demuxmodelsmux-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/1ff28c84f9f3fc9add1b5ab1ed99bb83/plot_6_example_DemuxModelsMux.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_6_example_DemuxModelsMux.py</span></code></a></div>
@@ -294,7 +294,7 @@ We prepare the data and build a PipeGraph with these steps alone:</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, The authors.
+        &copy; Copyright 2018, The authors
 
     </p>
   </div>
@@ -313,21 +313,14 @@ We prepare the data and build a PipeGraph with these steps alone:</p>
 
   
 
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.1.0',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
 
   
 

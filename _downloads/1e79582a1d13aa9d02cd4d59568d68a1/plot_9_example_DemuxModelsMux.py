@@ -19,7 +19,7 @@ from sklearn.mixture import GaussianMixture
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 
-from pipegraph.base import ( PipeGraphRegressor,
+from pipegraph.base import ( PipeGraph,
                              RegressorsWithDataDependentNumberOfReplicas,
                              NeutralRegressor,
                              )
@@ -62,7 +62,7 @@ connections = {'scaler': {'X': 'X'},
                'neutral': {'X': 'models'}
                }
 
-pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
+pgraph = PipeGraph(steps=steps, fit_connections=connections)
 
 
 ##############################################################################################################

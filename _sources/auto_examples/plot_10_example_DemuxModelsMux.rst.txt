@@ -31,7 +31,7 @@ We continue demonstrating several interesting features:
     from sklearn.linear_model import LinearRegression
     from sklearn.model_selection import train_test_split
 
-    from pipegraph.base import ( PipeGraphRegressor,
+    from pipegraph.base import ( PipeGraph,
                                  ClassifierAndRegressorsBundle,
                                  NeutralRegressor
                                 )
@@ -79,7 +79,7 @@ components and combining the classifier with the demultiplexed models:
         def __init__(self, steps=[('classifier', GaussianMixture()), ('regressor', LinearRegression())]):
             self.steps = steps
 
-        def fit(self, *pargs, **kwargs):
+        def pg_fit(self, *pargs, **kwargs):
             classifier = self.named_steps.classifier
             regressor = self.named_steps.regressor
             number_of_clusters = query_number_of_clusters_from_classifier(classifier)
@@ -91,11 +91,11 @@ components and combining the classifier with the demultiplexed models:
                                regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'classifier'})
             self._adaptee = PipeGraph(steps=steps, fit_connections=connections)
 
-            self._adaptee.fit(*pargs, **kwargs)
+            self._adaptee.pg_fit(*pargs, **kwargs)
             return self
 
-        def predict(self, *pargs, **kwargs):
-            return self._adaptee.predict(*pargs, **kwargs)
+        def pg_predict(self, *pargs, **kwargs):
+            return self._adaptee.pg_predict(*pargs, **kwargs)
 
 
 Using this new component we can build a simplified PipeGraph:
@@ -117,7 +117,7 @@ Using this new component we can build a simplified PipeGraph:
                    'bundle': {'X': 'scaler', 'y': 'y'},
                    'neutral': {'X': 'bundle', 'y': 'y'}}
 
-    pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
+    pgraph = PipeGraph(steps=steps, fit_connections=connections)
 
 
 
@@ -158,11 +158,11 @@ Using GridSearchCV to find the best number of clusters and the best regressors
 
  .. code-block:: none
 
-    Score: 0.9980835187159897
+    Score: 0.9980430622288714
     bundle__classifier__n_components: 3
 
 
-**Total running time of the script:** ( 0 minutes  2.601 seconds)
+**Total running time of the script:** ( 0 minutes  2.643 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_10_example_DemuxModelsMux.py:

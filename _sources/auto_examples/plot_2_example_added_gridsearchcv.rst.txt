@@ -38,7 +38,7 @@ Firstly, we import the necessary libraries and create some artificial data.
     from sklearn.preprocessing import PolynomialFeatures
     from sklearn.linear_model import LinearRegression
     from sklearn.model_selection import GridSearchCV
-    from pipegraph.base import PipeGraphRegressor
+    from pipegraph.base import PipeGraph
 
     import matplotlib.pyplot as plt
 
@@ -83,7 +83,7 @@ Now, we use ``PipeGraphRegressor`` as estimator for :class:`GridSearchCV` and pe
 .. code-block:: python
 
 
-    pgraph = PipeGraphRegressor(steps=steps)
+    pgraph = PipeGraph(steps=steps)
     grid_search_regressor = GridSearchCV(estimator=pgraph, param_grid=param_grid, refit=True)
     grid_search_regressor.fit(X, y)
     y_pred = grid_search_regressor.predict(X)
@@ -112,16 +112,17 @@ Now, we use ``PipeGraphRegressor`` as estimator for :class:`GridSearchCV` and pe
  .. code-block:: none
 
     Information about the parameters of the best estimator: 
-     degree: 5 
-     coefficients: [[    0.           464.2544559  -1931.84420663  4013.05236721
-      -4029.45954231  1576.73576758]]
+     degree: 10 
+     coefficients: [[ 0.00000000e+00  4.04835514e+02 -5.74385406e+02 -2.07149796e+04
+       2.03310512e+05 -9.07038083e+05  2.30162687e+06 -3.50485520e+06
+       3.16900348e+06 -1.56834715e+06  3.27283988e+05]]
 
 
 This example showed how to use :class:`GridSearchCV` with :class:`PipeGraphRegressor` in a simple linear workflow.
 :ref:`Next example <example3>` provides detail on how to proceed with a non linear case.
 
 
-**Total running time of the script:** ( 0 minutes  0.398 seconds)
+**Total running time of the script:** ( 0 minutes  0.213 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_2_example_added_gridsearchcv.py:

@@ -31,7 +31,7 @@ We continue demonstrating several interesting features:
     from sklearn.linear_model import LinearRegression
     from sklearn.model_selection import train_test_split
 
-    from pipegraph.base import ( PipeGraphRegressor,
+    from pipegraph.base import ( PipeGraph,
                                  RegressorsWithDataDependentNumberOfReplicas,
                                  NeutralRegressor,
                                  )
@@ -84,7 +84,7 @@ a custom scoring function for a block with an arbitrary number of inputs.
                    'neutral': {'X': 'models'}
                    }
 
-    pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
+    pgraph = PipeGraph(steps=steps, fit_connections=connections)
 
 
 
@@ -125,11 +125,11 @@ Using GridSearchCV to find the best number of clusters and the best regressors
 
  .. code-block:: none
 
-    Score: 0.9980528322230667
-    classifier__n_components: 3
+    Score: 0.998069285245826
+    classifier__n_components: 4
 
 
-**Total running time of the script:** ( 0 minutes  1.795 seconds)
+**Total running time of the script:** ( 0 minutes  1.604 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_9_example_DemuxModelsMux.py:

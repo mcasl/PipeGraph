@@ -30,7 +30,7 @@ We continue demonstrating several interesting features:
     from sklearn.mixture import GaussianMixture
 
     from sklearn.linear_model import LinearRegression
-    from pipegraph.base import PipeGraphRegressor, RegressorsWithDataDependentNumberOfReplicas
+    from pipegraph.base import PipeGraph, RegressorsWithDataDependentNumberOfReplicas
 
     X_first = pd.Series(np.random.rand(100,))
     y_first = pd.Series(4 * X_first + 0.5*np.random.randn(100,))
@@ -74,7 +74,7 @@ context. This morphing capability opens interesting possibilities to explore ind
         def __init__(self, steps=[('regressor', LinearRegression() )]):
             self.steps = steps
 
-        def fit(self, *pargs, **kwargs):
+        def pg_fit(self, *pargs, **kwargs):
             regressor = self.named_steps.regressor
             number_of_clusters = len(set(kwargs['selection']))
             multiple_regressors = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_clusters,
@@ -82,11 +82,11 @@ context. This morphing capability opens interesting possibilities to explore ind
             steps = [('regressorsBundle', multiple_regressors)]
             connections = dict(regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'selection'})
             self._pipegraph = PipeGraph(steps=steps, fit_connections=connections)
-            self._pipegraph.fit(*pargs, **kwargs)
+            self._pipegraph.pg_fit(*pargs, **kwargs)
             return self
 
-        def predict(self, *pargs, **kwargs):
-            return self._pipegraph.predict(*pargs, **kwargs)
+        def pg_predict(self, *pargs, **kwargs):
+            return self._pipegraph.pg_predict(*pargs, **kwargs)
 
 
 Using this new component we can build a simplified PipeGraph:
@@ -111,7 +111,7 @@ Using this new component we can build a simplified PipeGraph:
                               'selection': 'classifier'},
                    }
 
-    pgraph = PipeGraphRegressor(steps=steps, fit_connections=connections)
+    pgraph = PipeGraph(steps=steps, fit_connections=connections)
     pgraph.fit(X, y)
     y_pred = pgraph.predict(X)
     plt.scatter(X, y)
@@ -125,7 +125,7 @@ Using this new component we can build a simplified PipeGraph:
 
 
 
-**Total running time of the script:** ( 0 minutes  0.074 seconds)
+**Total running time of the script:** ( 0 minutes  0.052 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_8_example_DemuxModelsMux.py:
