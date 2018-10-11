@@ -112,17 +112,15 @@ Now, we use ``PipeGraphRegressor`` as estimator for :class:`GridSearchCV` and pe
  .. code-block:: none
 
     Information about the parameters of the best estimator: 
-     degree: 10 
-     coefficients: [[ 0.00000000e+00  4.04835514e+02 -5.74385406e+02 -2.07149796e+04
-       2.03310512e+05 -9.07038083e+05  2.30162687e+06 -3.50485520e+06
-       3.16900348e+06 -1.56834715e+06  3.27283988e+05]]
+     degree: 3 
+     coefficients: [[ -39.63425663  240.78393703 -491.49480204  333.15514139]]
 
 
 This example showed how to use :class:`GridSearchCV` with :class:`PipeGraphRegressor` in a simple linear workflow.
 :ref:`Next example <example3>` provides detail on how to proceed with a non linear case.
 
 
-**Total running time of the script:** ( 0 minutes  0.213 seconds)
+**Total running time of the script:** ( 0 minutes  0.203 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_2_example_added_gridsearchcv.py:
