@@ -144,42 +144,20 @@ class PipeGraph(_BaseComposition):
         self._set_params('steps', **kwargs)
         return self
 
-
-    def fit(self, X, y=None, **fit_params):
+    def fit(self, X, y=None, **kwargs):
         """
         Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.
 
         Parameters
         ----------
         X: iterable object
-            Training data. Must fulfill input requirements of first step of the PipeGraph.
+            Input fit data.
 
         y : iterable, default=None
-            Training targets. Must fulfill label requirements for all steps of the PipeGraph.
+            Output fit data.
 
-        **fit_params : dict of string -> object
-            Parameters passed to the ``fit`` method of each step, where
-            each parameter name is prefixed such that parameter ``p`` for step
-            ``s`` has key ``s__p``.
-
-        Returns
-        -------
-        self : PipeGraphClassifier
-            This estimator
-        """
-        self.pg_fit(X, y=y, **fit_params)
-        return self
-
-    def pg_fit(self, *pargs, **kwargs):
-        """
-        Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.
-
-        Parameters
-        ----------
-        *pargs :
-            Arbitrary number of positional arguments.
         **kwargs : dict of string -> object
-             Arbitrary number of keyword arguments.
+            Other input data
 
         Returns
         -------
@@ -192,17 +170,9 @@ class PipeGraph(_BaseComposition):
             raise ValueError("Please use another name for the _External node. _External is used internally.")
         self._steps_dict = {name: add_mixins_to_step(step=step_model) for name, step_model in self.steps}
 
-        if len(pargs) == 0:
-            external_data = {}
-        elif len(pargs) == 1:
-            external_data = {('_External', 'X'): pargs[0]}
-        elif len(pargs) == 2:
-            external_data = {('_External', 'X'): pargs[0],
-                             ('_External', 'y'): pargs[1]
-                             }
-        else:
-            raise ValueError("The developer never thought that 3 positional parameters were possible."
-                             "Try using keyword parameters from the third on.")
+        external_data = {('_External', 'X'): X,
+                         ('_External', 'y'): y
+                        }
 
         external_data.update({('_External', key): item
                               for key, item in kwargs.items()})
@@ -235,7 +205,7 @@ class PipeGraph(_BaseComposition):
                                                   step_name=step_name,
                                                   method='fit')
         try:
-            self._steps_dict[step_name].pg_fit(**fit_inputs)
+            self._steps_dict[step_name].fit(**fit_inputs)
         except ValueError:
             print("ERROR: _fit.fit call ValueError!")
 
@@ -244,7 +214,7 @@ class PipeGraph(_BaseComposition):
                                                       method='predict')
         results = dict()
         try:
-            results = self._steps_dict[step_name].pg_predict(**predict_inputs)
+            results = self._steps_dict[step_name].predict_dict(**predict_inputs)
         except ValueError:
             print("ERROR: _fit.predict call ValueError!")
 
@@ -267,7 +237,7 @@ class PipeGraph(_BaseComposition):
         -------
         y_pred : array-like
         """
-        return self.pg_predict(X, y=None)['predict']
+        return self.predict_dict(X, y=None)['predict']
 
     def predict_proba(self, X):
         """
@@ -282,7 +252,7 @@ class PipeGraph(_BaseComposition):
         -------
         y_proba : array-like, shape = [n_samples, n_classes]
         """
-        return self.pg_predict(X, y=None)['predict_proba']
+        return self.predict_dict(X, y=None)['predict_proba']
 
     def decision_function(self, X):
         """
@@ -314,17 +284,17 @@ class PipeGraph(_BaseComposition):
         -------
         y_proba : array-like, shape = [n_samples, n_classes]
         """
-        return self.pg_predict(X, y=None)['predict_log_proba']
+        return self.predict_dict(X, y=None)['predict_log_proba']
 
-    def pg_predict(self, *pargs, **kwargs):
+    def predict_dict(self, X, **kwargs):
         """
         Predict the PipeGraph steps one after the other and following the topological
         order defined by the alternative_connections attribute, in case it is not None, or the connections attribute otherwise.
 
         Parameters
         ----------
-        *pargs :
-            Arbitrary number of positional arguments.
+        X :
+            Input data
         **kwargs : dict of string -> object
              Arbitrary number of keyword arguments.
 
@@ -333,17 +303,8 @@ class PipeGraph(_BaseComposition):
         result_dict : dict
              Dictionary containing a single or multiple outputs
         """
-        if len(pargs) == 0:
-            external_data = {}
-        elif len(pargs) == 1:
-            external_data = {('_External', 'X'): pargs[0]}
-        elif len(pargs) == 2:
-            external_data = {('_External', 'X'): pargs[0],
-                             ('_External', 'y'): pargs[1]
-                             }
-        else:
-            raise ValueError("The developer never thought that 3 positional parameters were possible. "
-                             "Try using keyword parameters from the third on.")
+        external_data = {('_External', 'X'): X,
+                        }
 
         external_data.update({('_External', key): item for key, item in kwargs.items()})
         self._predict_data = external_data
@@ -351,14 +312,14 @@ class PipeGraph(_BaseComposition):
         predict_nodes = self._filter_predict_nodes()
 
         for name in predict_nodes:
-            self._pg_predict_single(name)
+            self._predict_single_step(name)
 
         desired_output_step = self.steps[-1][0]
         result_dict = {label: self._predict_data.get((desired_output_step, label), None)
                        for label in {'predict', 'predict_proba', 'predict_log_proba'}}
         return result_dict
 
-    def _pg_predict_single(self, step_name):
+    def _predict_single_step(self, step_name):
         """
 
         Args:
@@ -370,7 +331,7 @@ class PipeGraph(_BaseComposition):
                                                       method='predict')
         results =  {}
         try:
-            results = self._steps_dict[step_name].pg_predict(**predict_inputs)
+            results = self._steps_dict[step_name].predict_dict(**predict_inputs)
         except ValueError:
             print("ERROR: _predict call ValueError!")
 
@@ -745,7 +706,7 @@ class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
     def __init__(self, steps=[('regressor', LinearRegression() )]):
         self.steps = steps
 
-    def pg_fit(self, *pargs, **kwargs):
+    def fit(self, *pargs, **kwargs):
         regressor = self.named_steps.regressor
         number_of_clusters = len(set(kwargs['selection']))
         multiple_regressors = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_clusters,
@@ -753,11 +714,11 @@ class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
         steps = [('regressorsBundle', multiple_regressors)]
         connections = dict(regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'selection'})
         self._pipegraph = PipeGraph(steps=steps, fit_connections=connections)
-        self._pipegraph.pg_fit(*pargs, **kwargs)
+        self._pipegraph.fit(*pargs, **kwargs)
         return self
 
-    def pg_predict(self, *pargs, **kwargs):
-        return self._pipegraph.pg_predict(*pargs, **kwargs)
+    def predict_dict(self, *pargs, **kwargs):
+        return self._pipegraph.predict_dict(*pargs, **kwargs)
 
 
 def query_number_of_clusters_from_classifier(classifier):
@@ -779,7 +740,7 @@ class ClassifierAndRegressorsBundle(PipeGraph, RegressorMixin):
     def __init__(self, steps=[('classifier', GaussianMixture()), ('regressor', LinearRegression())]):
         self.steps = steps
 
-    def pg_fit(self, *pargs, **kwargs):
+    def fit(self, *pargs, **kwargs):
         classifier = self.named_steps.classifier
         regressor = self.named_steps.regressor
         number_of_clusters = query_number_of_clusters_from_classifier(classifier)
@@ -791,11 +752,11 @@ class ClassifierAndRegressorsBundle(PipeGraph, RegressorMixin):
                            regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'classifier'})
         self._adaptee = PipeGraph(steps=steps, fit_connections=connections)
 
-        self._adaptee.pg_fit(*pargs, **kwargs)
+        self._adaptee.fit(*pargs, **kwargs)
         return self
 
-    def pg_predict(self, *pargs, **kwargs):
-        return self._adaptee.pg_predict(*pargs, **kwargs)
+    def predict_dict(self, *pargs, **kwargs):
+        return self._adaptee.predict_dict(*pargs, **kwargs)
 
 
 class NeutralRegressor(BaseEstimator, RegressorMixin):

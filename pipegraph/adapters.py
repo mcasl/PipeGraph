@@ -33,7 +33,7 @@ from abc import abstractmethod
 from sklearn.base import BaseEstimator
 
 class AdapterMixins:
-    def pg_fit(self, *pargs, **kwargs):
+    def fit_using_varargs(self, *pargs, **kwargs):
         return self.fit(*pargs, **kwargs)
 
     def _get_fit_signature(self):
@@ -41,7 +41,7 @@ class AdapterMixins:
 
 
 class FitTransformMixin(AdapterMixins):
-    def pg_predict(self, *pargs, **kwargs):
+    def predict_dict(self, *pargs, **kwargs):
         result = {'predict': self.transform(*pargs, **kwargs)}
         return result
 
@@ -50,7 +50,7 @@ class FitTransformMixin(AdapterMixins):
 
 
 class FitPredictMixin(AdapterMixins):
-    def pg_predict(self, *pargs, **kwargs):
+    def predict_dict(self, *pargs, **kwargs):
         result = {'predict': self.predict(*pargs, **kwargs)}
         if hasattr(self, 'predict_proba'):
             result['predict_proba'] = self.predict_proba(*pargs, **kwargs)
@@ -61,11 +61,12 @@ class FitPredictMixin(AdapterMixins):
     def _get_predict_signature(self):
         return list(inspect.signature(self.predict).parameters)
 
+
 class AtomicFitPredictMixin(AdapterMixins):
-    def pg_fit(self, *pargs, **kwargs):
+    def fit_using_varargs(self, *pargs, **kwargs):
         return self
 
-    def pg_predict(self, *pargs, **kwargs):
+    def predict_dict(self, *pargs, **kwargs):
         return {'predict': self.fit_predict(**kwargs)}
 
     def _get_predict_signature(self):
@@ -73,7 +74,7 @@ class AtomicFitPredictMixin(AdapterMixins):
 
 
 class CustomFitPredictWithDictionaryOutputMixin(AdapterMixins):
-    def pg_predict(self, *pargs, **kwargs):
+    def predict_dict(self, *pargs, **kwargs):
         return self.predict(*pargs, **kwargs)
 
     def _get_predict_signature(self):

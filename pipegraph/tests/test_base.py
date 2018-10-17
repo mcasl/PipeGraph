@@ -406,8 +406,8 @@ class TestPipegraph(unittest.TestCase):
         y = self.y
         lm = LinearRegression()
         lm_step = add_mixins_to_step(lm)
-        lm_step.pg_fit(X=X, y=y)
-        assert_array_equal(lm.predict(X), lm_step.pg_predict(X=X)['predict'])
+        lm_step.fit(X=X, y=y)
+        assert_array_equal(lm.predict(X), lm_step.predict_dict(X=X)['predict'])
 
     def test_Pipegraph__under_fit__concatenate_Xy(self):
         pgraph = self.pgraph
@@ -427,8 +427,8 @@ class TestPipegraph(unittest.TestCase):
         pgraph = self.pgraph
         expected = pd.concat([X, y], axis=1)
         current_step = pgraph._steps_dict['Concatenate_Xy']
-        current_step.pg_fit()
-        result = current_step.pg_predict(df1=X, df2=y)['predict']
+        current_step.fit()
+        result = current_step.predict_dict(df1=X, df2=y)['predict']
         self.assertEqual(expected.shape, result.shape)
         assert_frame_equal(self.X, result.loc[:,['X']])
         assert_frame_equal(self.y, result.loc[:,['y']])
@@ -439,9 +439,9 @@ class TestPipegraph(unittest.TestCase):
         y = self.y
         pgraph = self.pgraph
         current_step = pgraph._steps_dict['Gaussian_Mixture']
-        current_step.pg_fit(X=X)
+        current_step.fit(X=X)
         expected = current_step.predict(X=X)
-        result = current_step.pg_predict(X=X)['predict']
+        result = current_step.predict_dict(X=X)['predict']
         assert_array_equal(expected, result)
 
     def test_Pipegraph__predict__dbscan(self):
@@ -449,9 +449,9 @@ class TestPipegraph(unittest.TestCase):
         y = self.y
         pgraph = self.pgraph
         current_step = pgraph._steps_dict['Dbscan']
-        current_step.pg_fit(X=X)
+        current_step.fit(X=X)
         expected = current_step.fit_predict(X=X)
-        result = current_step.pg_predict(X=X)['predict']
+        result = current_step.predict_dict(X=X)['predict']
         assert_array_equal(expected, result)
 
     def test_Pipegraph__combine_clustering_predict(self):
@@ -459,17 +459,17 @@ class TestPipegraph(unittest.TestCase):
         y = self.y
         pgraph = self.pgraph
         current_step = pgraph._steps_dict['Gaussian_Mixture']
-        current_step.pg_fit(X=pd.concat([X, y], axis=1))
-        result_gaussian = current_step.pg_predict(X=pd.concat([X, y], axis=1))['predict']
+        current_step.fit(X=pd.concat([X, y], axis=1))
+        result_gaussian = current_step.predict_dict(X=pd.concat([X, y], axis=1))['predict']
 
         current_step = pgraph._steps_dict['Dbscan']
-        result_dbscan = current_step.pg_predict(X=pd.concat([X, y], axis=1))['predict']
+        result_dbscan = current_step.predict_dict(X=pd.concat([X, y], axis=1))['predict']
         self.assertEqual(result_dbscan.min(), 0)
 
         current_step = pgraph._steps_dict['Combine_Clustering']
-        current_step.pg_fit(dominant=result_dbscan, other=result_gaussian)
+        current_step.fit(dominant=result_dbscan, other=result_gaussian)
         expected = current_step.predict(dominant=result_dbscan, other=result_gaussian)
-        result = current_step.pg_predict(dominant=result_dbscan, other=result_gaussian)['predict']
+        result = current_step.predict_dict(dominant=result_dbscan, other=result_gaussian)['predict']
         assert_array_equal(expected, result)
         self.assertEqual(result.min(), 0)
 
@@ -478,16 +478,16 @@ class TestPipegraph(unittest.TestCase):
         y = self.y
         pgraph = self.pgraph
         current_step = pgraph._steps_dict['Concatenate_Xy']
-        current_step.pg_fit()
-        result = current_step.pg_predict(df1=X, df2=y)
+        current_step.fit()
+        result = current_step.predict_dict(df1=X, df2=y)
         self.assertEqual(list(result.keys()), ['predict'])
 
     def test_Pipegraph__dbscan__dict_key(self):
         X = self.X
         pgraph = self.pgraph
         current_step = pgraph._steps_dict['Dbscan']
-        current_step.pg_fit(X=X)
-        result = current_step.pg_predict(X=X)
+        current_step.fit(X=X)
+        result = current_step.predict_dict(X=X)
         self.assertEqual(list(result.keys()), ['predict'])
 
     def test_Pipegraph__combine_clustering__dict_key(self):
@@ -495,8 +495,8 @@ class TestPipegraph(unittest.TestCase):
         y = self.y
         pgraph = self.pgraph
         current_step = pgraph._steps_dict['Combine_Clustering']
-        current_step.pg_fit(dominant=X, other=y)
-        result = current_step.pg_predict(dominant=X, other=y)
+        current_step.fit(dominant=X, other=y)
+        result = current_step.predict_dict(dominant=X, other=y)
         self.assertEqual(list(result.keys()), ['predict'])
 
     def test_Pipegraph__gaussian_mixture__dict_key(self):
@@ -504,8 +504,8 @@ class TestPipegraph(unittest.TestCase):
         y = self.y
         pgraph = self.pgraph
         current_step = pgraph._steps_dict['Gaussian_Mixture']
-        current_step.pg_fit(X=X)
-        result = current_step.pg_predict(X=X)
+        current_step.fit(X=X)
+        result = current_step.predict_dict(X=X)
         self.assertEqual(sorted(list(result.keys())), sorted(['predict', 'predict_proba']))
 
     def test_Pipegraph__regressor__dict_key(self):
@@ -513,8 +513,8 @@ class TestPipegraph(unittest.TestCase):
         y = self.y
         pgraph = self.pgraph
         current_step = pgraph._steps_dict['Regressor']
-        current_step.pg_fit(X=X, y=y)
-        result = current_step.pg_predict(X=X)
+        current_step.fit(X=X, y=y)
+        result = current_step.predict_dict(X=X)
         self.assertEqual(list(result.keys()), ['predict'])
 
 
@@ -629,7 +629,7 @@ class TestPipegraph(unittest.TestCase):
     def test_Pipegraph__graph_pg_predict_using_keywords(self):
         pgraph = self.pgraph
         pgraph.fit(X=self.X, y=self.y)
-        pgraph.pg_predict(X=self.X, y=self.y)
+        pgraph.predict_dict(X=self.X, y=self.y)
         assert_frame_equal(pgraph._predict_data['_External', 'X'], self.X)
         assert_frame_equal(pgraph._predict_data['_External', 'y'], self.y)
         self.assertEqual(pgraph._predict_data['Regressor', 'predict'].shape[0], self.y.shape[0])
@@ -639,10 +639,10 @@ class TestPipegraph(unittest.TestCase):
         pgraph.fit(X=self.X, y=self.y)
         self.assertRaises(TypeError, pgraph.predict, self.X, self.y, self.y)
 
-    def test_Pipegraph__graph_predict_using_two_positional(self):
+    def test_Pipegraph__graph_predict_using_one_positional_one_keyword(self):
         pgraph = self.pgraph
         pgraph.fit(X=self.X, y=self.y)
-        pgraph.pg_predict(self.X, self.y)
+        pgraph.predict_dict(self.X, y=self.y)
         assert_frame_equal(pgraph._predict_data['_External', 'X'], self.X)
         assert_frame_equal(pgraph._predict_data['_External', 'y'], self.y)
         self.assertEqual(pgraph._predict_data['Regressor', 'predict'].shape[0], self.y.shape[0])
@@ -650,7 +650,7 @@ class TestPipegraph(unittest.TestCase):
     def test_Pipegraph__graph_pg_predict_using_one_positional(self):
         pgraph = self.pgraph
         pgraph.fit(X=self.X, y=self.y)
-        pgraph.pg_predict(self.X, y=self.y)
+        pgraph.predict_dict(self.X, y=self.y)
         assert_frame_equal(pgraph._predict_data['_External', 'X'], self.X)
         assert_frame_equal(pgraph._predict_data['_External', 'y'], self.y)
         self.assertEqual(pgraph._predict_data['Regressor', 'predict'].shape[0], self.y.shape[0])
