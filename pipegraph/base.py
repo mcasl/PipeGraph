@@ -207,7 +207,7 @@ class PipeGraph(_BaseComposition):
         try:
             self._steps_dict[step_name].fit(**fit_inputs)
         except ValueError:
-            print("ERROR: _fit.fit call ValueError!")
+            print("ERROR: step.fit call ValueError!")
 
         predict_inputs = self._fetch_signature_values(graph_data=self._fit_data,
                                                       step_name=step_name,
@@ -389,9 +389,14 @@ class PipeGraph(_BaseComposition):
         final_step_name, final_step = self.steps[-1]
 
         predict_inputs = self._fetch_signature_values(graph_data=self._predict_data,
-                                                      step_name=final_step_name,
-                                                      method='predict')
+                                                  step_name=final_step_name,
+                                                  method='predict')
         Xt = predict_inputs['X']
+
+        if y is None:
+            node_and_outer_variable_tuple = self.predict_connections[final_step_name]['y']
+            y = self._predict_data.get(node_and_outer_variable_tuple, None)
+
         return final_step.score(Xt, y, **score_params)
 
     @property
@@ -426,6 +431,7 @@ class PipeGraph(_BaseComposition):
             step_name:
 
         Returns:
+        :rtype: dict
 
         """
         connections = self.fit_connections if graph_data is self._fit_data else self.predict_connections
