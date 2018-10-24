@@ -74,7 +74,7 @@ context. This morphing capability opens interesting possibilities to explore ind
         def __init__(self, steps=[('regressor', LinearRegression() )]):
             self.steps = steps
 
-        def pg_fit(self, *pargs, **kwargs):
+        def fit(self, *pargs, **kwargs):
             regressor = self.named_steps.regressor
             number_of_clusters = len(set(kwargs['selection']))
             multiple_regressors = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_clusters,
@@ -82,11 +82,11 @@ context. This morphing capability opens interesting possibilities to explore ind
             steps = [('regressorsBundle', multiple_regressors)]
             connections = dict(regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'selection'})
             self._pipegraph = PipeGraph(steps=steps, fit_connections=connections)
-            self._pipegraph.pg_fit(*pargs, **kwargs)
+            self._pipegraph.fit(*pargs, **kwargs)
             return self
 
-        def pg_predict(self, *pargs, **kwargs):
-            return self._pipegraph.pg_predict(*pargs, **kwargs)
+        def predict_dict(self, *pargs, **kwargs):
+            return self._pipegraph.predict_dict(*pargs, **kwargs)
 
 
 Using this new component we can build a simplified PipeGraph:
@@ -125,7 +125,7 @@ Using this new component we can build a simplified PipeGraph:
 
 
 
-**Total running time of the script:** ( 0 minutes  0.050 seconds)
+**Total running time of the script:** ( 0 minutes  0.046 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_8_example_DemuxModelsMux.py:

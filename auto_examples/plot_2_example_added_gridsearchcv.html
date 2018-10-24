@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Second example: GridSearchCV demonstration &mdash; PipeGraph 0.1.0 documentation</title>
+  <title>Second example: GridSearchCV demonstration &mdash; PipeGraph 0.2.0 documentation</title>
   
 
   
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                0.1
+                0.2
               </div>
             
           
@@ -96,6 +96,7 @@
 <li class="toctree-l2"><a class="reference internal" href="plot_9_example_DemuxModelsMux.html">Ninth Example: # GridSearch on dynamically built component using input signal values</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_3_example_varying_sample_weights.html">Third Example: Injecting varying <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> vectors to a linear regression model for GridSearchCV</a></li>
 <li class="toctree-l2"><a class="reference internal" href="plot_6_example_DemuxModelsMux.html">Sixth Example: Encapsulating several blocks into a PipeGraph and reusing it</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_Finding_Number_of_clusters.html">Finding number of clusters</a></li>
 </ul>
 </li>
 </ul>
@@ -230,13 +231,14 @@ In this case we just want to explore a few possibilities varying the degree of t
 <img alt="../_images/sphx_glr_plot_2_example_added_gridsearchcv_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_2_example_added_gridsearchcv_001.png" />
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Information about the parameters of the best estimator:
- degree: 3
- coefficients: [[ -39.63425663  240.78393703 -491.49480204  333.15514139]]
+ degree: 5
+ coefficients: [[    0.           427.00777774 -1734.87885269  3693.40434828
+  -3866.4077028   1577.58211765]]
 </pre></div>
 </div>
 <p>This example showed how to use <code class="xref py py-class docutils literal notranslate"><span class="pre">GridSearchCV</span></code> with <code class="xref py py-class docutils literal notranslate"><span class="pre">PipeGraphRegressor</span></code> in a simple linear workflow.
 <a class="reference internal" href="plot_3_example_varying_sample_weights.html#example3"><span class="std std-ref">Next example</span></a> provides detail on how to proceed with a non linear case.</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.203 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.195 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-2-example-added-gridsearchcv-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/14457f112b219d48dbc161fb099198d8/plot_2_example_added_gridsearchcv.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_2_example_added_gridsearchcv.py</span></code></a></div>

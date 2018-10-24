@@ -79,7 +79,7 @@ components and combining the classifier with the demultiplexed models:
         def __init__(self, steps=[('classifier', GaussianMixture()), ('regressor', LinearRegression())]):
             self.steps = steps
 
-        def pg_fit(self, *pargs, **kwargs):
+        def fit(self, *pargs, **kwargs):
             classifier = self.named_steps.classifier
             regressor = self.named_steps.regressor
             number_of_clusters = query_number_of_clusters_from_classifier(classifier)
@@ -91,11 +91,11 @@ components and combining the classifier with the demultiplexed models:
                                regressorsBundle={'X': 'X', 'y': 'y', 'selection': 'classifier'})
             self._adaptee = PipeGraph(steps=steps, fit_connections=connections)
 
-            self._adaptee.pg_fit(*pargs, **kwargs)
+            self._adaptee.fit(*pargs, **kwargs)
             return self
 
-        def pg_predict(self, *pargs, **kwargs):
-            return self._adaptee.pg_predict(*pargs, **kwargs)
+        def predict_dict(self, *pargs, **kwargs):
+            return self._adaptee.predict_dict(*pargs, **kwargs)
 
 
 Using this new component we can build a simplified PipeGraph:
@@ -158,11 +158,11 @@ Using GridSearchCV to find the best number of clusters and the best regressors
 
  .. code-block:: none
 
-    Score: 0.9980655473910182
-    bundle__classifier__n_components: 4
+    Score: 0.998216588209295
+    bundle__classifier__n_components: 3
 
 
-**Total running time of the script:** ( 0 minutes  2.812 seconds)
+**Total running time of the script:** ( 0 minutes  2.197 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_10_example_DemuxModelsMux.py:

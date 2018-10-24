@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>PipeGraph &mdash; PipeGraph 0.1.0 documentation</title>
+  <title>PipeGraph &mdash; PipeGraph 0.2.0 documentation</title>
   
 
   
@@ -57,7 +57,7 @@
             
             
               <div class="version">
-                0.1
+                0.2
               </div>
             
           
@@ -203,18 +203,16 @@ that uses a different connections dictionary during fit than during predict. The
 
 <dl class="method">
 <dt id="pipegraph.PipeGraph.fit">
-<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraph.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraph.fit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraph.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraph.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>X</strong> (<em>iterable object</em>) – Training data. Must fulfill input requirements of first step of the PipeGraph.</li>
-<li><strong>y</strong> (<em>iterable</em><em>, </em><em>default=None</em>) – Training targets. Must fulfill label requirements for all steps of the PipeGraph.</li>
-<li><strong>**fit_params</strong> (<em>dict of string -&gt; object</em>) – Parameters passed to the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method of each step, where
-each parameter name is prefixed such that parameter <code class="docutils literal notranslate"><span class="pre">p</span></code> for step
-<code class="docutils literal notranslate"><span class="pre">s</span></code> has key <code class="docutils literal notranslate"><span class="pre">s__p</span></code>.</li>
+<li><strong>X</strong> (<em>iterable object</em>) – Input fit data.</li>
+<li><strong>y</strong> (<em>iterable</em><em>, </em><em>default=None</em>) – Output fit data.</li>
+<li><strong>**kwargs</strong> (<em>dict of string -&gt; object</em>) – Other input data</li>
 </ul>
 </td>
 </tr>
@@ -303,55 +301,6 @@ into: This can be either ‘fit’ or ‘predict’, indicating which connection
 </dd></dl>
 
 <dl class="method">
-<dt id="pipegraph.PipeGraph.pg_fit">
-<code class="descname">pg_fit</code><span class="sig-paren">(</span><em>*pargs</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraph.pg_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraph.pg_fit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fit the PipeGraph steps one after the other and following the topological order of the graph defined by the connections attribute.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>*pargs</strong> – Arbitrary number of positional arguments.</li>
-<li><strong>**kwargs</strong> (<em>dict of string -&gt; object</em>) – Arbitrary number of keyword arguments.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>self</strong> – This estimator</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PipeGraphClassifier</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pipegraph.PipeGraph.pg_predict">
-<code class="descname">pg_predict</code><span class="sig-paren">(</span><em>*pargs</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraph.pg_predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraph.pg_predict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Predict the PipeGraph steps one after the other and following the topological
-order defined by the alternative_connections attribute, in case it is not None, or the connections attribute otherwise.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>*pargs</strong> – Arbitrary number of positional arguments.</li>
-<li><strong>**kwargs</strong> (<em>dict of string -&gt; object</em>) – Arbitrary number of keyword arguments.</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>result_dict</strong> – Dictionary containing a single or multiple outputs</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
 <dt id="pipegraph.PipeGraph.predict">
 <code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraph.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraph.predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Predict the PipeGraph steps one after the other and following the topological
@@ -365,6 +314,31 @@ order defined by the alternative_connections attribute, in case it is not None, 
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>y_pred</strong></td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array-like</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipegraph.PipeGraph.predict_dict">
+<code class="descname">predict_dict</code><span class="sig-paren">(</span><em>X</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipegraph/base.html#PipeGraph.predict_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipegraph.PipeGraph.predict_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predict the PipeGraph steps one after the other and following the topological
+order defined by the alternative_connections attribute, in case it is not None, or the connections attribute otherwise.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> – Input data</li>
+<li><strong>**kwargs</strong> (<em>dict of string -&gt; object</em>) – Arbitrary number of keyword arguments.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>result_dict</strong> – Dictionary containing a single or multiple outputs</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></p>
+</td>
 </tr>
 </tbody>
 </table>
