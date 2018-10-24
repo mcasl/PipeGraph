@@ -42,7 +42,7 @@ model.inject(sink='classification', sink_var='X', source='_External',  source_va
 model.inject(sink='classification', sink_var='y', source='clustering', source_var='predict')
 
 n_folds = 5
-number_of_clusters_to_explore = np.arange(2, 50)
+number_of_clusters_to_explore = np.arange(2, 20)
 search = GridSearchCV(model, param_grid=dict(clustering__n_clusters=number_of_clusters_to_explore), cv=n_folds)
 search.fit(X)
 #%%
