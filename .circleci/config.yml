@@ -63,21 +63,22 @@ jobs:
             sudo cat ~/log.txt && if grep -q "Traceback (most recent call last):" ~/log.txt; then false; else true; fi
 
       - run:
-          name: init .pypirc
+          name: Twine upload
           command: |
             echo -e "[pypi]" >> ~/.pypirc
             echo -e "username = pinguy" >> ~/.pypirc
             echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
-
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+                . $HOME/venv/bin/activate
+                python setup.py sdist
+                twine upload --repository-url https://test.pypi.org/legacy/  dist/*
+            fi
 
       - deploy:
           name: Push Documentation to Github Pages
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
                 ci_scripts/circleci/push_doc.sh doc/_build/html
-                . $HOME/venv/bin/activate
-                python setup.py sdist
-                twine upload --repository-url https://test.pypi.org/legacy/  dist/*
             fi
 
       - store_artifacts:
