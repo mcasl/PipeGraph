@@ -88,7 +88,7 @@ jobs:
           name: Twine upload
           command: |
             . $HOME/venv/bin/activate
-            twine upload  -u $PYPI_USERNAME -p $PYPI_PASSWORD  dist/*
+#  twine upload  -u $PYPI_USERNAME -p $PYPI_PASSWORD  dist/*
 
       - deploy:
           name: Make HTML documentation
