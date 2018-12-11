@@ -107,7 +107,6 @@ jobs:
           command: |
             ci_scripts/circleci/push_doc.sh doc/_build/html
 
-
 workflows:
   version: 2
   build_and_deploy:
