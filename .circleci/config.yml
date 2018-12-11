@@ -65,13 +65,12 @@ jobs:
       - run:
           name: Twine upload
           command: |
-            echo -e "[pypi]" >> ~/.pypirc
-            echo -e "username = pinguy" >> ~/.pypirc
-            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+
+            $PYPI_PASSWORD
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
                 . $HOME/venv/bin/activate
                 python setup.py sdist
-                twine upload --repository-url https://test.pypi.org/legacy/  dist/*
+                twine upload  -u pinguy -p $PYPI_PASSWORD  --repository-url https://test.pypi.org/legacy/  dist/*
             fi
 
       - deploy:
