@@ -13,6 +13,7 @@ RUN set -ex  \
 		dvipng \
 		texlive-latex-base \
 		texlive-latex-extra \
+        twine \
 	' \
    && sudo apt-get update \
    && sudo apt-get install -y --no-install-suggests --no-install-recommends $OS_packages \
