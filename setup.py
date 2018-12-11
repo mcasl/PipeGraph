@@ -62,7 +62,7 @@ setup(
         'dev': ['check-manifest'],
         'test': ['coverage'],
     },
-    python_requires='>=3'
+    python_requires='>=3',
     cmdclass={
         'verify': VerifyVersionCommand,
     }
