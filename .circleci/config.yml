@@ -11,7 +11,7 @@ jobs:
         environment:
           - USERNAME: "mcasl"
           - DOC_REPO: "PipeGraph"
-          - DOC_URL: "https://mcasl.github.io/PipeGraph/"
+          - DOC_URL: ""
           - EMAIL: "manuel.castejon@gmail.com"
     working_directory: ~/PipeGraph
     steps:
@@ -50,7 +50,7 @@ jobs:
         environment:
           - USERNAME: "mcasl"
           - DOC_REPO: "PipeGraph"
-          - DOC_URL: "https://mcasl.github.io/PipeGraph/"
+          - DOC_URL: ""
           - EMAIL: "manuel.castejon@gmail.com"
     working_directory: ~/PipeGraph
     steps:
