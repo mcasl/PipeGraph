@@ -98,11 +98,10 @@ jobs:
             python setup.py develop
             set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
             sudo cat ~/log.txt && if grep -q "Traceback (most recent call last):" ~/log.txt; then false; else true; fi
-            ci_scripts/circleci/push_doc.sh _build/html
+            $HOME/$DOC_REPO/ci_scripts/circleci/push_doc.sh _build/html
       - store_artifacts:
-            path: _build/html
+            path: doc/_build/html
             destination: ~/log.txt
-
 
 
 workflows:
