@@ -125,11 +125,14 @@ Using GridSearchCV to find the best number of clusters and the best regressors
 
  .. code-block:: none
 
-    Score: 0.9982737552336616
-    classifier__n_components: 5
+    ERROR: _predict call ValueError!
+    ERROR: _predict call ValueError!
+    ERROR: _predict call ValueError!
+    Score: 0.99780940515692
+    classifier__n_components: 3
 
 
-**Total running time of the script:** ( 0 minutes  1.237 seconds)
+**Total running time of the script:** ( 0 minutes  1.272 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_9_example_DemuxModelsMux.py:
