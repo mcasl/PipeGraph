@@ -2,7 +2,7 @@
 #
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
-version: 2
+version: 0.2.3
 jobs:
   build:
 
@@ -29,8 +29,9 @@ jobs:
           # fallback to using the latest  cache if no exact match is found
           - v1-dependencies-
 
+
       - run:
-          name: Install dependencies
+          name: Install dependencies on requirements.txt
           command: |
             python3 -m venv %HOME/venv
             . $HOME/venv/bin/activate
@@ -40,18 +41,18 @@ jobs:
             - $HOME/venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
 
+
       - run:
-          name: Run tests
+          name: Run unitary tests
           command: |
             . $HOME/venv/bin/activate
             mkdir test-reports
             python -m pytest --junitxml=test-reports/junit.xml pipegraph/tests
-
       - store_test_results:
             path: test-reports
-
       - store_artifacts:
             path: test-reports
+
 
       - run:
           name: Make HTML documentation
@@ -61,26 +62,33 @@ jobs:
             python setup.py develop
             set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
             sudo cat ~/log.txt && if grep -q "Traceback (most recent call last):" ~/log.txt; then false; else true; fi
+      - store_artifacts:
+          path: doc/_build/html
+          destination: ~/log.txt
+
+
+      - run:
+          name: Verify git tag vs. version
+          command: |
+            . $HOME/venv/bin/activate
+            python setup.py verify
+
+      - run:
+          name: Create package
+          command: |
+            . $HOME/venv/bin/activate
+            python setup.py sdist bdist_wheel
 
       - run:
           name: Twine upload
           command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
-                . $HOME/venv/bin/activate
-                python setup.py sdist
-                twine upload  -u $PYPI_USERNAME -p $PYPI_PASSWORD  dist/*
-            fi
+            . $HOME/venv/bin/activate
+            twine upload  -u $PYPI_USERNAME -p $PYPI_PASSWORD  dist/*
 
       - deploy:
           name: Push Documentation to Github Pages
           command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
-                ci_scripts/circleci/push_doc.sh doc/_build/html
-            fi
-
-      - store_artifacts:
-          path: doc/_build/html
-          destination: ~/log.txt
+            ci_scripts/circleci/push_doc.sh doc/_build/html
 
 
 
