@@ -6,7 +6,7 @@ from setuptools.command.install import install
 from codecs import open
 
 
-VERSION = "0.3"
+VERSION = "0.3.1"
 
 
 # some excerpts from https://circleci.com/blog/continuously-deploying-python-packages-to-pypi-with-circleci/
