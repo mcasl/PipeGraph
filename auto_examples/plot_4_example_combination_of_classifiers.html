@@ -1,0 +1,327 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Fourth Example: Combination of classifiers &mdash; PipeGraph 0.2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Ninth Example: # GridSearch on dynamically built component using input signal values" href="plot_9_example_DemuxModelsMux.html" />
+    <link rel="prev" title="Fifth Example: Demultiplexor - multiplexor" href="plot_5_example_Demultiplexer_Multiplexer.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PipeGraph
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">General examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="plot_1_example_two_nodes_in_linear_sequence.html">First example: A simple linear workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_2_example_added_gridsearchcv.html">Second example: <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> demonstration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_8_example_DemuxModelsMux.html">Eighth Example: # Dynamically built component using input signal values during the fit stage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_7_example_DemuxModelsMux.html">Seventh Example: Dynamically built component using initialization parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_10_example_DemuxModelsMux.html">Tenth Example: # Alternative solution to example number 9</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_5_example_Demultiplexer_Multiplexer.html">Fifth Example: Demultiplexor - multiplexor</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Fourth Example: Combination of classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_9_example_DemuxModelsMux.html">Ninth Example: # GridSearch on dynamically built component using input signal values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_3_example_varying_sample_weights.html">Third Example: Injecting varying <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> vectors to a linear regression model for GridSearchCV</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_6_example_DemuxModelsMux.html">Sixth Example: Encapsulating several blocks into a PipeGraph and reusing it</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_Finding_Number_of_clusters.html">Finding number of clusters</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PipeGraph</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">General examples</a> &raquo;</li>
+        
+      <li>Fourth Example: Combination of classifiers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/auto_examples/plot_4_example_combination_of_classifiers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-auto-examples-plot-4-example-combination-of-classifiers-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="fourth-example-combination-of-classifiers">
+<span id="example4"></span><span id="sphx-glr-auto-examples-plot-4-example-combination-of-classifiers-py"></span><h1>Fourth Example: Combination of classifiers<a class="headerlink" href="#fourth-example-combination-of-classifiers" title="Permalink to this headline">¶</a></h1>
+<p>A set of classifiers is combined as input to a neural network. Additionally, the scaled inputs are injected as well to
+the neural network. The data is firstly transformed by scaling its features.</p>
+<p>Steps of the <strong>PipeGraph</strong>:</p>
+<ul class="simple">
+<li><strong>scaler</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">MinMaxScaler</span></code> data preprocessor</li>
+<li><strong>gaussian_nb</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianNB</span></code> classifier</li>
+<li><strong>svc</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">SVC</span></code> classifier</li>
+<li><strong>concat</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">Concatenator</span></code> custom class that appends the outputs of the <code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianNB</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">SVC</span></code> classifiers, and the scaled inputs.</li>
+<li><strong>mlp</strong>: A <code class="xref py py-class docutils literal notranslate"><span class="pre">MLPClassifier</span></code> object</li>
+</ul>
+<div class="figure" id="id1">
+<img alt="https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva4.png" src="https://raw.githubusercontent.com/mcasl/PipeGraph/master/examples/images/Diapositiva4.png" />
+<p class="caption"><span class="caption-text">Figure 1. PipeGraph diagram showing the steps and their connections</span></p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">PolynomialFeatures</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
+<span class="kn">from</span> <span class="nn">pipegraph.base</span> <span class="kn">import</span> <span class="n">PipeGraph</span><span class="p">,</span> <span class="n">Concatenator</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span>
+<span class="kn">from</span> <span class="nn">sklearn.naive_bayes</span> <span class="kn">import</span> <span class="n">GaussianNB</span>
+<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">SVC</span>
+<span class="kn">from</span> <span class="nn">sklearn.neural_network</span> <span class="kn">import</span> <span class="n">MLPClassifier</span>
+
+<span class="n">iris</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">()</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">data</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">target</span>
+
+<span class="n">scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
+<span class="n">gaussian_nb</span> <span class="o">=</span> <span class="n">GaussianNB</span><span class="p">()</span>
+<span class="n">svc</span> <span class="o">=</span> <span class="n">SVC</span><span class="p">()</span>
+<span class="n">mlp</span> <span class="o">=</span> <span class="n">MLPClassifier</span><span class="p">()</span>
+<span class="n">concatenator</span> <span class="o">=</span> <span class="n">Concatenator</span><span class="p">()</span>
+
+<span class="n">steps</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">scaler</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;gaussian_nb&#39;</span><span class="p">,</span> <span class="n">gaussian_nb</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="n">svc</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;concat&#39;</span><span class="p">,</span> <span class="n">concatenator</span><span class="p">),</span>
+         <span class="p">(</span><span class="s1">&#39;mlp&#39;</span><span class="p">,</span> <span class="n">mlp</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>In this example we use a <code class="xref py py-class docutils literal notranslate"><span class="pre">PipeGraphClassifier</span></code> because the result is a classification and we want to take advantage of Scikit-Learn default scoring method for classifiers.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pgraph</span> <span class="o">=</span> <span class="n">PipeGraph</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">)</span>
+<span class="p">(</span><span class="n">pgraph</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="n">sink</span><span class="o">=</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">sink_var</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;_External&#39;</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="s1">&#39;gaussian_nb&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;scaler&#39;</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="s1">&#39;gaussian_nb&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;scaler&#39;</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="s1">&#39;concat&#39;</span><span class="p">,</span> <span class="s1">&#39;X1&#39;</span><span class="p">,</span> <span class="s1">&#39;scaler&#39;</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="s1">&#39;concat&#39;</span><span class="p">,</span> <span class="s1">&#39;X2&#39;</span><span class="p">,</span> <span class="s1">&#39;gaussian_nb&#39;</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="s1">&#39;concat&#39;</span><span class="p">,</span> <span class="s1">&#39;X3&#39;</span><span class="p">,</span> <span class="s1">&#39;svc&#39;</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="s1">&#39;mlp&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;concat&#39;</span><span class="p">)</span>
+       <span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="s1">&#39;mlp&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">source_var</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;svc__C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+              <span class="s1">&#39;mlp__hidden_layer_sizes&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="mi">3</span><span class="p">,),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,),</span> <span class="p">(</span><span class="mi">9</span><span class="p">,),],</span>
+              <span class="s1">&#39;mlp__max_iter&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]}</span>
+
+<span class="n">grid_search_classifier</span>  <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">pgraph</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">param_grid</span><span class="p">,</span> <span class="n">refit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">grid_search_classifier</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">grid_search_classifier</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="n">grid_search_classifier</span><span class="o">.</span><span class="n">best_estimator_</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span>
+
+
+<span class="c1"># Code for plotting the confusion matrix taken</span>
+<span class="c1">#  from &#39;Python Data Science Handbook&#39; by Jake VanderPlas</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">confusion_matrix</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span><span class="p">;</span> <span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>  <span class="c1"># for plot styling</span>
+
+<span class="n">mat</span> <span class="o">=</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">square</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">annot</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">cbar</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;true label&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;predicted label&#39;</span><span class="p">);</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/sphx_glr_plot_4_example_combination_of_classifiers_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_4_example_combination_of_classifiers_001.png" />
+<p>This example displayed complex data injections that are successfully managed by <strong>PipeGraph</strong>.
+Next example <a class="reference internal" href="plot_5_example_Demultiplexer_Multiplexer.html#example5"><span class="std std-ref">on</span></a>.</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  16.964 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-4-example-combination-of-classifiers-py">
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" download="" href="../_downloads/0d954512732fe07c94dc67426867a21a/plot_4_example_combination_of_classifiers.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_4_example_combination_of_classifiers.py</span></code></a></div>
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" download="" href="../_downloads/a071499e06782b15f31e7821bcd311a3/plot_4_example_combination_of_classifiers.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_4_example_combination_of_classifiers.ipynb</span></code></a></div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="plot_9_example_DemuxModelsMux.html" class="btn btn-neutral float-right" title="Ninth Example: # GridSearch on dynamically built component using input signal values" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="plot_5_example_Demultiplexer_Multiplexer.html" class="btn btn-neutral" title="Fifth Example: Demultiplexor - multiplexor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, The authors
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
