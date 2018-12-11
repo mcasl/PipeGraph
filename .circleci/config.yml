@@ -70,7 +70,10 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
                 . $HOME/venv/bin/activate
                 python setup.py sdist
-                twine upload  -u $PYPI_USERNAME -p $PYPI_PASSWORD  dist/*
+                echo -e "[pypi]" >> ~/.pypirc
+                echo -e "username = $PYPI_USERNAME" >> ~/.pypirc
+                echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+                twine upload  dist/*
             fi
 
       - deploy:
