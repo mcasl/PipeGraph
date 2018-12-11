@@ -7,7 +7,7 @@ jobs:
   build:
 
     docker:
-      - image: mcasl/circleci_pipegraph:0.0.4
+      - image: mcasl/circleci_pipegraph:0.0.5
         environment:
         - USERNAME: "mcasl"
         - DOC_REPO: "PipeGraph"
@@ -70,7 +70,7 @@ jobs:
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
                 . $HOME/venv/bin/activate
                 python setup.py sdist
-                twine upload  -u pinguy -p $PYPI_PASSWORD  --repository-url https://test.pypi.org/legacy/  dist/*
+                twine upload  -u $PYPI_USERNAME -p $PYPI_PASSWORD  dist/*
             fi
 
       - deploy:
@@ -81,7 +81,7 @@ jobs:
             fi
 
       - store_artifacts:
-          path: _build/html
+          path: doc/_build/html
           destination: ~/log.txt
 
 
