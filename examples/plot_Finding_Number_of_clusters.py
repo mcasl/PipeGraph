@@ -70,7 +70,7 @@ plt.show()
 # The results show an abrupt slope right after 10 clusters, which is commonly interpreted as
 # a hint for maximum number of clusters.
 #
-# The accuracy and confussion matrix for the 10 clusters configuration are shown below.
+# The accuracy and confusion matrix for the 10 clusters configuration are shown below.
 
 # Code for plotting the confusion matrix taken from 'Python Data Science Handbook' by Jake VanderPlas
 
