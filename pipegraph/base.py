@@ -661,6 +661,7 @@ class Demultiplexer(BaseEstimator):
 
     def predict(self, **kwargs):
         selection = kwargs.pop('selection')
+        selection = selection.iloc[:, 0].values if isinstance(selection, pd.DataFrame) else selection
         result = dict()
         for variable, value in kwargs.items():
             for class_number in set(selection):
@@ -678,6 +679,8 @@ class Multiplexer(BaseEstimator):
     def predict(self, **kwargs):
         # list of arrays with the same dimension
         selection = kwargs['selection']
+        selection = selection.iloc[:, 0].values if isinstance(selection, pd.DataFrame) else selection
+
         array_list = [pd.DataFrame(data=kwargs[str(class_number)],
                                    index=np.flatnonzero(selection == class_number))
                       for class_number in set(selection)]
@@ -713,8 +716,11 @@ class RegressorsWithDataDependentNumberOfReplicas(PipeGraph, RegressorMixin):
         self.steps = steps
 
     def fit(self, *pargs, **kwargs):
+        selection = kwargs['selection']
+        selection = selection.iloc[:,0].values if isinstance(selection, pd.DataFrame) else selection
+        kwargs['selection'] = selection
         regressor = self.named_steps.regressor
-        number_of_clusters = len(set(kwargs['selection']))
+        number_of_clusters = len(np.unique(selection))
         multiple_regressors = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_clusters,
                                                                          regressor=regressor)
         steps = [('regressorsBundle', multiple_regressors)]
