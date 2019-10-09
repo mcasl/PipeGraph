@@ -75,8 +75,11 @@ context. This morphing capability opens interesting possibilities to explore ind
             self.steps = steps
 
         def fit(self, *pargs, **kwargs):
+            selection = kwargs['selection']
+            selection = selection.iloc[:,0].values if isinstance(selection, pd.DataFrame) else selection
+            kwargs['selection'] = selection
             regressor = self.named_steps.regressor
-            number_of_clusters = len(set(kwargs['selection']))
+            number_of_clusters = len(np.unique(selection))
             multiple_regressors = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_clusters,
                                                                              regressor=regressor)
             steps = [('regressorsBundle', multiple_regressors)]
@@ -125,7 +128,7 @@ Using this new component we can build a simplified PipeGraph:
 
 
 
-**Total running time of the script:** ( 0 minutes  0.051 seconds)
+**Total running time of the script:** ( 0 minutes  0.049 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_8_example_DemuxModelsMux.py:

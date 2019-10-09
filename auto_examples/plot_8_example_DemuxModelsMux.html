@@ -214,8 +214,11 @@ context. This morphing capability opens interesting possibilities to explore ind
         self.steps = steps
 
     def fit(self, *pargs, **kwargs):
+        selection = kwargs[&#39;selection&#39;]
+        selection = selection.iloc[:,0].values if isinstance(selection, pd.DataFrame) else selection
+        kwargs[&#39;selection&#39;] = selection
         regressor = self.named_steps.regressor
-        number_of_clusters = len(set(kwargs[&#39;selection&#39;]))
+        number_of_clusters = len(np.unique(selection))
         multiple_regressors = RegressorsWithParametrizedNumberOfReplicas(number_of_replicas=number_of_clusters,
                                                                          regressor=regressor)
         steps = [(&#39;regressorsBundle&#39;, multiple_regressors)]
@@ -252,7 +255,7 @@ context. This morphing capability opens interesting possibilities to explore ind
 </pre></div>
 </div>
 <img alt="../_images/sphx_glr_plot_8_example_DemuxModelsMux_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_8_example_DemuxModelsMux_001.png" />
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.051 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.049 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-8-example-demuxmodelsmux-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/988861a8b0d2fb2889cb04460f3a19d7/plot_8_example_DemuxModelsMux.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_8_example_DemuxModelsMux.py</span></code></a></div>
