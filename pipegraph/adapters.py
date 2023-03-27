@@ -42,8 +42,7 @@ class AdapterMixins:
 
 class FitTransformMixin(AdapterMixins):
     def predict_dict(self, *pargs, **kwargs):
-        result = {'predict': self.transform(*pargs, **kwargs)}
-        return result
+        return {'predict': self.transform(*pargs, **kwargs)}
 
     def _get_predict_signature(self):
         return list(inspect.signature(self.transform).parameters)
