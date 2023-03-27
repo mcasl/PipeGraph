@@ -22,6 +22,7 @@ Steps of the **PipeGraph**:
 
     Figure 1. PipeGraph diagram showing the steps and their connections
 """
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
@@ -85,7 +86,7 @@ plt.scatter(X.loc[:,'X'], y_pred)
 plt.show()
 
 power = grid_search_regressor.best_estimator_.get_params()['custom_power']
-print('Power that obtains the best results in the linear model: \n {}'.format(power))
+print(f'Power that obtains the best results in the linear model: \n {power}')
 
 ###############################################################################
 # This example displayed a non linear workflow successfully implemented by **PipeGraph**, while at the same time showing a way to circumvent current limitations of standard :class:`GridSearchCV`, in particular, the retriction on the number of input parameters.
