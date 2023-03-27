@@ -99,10 +99,10 @@ class PipeGraph(_BaseComposition):
                     Returning self allows chaining operations
                 """
         if self.fit_connections is None:
-            self.fit_connections = dict()
+            self.fit_connections = {}
 
         if self.predict_connections is None:
-            self.predict_connections = dict()
+            self.predict_connections = {}
 
         if into == 'fit':
             connections = self.fit_connections
@@ -170,12 +170,9 @@ class PipeGraph(_BaseComposition):
             raise ValueError("Please use another name for the _External node. _External is used internally.")
         self._steps_dict = {name: add_mixins_to_step(step=step_model) for name, step_model in self.steps}
 
-        external_data = {('_External', 'X'): X,
-                         ('_External', 'y'): y
-                        }
-
-        external_data.update({('_External', key): item
-                              for key, item in kwargs.items()})
+        external_data = {('_External', 'X'): X, ('_External', 'y'): y} | {
+            ('_External', key): item for key, item in kwargs.items()
+        }
         self._fit_data = external_data
 
         if self.fit_connections is None:
@@ -212,7 +209,7 @@ class PipeGraph(_BaseComposition):
         predict_inputs = self._fetch_signature_values(graph_data=self._fit_data,
                                                       step_name=step_name,
                                                       method='predict')
-        results = dict()
+        results = {}
         try:
             results = self._steps_dict[step_name].predict_dict(**predict_inputs)
         except ValueError:
@@ -303,10 +300,9 @@ class PipeGraph(_BaseComposition):
         result_dict : dict
              Dictionary containing a single or multiple outputs
         """
-        external_data = {('_External', 'X'): X,
-                        }
-
-        external_data.update({('_External', key): item for key, item in kwargs.items()})
+        external_data = {
+            ('_External', 'X'): X,
+        } | {('_External', key): item for key, item in kwargs.items()}
         self._predict_data = external_data
 
         predict_nodes = self._filter_predict_nodes()
@@ -315,9 +311,10 @@ class PipeGraph(_BaseComposition):
             self._predict_single_step(name)
 
         desired_output_step = self.steps[-1][0]
-        result_dict = {label: self._predict_data.get((desired_output_step, label), None)
-                       for label in {'predict', 'predict_proba', 'predict_log_proba'}}
-        return result_dict
+        return {
+            label: self._predict_data.get((desired_output_step, label), None)
+            for label in {'predict', 'predict_proba', 'predict_log_proba'}
+        }
 
     def _predict_single_step(self, step_name):
         """
@@ -414,7 +411,7 @@ class PipeGraph(_BaseComposition):
         Returns:
 
         """
-        return (name for name in nx.topological_sort(self._fit_graph))
+        return iter(nx.topological_sort(self._fit_graph))
 
     def _filter_predict_nodes(self):
         """
@@ -422,7 +419,7 @@ class PipeGraph(_BaseComposition):
         Returns:
 
         """
-        return (name for name in nx.topological_sort(self._predict_graph))
+        return iter(nx.topological_sort(self._predict_graph))
 
     def _fetch_signature_values(self, graph_data, step_name, method):
         """
@@ -438,31 +435,32 @@ class PipeGraph(_BaseComposition):
         connection_tuples = {}
         for key, value in connections[step_name].items():
             if not isinstance(value, str):
-                connection_tuples.update({key: value})
+                connection_tuples[key] = value
             elif value in connections:
-                connection_tuples.update({key: (value, 'predict')})
+                connection_tuples[key] = (value, 'predict')
             else:
-                connection_tuples.update({key: ('_External', value)})
+                connection_tuples[key] = ('_External', value)
 
         if isinstance(self._steps_dict[step_name], PipeGraph):
-            input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
-                          for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()}
-            return input_data
-
+            return {
+                inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
+                for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
+            }
         if method == 'fit':
             variable_list = self._steps_dict[step_name]._get_fit_signature()
         elif method=='predict':
             variable_list = self._steps_dict[step_name]._get_predict_signature()
 
         if 'kwargs' in variable_list:
-            input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
-                          for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()}
-            return input_data
-
-        input_data = {inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
-                      for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
-                      if inner_variable in variable_list}
-        return input_data
+            return {
+                inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
+                for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
+            }
+        return {
+            inner_variable: graph_data.get(node_and_outer_variable_tuple, None)
+            for inner_variable, node_and_outer_variable_tuple in connection_tuples.items()
+            if inner_variable in variable_list
+        }
 
     def _write_step_outputs(self, graph_data, step_name, output_data):
         """
@@ -528,7 +526,7 @@ def add_mixins_to_step(step, mixin=None):
     """
 
     if mixin is None:
-        is_a_mixin_not_needed = isinstance(step, AdapterMixins) or  isinstance(step, PipeGraph)
+        is_a_mixin_not_needed = isinstance(step, (AdapterMixins, PipeGraph))
         if is_a_mixin_not_needed:
             return step
         elif step.__class__ in strategies_for_custom_adaptees:
@@ -551,8 +549,8 @@ def add_mixins_to_step(step, mixin=None):
 
 def make_connections_when_not_provided_to_init(steps):
     names = [name for name, _ in steps]
-    connections = dict()
-    if len(names) == 0:
+    connections = {}
+    if not names:
         ValueError("Error: No steps to chain. Please provide a list of steps to PipeGraph")
 
     for index, name in enumerate(names):
@@ -594,7 +592,7 @@ class Concatenator(BaseEstimator):
         df_list = []
         for name in sorted(kwargs.keys()):
             item = kwargs[name]
-            if isinstance(item, pd.Series) or isinstance(item, pd.DataFrame):
+            if isinstance(item, (pd.Series, pd.DataFrame)):
                 df_list.append(item)
             else:
                 df_list.append(pd.DataFrame(data=item))
@@ -631,9 +629,10 @@ class ColumnSelector(BaseEstimator):
 
         if self.mapping is None:
             return {'predict': X}
-        result = {name: X.iloc[:, column_slice]
-                  for name, column_slice in self.mapping.items()}
-        return result
+        return {
+            name: X.iloc[:, column_slice]
+            for name, column_slice in self.mapping.items()
+        }
 
 
 class Reshape(BaseEstimator):
@@ -644,7 +643,7 @@ class Reshape(BaseEstimator):
         return self
 
     def predict(self, X, *pargs, **kwargs):
-        if isinstance(X, pd.DataFrame) or isinstance(X, pd.Series):
+        if isinstance(X, (pd.DataFrame, pd.Series)):
             X = X.values
         return X.reshape(self.dimension)
 
@@ -661,7 +660,7 @@ class Demultiplexer(BaseEstimator):
 
     def predict(self, **kwargs):
         selection = kwargs.pop('selection')
-        result = dict()
+        result = {}
         for variable, value in kwargs.items():
             for class_number in set(selection):
                 if value is None:
@@ -681,8 +680,7 @@ class Multiplexer(BaseEstimator):
         array_list = [pd.DataFrame(data=kwargs[str(class_number)],
                                    index=np.flatnonzero(selection == class_number))
                       for class_number in set(selection)]
-        result = pd.concat(array_list, axis=0).sort_index()
-        return result
+        return pd.concat(array_list, axis=0).sort_index()
 
 
 class RegressorsWithParametrizedNumberOfReplicas(PipeGraph, RegressorMixin):
@@ -690,20 +688,27 @@ class RegressorsWithParametrizedNumberOfReplicas(PipeGraph, RegressorMixin):
         self.number_of_replicas = number_of_replicas
         self.regressor = regressor
 
-        steps = ([('demux', Demultiplexer())] +
-                 [('regressor_' + str(i), clone(regressor)) for i in range(number_of_replicas)] +
-                 [('mux', Multiplexer())]
-                 )
+        steps = (
+            [('demux', Demultiplexer())]
+            + [
+                (f'regressor_{str(i)}', clone(regressor))
+                for i in range(number_of_replicas)
+            ]
+        ) + [('mux', Multiplexer())]
 
         connections = dict(demux={'X': 'X',
                                   'y': 'y',
                                   'selection': 'selection'})
 
         for i in range(number_of_replicas):
-            connections['regressor_' + str(i)] = {'X': ('demux', 'X_' + str(i)),
-                                               'y': ('demux', 'y_' + str(i))}
+            connections[f'regressor_{str(i)}'] = {
+                'X': ('demux', f'X_{str(i)}'),
+                'y': ('demux', f'y_{str(i)}'),
+            }
 
-        connections['mux'] = {str(i): ('regressor_' + str(i)) for i in range(number_of_replicas)}
+        connections['mux'] = {
+            str(i): f'regressor_{str(i)}' for i in range(number_of_replicas)
+        }
         connections['mux']['selection'] = 'selection'
         super().__init__(steps=steps, fit_connections=connections)
 
@@ -739,8 +744,7 @@ def query_number_of_clusters_from_classifier(classifier):
 
     classifier_class = type(classifier).__name__
     number_of_clusters_str = number_of_clusters_dictionary[classifier_class]
-    number_of_cluster = classifier.get_params()[number_of_clusters_str]
-    return number_of_cluster
+    return classifier.get_params()[number_of_clusters_str]
 
 class ClassifierAndRegressorsBundle(PipeGraph, RegressorMixin):
     def __init__(self, steps=[('classifier', GaussianMixture()), ('regressor', LinearRegression())]):
@@ -798,5 +802,5 @@ strategies_for_custom_adaptees = {
 }
 
 from pipegraph.demo_blocks import strategies_for_demo_blocks_adaptees
-strategies_for_custom_adaptees.update(strategies_for_demo_blocks_adaptees)
+strategies_for_custom_adaptees |= strategies_for_demo_blocks_adaptees
 
