@@ -494,7 +494,7 @@ def build_graph(connections):
     graph = nx.DiGraph()
     graph.add_nodes_from(connections)
     for name in connections:
-        current_node = graph.node[name]
+        current_node = graph.nodes[name]
         current_node['name'] = name
         ascendants_set = set()
         for inner_variable, value in connections[name].items():

@@ -32,7 +32,7 @@ import unittest
 
 import numpy as np
 import pandas as pd
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 from sklearn.cluster import DBSCAN
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split

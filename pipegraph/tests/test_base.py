@@ -33,7 +33,7 @@ import numpy as np
 import pandas as pd
 from sklearn.naive_bayes import GaussianNB
 from numpy.testing import assert_array_equal
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 from sklearn.cluster import DBSCAN, KMeans
 from sklearn.linear_model import LinearRegression
 from sklearn.mixture import GaussianMixture
@@ -671,9 +671,9 @@ class TestPipegraph(unittest.TestCase):
         self.assertEqual(pgraph._steps_dict['Dbscan'].set_params(eps=10.2).get_params()['eps'],
                          10.2)
         self.assertEqual(pgraph._steps_dict['Regressor'].set_params(copy_X=False).get_params(),
-                         {'copy_X': False, 'fit_intercept': True, 'n_jobs': None, 'normalize': False})
+                         {'copy_X': False, 'fit_intercept': True, 'n_jobs': None, 'positive': False})
         self.assertEqual(pgraph._steps_dict['Regressor'].set_params(n_jobs=13).get_params(),
-                         {'copy_X': False, 'fit_intercept': True, 'n_jobs': 13, 'normalize': False})
+                         {'copy_X': False, 'fit_intercept': True, 'n_jobs': 13, 'positive': False})
 
     def test_Pipegraph__named_steps(self):
         pgraph = self.pgraph
@@ -745,7 +745,7 @@ class TestPipeGraphSingleNodeLinearModel(unittest.TestCase):
                     'linear_model__copy_X': True,
                     'linear_model__fit_intercept': True,
                     'linear_model__n_jobs': 1,
-                    'linear_model__normalize': False,
+                    'linear_model__positive': False,
                     'steps': self.steps}
         for item in expected:
             self.assertTrue(item in result)
@@ -754,10 +754,10 @@ class TestPipeGraphSingleNodeLinearModel(unittest.TestCase):
         pgraph = self.pgraph
         result_pre = pgraph.get_params()
         expected_pre = {'linear_model': self.lm,
-                        'linear_model__copy_X': True,
                         'linear_model__fit_intercept': True,
-                        'linear_model__n_jobs': 1,
-                        'linear_model__normalize': False,
+                        'linear_model__copy_X': True,
+                        'linear_model__n_jobs': None,
+                        'linear_model__positive': False,
                         'steps': self.steps}
         for item in expected_pre:
             self.assertTrue(item in result_pre)
@@ -767,7 +767,7 @@ class TestPipeGraphSingleNodeLinearModel(unittest.TestCase):
                          'linear_model__copy_X': False,
                          'linear_model__fit_intercept': True,
                          'linear_model__n_jobs': 1,
-                         'linear_model__normalize': False,
+                         'linear_model__positive': False,
                          'steps': self.steps}
         for item in expected_post:
             self.assertTrue(item in result_post)
