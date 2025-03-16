@@ -18,6 +18,7 @@ Steps of the **PipeGraph**:
     Figure 1. PipeGraph diagram showing the steps and their connections
 """
 
+
 ###############################################################################
 # Firstly, we import the necessary libraries and create some artificial data.
 
@@ -64,7 +65,9 @@ plt.show()
 coef = grid_search_regressor.best_estimator_.get_params()['linear_model'].coef_
 degree = grid_search_regressor.best_estimator_.get_params()['polynomial_features'].degree
 
-print('Information about the parameters of the best estimator: \n degree: {} \n coefficients: {} '.format(degree, coef))
+print(
+    f'Information about the parameters of the best estimator: \n degree: {degree} \n coefficients: {coef} '
+)
 
 ###############################################################################
 # This example showed how to use :class:`GridSearchCV` with :class:`PipeGraphRegressor` in a simple linear workflow.
