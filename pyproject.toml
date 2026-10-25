@@ -1,25 +1,67 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "pipegraph"
 version = "0.3.4"
-description = "PipeGraph extends the concept of Scikit-Learn's Pipeline tool"
-readme = "README.rst"
+description = "PipeGraph extends the concept of Scikit-Learn's Pipeline tool to graph-shaped workflows"
+readme = "README.md"
 license = "MIT"
+license-files = ["LICENSE.txt"]
 requires-python = ">=3.12"
-dependencies = [
-    "matplotlib>=3.11.2",
-    "networkx>=3.7",
-    "numpy>=2.5.4",
-    "pandas>=3.1.0",
-    "scikit-learn>=1.9.1",
-    "scipy>=1.18.1",
-    "seaborn>=0.13.2",
+authors = [
+    { name = "Manuel Castejón-Limas", email = "manuel.castejon@unileon.es" },
+    { name = "Laura Fernández Robles" },
+    { name = "Héctor Alaiz Moretón" },
+    { name = "Jaime Cifuentes-Rodríguez" },
+    { name = "Javier Alfonso-Cendón" },
+    { name = "Camino Fernández-Llamas" },
 ]
+keywords = ["scikit-learn", "pipeline", "graph", "DAG", "machine learning"]
+classifiers = [
+    "Development Status :: 7 - Inactive",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+# Runtime dependencies. Lower bounds are the oldest versions the 0.3.4 test suite
+# was run against; the locked versions in uv.lock are the ones used for development.
+dependencies = [
+    "networkx>=3.0",
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "scikit-learn>=1.5",
+]
+
+[project.optional-dependencies]
+# Only needed to run the gallery of examples.
+examples = [
+    "matplotlib>=3.8",
+    "scipy>=1.11",
+    "seaborn>=0.13",
+]
+
+[project.urls]
+Homepage = "https://mcasl.github.io/PipeGraph/"
+Documentation = "https://mcasl.github.io/PipeGraph/"
+Source = "https://github.com/mcasl/PipeGraph"
+Changelog = "https://github.com/mcasl/PipeGraph/blob/master/CHANGELOG.md"
 
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
 ]
 docs = [
+    "matplotlib>=3.8",
+    "scipy>=1.11",
+    "seaborn>=0.13",
     "numpydoc>=1.11.0",
     "pillow>=13.0.0",
     "sphinx>=9.1.1",
@@ -32,8 +74,12 @@ release = [
     "wheel>=0.48.0",
 ]
 
+[tool.setuptools.packages.find]
+include = ["pipegraph*"]
+exclude = ["pipegraph.tests*"]
+
 [tool.uv]
-# El paquete se sigue construyendo con setup.py (CI); uv solo gestiona el entorno.
+# uv manages the environment; the package itself is built with setuptools (see [build-system]).
 package = false
 
 [tool.pytest.ini_options]
