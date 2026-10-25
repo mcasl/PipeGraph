@@ -19,6 +19,18 @@ dependencies = [
 dev = [
     "pytest>=9.1.1",
 ]
+docs = [
+    "numpydoc>=1.11.0",
+    "pillow>=13.0.0",
+    "sphinx>=9.1.1",
+    "sphinx-gallery>=0.22.1",
+    "sphinx-rtd-theme>=3.1.0",
+]
+release = [
+    "setuptools>=84.2.1",
+    "twine>=7.0.0",
+    "wheel>=0.48.0",
+]
 
 [tool.uv]
 # El paquete se sigue construyendo con setup.py (CI); uv solo gestiona el entorno.
