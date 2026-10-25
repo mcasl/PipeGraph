@@ -1,2 +1,6 @@
 include pyproject.toml
 include uv.lock
+include README.md
+include CHANGELOG.md
+include LICENSE.txt
+recursive-exclude pipegraph/tests *

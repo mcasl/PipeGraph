@@ -6,6 +6,16 @@
 Welcome to PipeGraph!
 ============================================
 
+.. note::
+   **Project status (October 2026): maintenance mode.** Release 0.3.4 keeps PipeGraph
+   working with Python 3.12–3.14 and scikit-learn 1.9, but no new features are planned.
+   Most of PipeGraph's use cases are now covered by scikit-learn itself (stacking,
+   metadata routing, ``ColumnTransformer``), by `skrub Data Ops
+   <https://skrub-data.org/stable/data_ops.html>`_ and by `scikit-lego
+   <https://koaning.github.io/scikit-lego/>`_. The project README on GitHub explains
+   which tool to use for each case and lists the known limitations of PipeGraph:
+   https://github.com/mcasl/PipeGraph#should-you-use-pipegraph-in-2026
+
 Introduction
 ------------
 

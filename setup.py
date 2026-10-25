@@ -1,71 +1,28 @@
+"""Packaging shim.
+
+All project metadata lives in ``pyproject.toml``. This file only keeps the
+``verify`` command used by CircleCI to check that the git tag matches the
+declared version before uploading a release.
+"""
 import os
 import sys
+import tomllib
 
-from setuptools import setup, find_packages
+from setuptools import setup
 from setuptools.command.install import install
-from codecs import open
 
+with open("pyproject.toml", "rb") as f:
+    VERSION = tomllib.load(f)["project"]["version"]
 
-VERSION = "0.3.4"
-
-
-# some excerpts from https://circleci.com/blog/continuously-deploying-python-packages-to-pypi-with-circleci/
-def readme():
-    with open('README.rst') as f:
-        return f.read()
 
 class VerifyVersionCommand(install):
-    """Custom command to verify that the git tag matches our version"""
-    description = 'verify that the git tag matches our version'
+    """Custom command to verify that the git tag matches our version."""
+    description = "verify that the git tag matches our version"
 
     def run(self):
-        tag = os.getenv('CIRCLE_TAG')
-
+        tag = os.getenv("CIRCLE_TAG")
         if tag != VERSION:
-            info = "Git tag: {0} does not match the version of this app: {1}".format(
-                tag, VERSION
-            )
-            sys.exit(info)
+            sys.exit(f"Git tag: {tag} does not match the version of this app: {VERSION}")
 
-setup(
-    name='pipeGraph',
-    version=VERSION,
-    description="PipeGraph extends the concept of Scikit-Learn's Pipeline tool",
-    long_description=readme(),
-    url='https://mcasl.github.io/PipeGraph/',
-    author='See License.txt file in source package',
-    author_email='manuel.castejon@unileon.es',
-    license="MIT",
-    classifiers=['Intended Audience :: Science/Research',
-                 'Intended Audience :: Developers',
-                 'License :: OSI Approved :: MIT License',
-                 'Topic :: Software Development',
-                 'Topic :: Scientific/Engineering',
-                 'Operating System :: Microsoft :: Windows',
-                 'Operating System :: POSIX',
-                 'Operating System :: Unix',
-                 'Operating System :: MacOS',
-                 'Programming Language :: Python :: 3.12',
-                 'Programming Language :: Python :: 3.13',
-                 'Programming Language :: Python :: 3.14',
-    ],
 
-    keywords='scikit-learn pipeline development',
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-
-    install_requires=['scikit-learn >= 1.5',
-                      'networkx >= 3.0',
-                      'pandas >= 2.0',
-                      'numpy >= 1.26',
-                      ],
-
-    extras_require={
-        'dev': ['check-manifest'],
-        'test': ['coverage'],
-    },
-    python_requires='>=3.12',
-    cmdclass={
-        'verify': VerifyVersionCommand,
-    }
-
-)
+setup(cmdclass={"verify": VerifyVersionCommand})
