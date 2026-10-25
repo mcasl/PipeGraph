@@ -45,23 +45,25 @@ setup(
                  'Operating System :: POSIX',
                  'Operating System :: Unix',
                  'Operating System :: MacOS',
-                 'Programming Language :: Python :: 3.6',
+                 'Programming Language :: Python :: 3.12',
+                 'Programming Language :: Python :: 3.13',
+                 'Programming Language :: Python :: 3.14',
     ],
 
     keywords='scikit-learn pipeline development',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
 
-    install_requires=['pytest',
-					  'scikit-learn >= 0.17',
-					  'networkx',
-					  'pandas'
-					  ],
+    install_requires=['scikit-learn >= 1.5',
+                      'networkx >= 3.0',
+                      'pandas >= 2.0',
+                      'numpy >= 1.26',
+                      ],
 
     extras_require={
         'dev': ['check-manifest'],
         'test': ['coverage'],
     },
-    python_requires='>=3',
+    python_requires='>=3.12',
     cmdclass={
         'verify': VerifyVersionCommand,
     }

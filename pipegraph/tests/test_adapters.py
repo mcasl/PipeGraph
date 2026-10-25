@@ -143,7 +143,7 @@ class TestCustomFitPredictWithDictionaryOutputMixin(unittest.TestCase):
 
     def test_FitPredictWithDictionaryOutput__predict(self):
         X = self.X
-        y = self.y.astype(int)
+        y = self.y.astype(int).ravel()
         gm = GaussianNB()
         wrapped_gm = add_mixins_to_step(gm)
         double_wrap= add_mixins_to_step(wrapped_gm)

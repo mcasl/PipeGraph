@@ -67,3 +67,9 @@ target/
 .idea/
 pipegraph/tests/scratch.py
 .ipynb_checkpoints/
+
+# uv
+.venv/
+
+# macOS
+.DS_Store
