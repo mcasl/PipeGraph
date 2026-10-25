@@ -18,27 +18,24 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "requirements.txt" }}
-          # fallback to using the latest  cache if no exact match is found
-          - v1-dependencies-
+            - v2-uv-{{ checksum "uv.lock" }}
+            - v2-uv-
 
       - run:
-          name: Install requirements.txt
+          name: Install uv and project dependencies
           command: |
-            python3 -m venv %HOME/venv
-            . $HOME/venv/bin/activate
-            pip install -r requirements.txt
+            pip install uv
+            uv sync
       - save_cache:
           paths:
-            - $HOME/venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
+            - ~/.cache/uv
+          key: v2-uv-{{ checksum "uv.lock" }}
 
       - run:
           name: Run unitary tests
           command: |
-            . $HOME/venv/bin/activate
             mkdir test-reports
-            python -m pytest --junitxml=test-reports/junit.xml pipegraph/tests
+            uv run pytest --junitxml=test-reports/junit.xml
       - store_test_results:
             path: test-reports
       - store_artifacts:
@@ -57,46 +54,40 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "requirements.txt" }}
-            # fallback to using the latest  cache if no exact match is found
-            - v1-dependencies-
+            - v2-uv-{{ checksum "uv.lock" }}
+            - v2-uv-
 
       - run:
-          name: Install dependencies on requirements.txt
+          name: Install uv and project dependencies
           command: |
-            python3 -m venv %HOME/venv
-            . $HOME/venv/bin/activate
-            pip install -r requirements.txt
+            pip install uv
+            uv sync --group docs --group release
       - save_cache:
           paths:
-            - $HOME/venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
+            - ~/.cache/uv
+          key: v2-uv-{{ checksum "uv.lock" }}
+
 
       - run:
           name: Verify Git Tag vs. Version
           command: |
-            . $HOME/venv/bin/activate
-            python setup.py verify
+            uv run python setup.py verify
 
       - run:
           name: Create package
           command: |
-            . $HOME/venv/bin/activate
-            python setup.py sdist bdist_wheel
+            uv run python setup.py sdist bdist_wheel
 
       - run:
           name: Twine upload
           command: |
-            . $HOME/venv/bin/activate
-            twine upload  -u $PYPI_USERNAME -p $PYPI_PASSWORD  dist/*
+            uv run twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
 
       - run:
           name: Make HTML documentation
           command: |
-            . $HOME/venv/bin/activate
-            python setup.py clean
-            python setup.py develop
-            set -o pipefail && cd doc && make html 2>&1 | tee ~/log.txt
+            export PYTHONPATH=$PWD
+            set -o pipefail && cd doc && uv run make html 2>&1 | tee ~/log.txt
             sudo cat ~/log.txt && if grep -q "Traceback (most recent call last):" ~/log.txt; then false; else true; fi
 
       - run:

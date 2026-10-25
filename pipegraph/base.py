@@ -591,13 +591,24 @@ class Concatenator(BaseEstimator):
         -------
         Pandas series or Pandas DataFrame with the data input concatenated
         """
+        names = sorted(kwargs.keys())
         df_list = []
-        for name in sorted(kwargs.keys()):
+        for name in names:
             item = kwargs[name]
-            if isinstance(item, pd.Series) or isinstance(item, pd.DataFrame):
+            if isinstance(item, pd.Series):
+                df_list.append(item.to_frame())
+            elif isinstance(item, pd.DataFrame):
                 df_list.append(item)
             else:
                 df_list.append(pd.DataFrame(data=item))
+
+        # Recent scikit-learn versions require unique column names. When the pieces
+        # clash (e.g. several unnamed blocks, all with columns 0, 1, ...), prefix
+        # every column with the name of the block it comes from.
+        all_columns = [column for df in df_list for column in df.columns]
+        if len(set(all_columns)) != len(all_columns):
+            df_list = [df.set_axis([f"{name}_{column}" for column in df.columns], axis=1)
+                       for name, df in zip(names, df_list)]
         return pd.concat(df_list, axis=1)
 
 

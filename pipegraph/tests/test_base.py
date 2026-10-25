@@ -670,9 +670,13 @@ class TestPipegraph(unittest.TestCase):
                          5)
         self.assertEqual(pgraph._steps_dict['Dbscan'].set_params(eps=10.2).get_params()['eps'],
                          10.2)
-        self.assertEqual(pgraph._steps_dict['Regressor'].set_params(copy_X=False).get_params(),
+        # No se compara el diccionario completo: las versiones recientes de scikit-learn
+        # añaden parámetros nuevos a LinearRegression (p. ej. 'tol').
+        params = pgraph._steps_dict['Regressor'].set_params(copy_X=False).get_params()
+        self.assertEqual({k: params[k] for k in ('copy_X', 'fit_intercept', 'n_jobs', 'positive')},
                          {'copy_X': False, 'fit_intercept': True, 'n_jobs': None, 'positive': False})
-        self.assertEqual(pgraph._steps_dict['Regressor'].set_params(n_jobs=13).get_params(),
+        params = pgraph._steps_dict['Regressor'].set_params(n_jobs=13).get_params()
+        self.assertEqual({k: params[k] for k in ('copy_X', 'fit_intercept', 'n_jobs', 'positive')},
                          {'copy_X': False, 'fit_intercept': True, 'n_jobs': 13, 'positive': False})
 
     def test_Pipegraph__named_steps(self):
